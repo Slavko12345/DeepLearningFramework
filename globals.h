@@ -19,7 +19,7 @@ const bool DATA_AUGMENTATION = 0;
 const double AUGMENTATION_SIZE = 0.2;
 const double CORNER_PROBABILITY = 0.5;
 
-const bool DROP_DATA_AUGMENTATION = 0;
+const bool DROP_DATA_AUGMENTATION = 1;
 const bool INPUT_UNCHANGED_PROBABILITY = 0.0625;
 const bool INPUT_DROP_RATE = 0.0625;
 const int INPUT_LEN = 3 * 32 * 32;

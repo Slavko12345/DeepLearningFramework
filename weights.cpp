@@ -11,18 +11,16 @@ using namespace std;
 
 void weights::SetModel()
 {
-    Nweights=5;
+    Nweights=4;
     weightList = new layerWeight[Nweights];
 
-    weightList[0].SetStairsFullConvolution(3, 1, 10);
+    weightList[0].SetStairsFullConvolution(3, 4, 4);
 
-    weightList[1].SetStairsFullConvolution(20, 1, 20);
+    weightList[1].SetStairsFullConvolution(35, 4, 4);
 
-    weightList[2].SetStairsFullConvolution(40, 1, 40);
+    weightList[2].SetStairsFullConvolution(67, 4, 4);
 
-    weightList[3].SetStairsFullConvolution(80, 1, 80);
-
-    weightList[4].SetFC(160, 10);
+    weightList[3].SetFC(99, 10);
 }
 
 void layerWeight::SetStairsVert(int startDepth, int numStairs, int numStairConvolutions){

@@ -17,10 +17,10 @@ void activityLayers::SetModel(layers* layersData){
     dropoutRates.resize(Nlayers, 0.0);
 
 //    dropoutRates[0] = 0.0625;
-    dropoutRates[1] = 0.125;
-    dropoutRates[2] = 0.125;
-    dropoutRates[3] = 0.125;
-    dropoutRates[4] = 0.125;
+//    dropoutRates[1] = 0.125;
+//    dropoutRates[2] = 0.125;
+//    dropoutRates[3] = 0.125;
+//    dropoutRates[4] = 0.125;
 
 
     orderedData* l_j;
