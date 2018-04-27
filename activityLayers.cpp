@@ -5,6 +5,7 @@
 #include "vect.h"
 #include "matrix.h"
 #include "tensor.h"
+#include "globals.h"
 activityLayers::activityLayers(){
 }
 
@@ -28,6 +29,8 @@ void activityLayers::SetModel(layers* layersData){
         layerList[j] = new activityData(l_j->len, dropoutRates[j]);
         if (layerList[j]->dropping) dropping = true;
     }
+
+    inputActivity = new activityData(INPUT_LEN, INPUT_DROP_RATE * DROP_DATA_AUGMENTATION);
 }
 
 void activityLayers::SetAllActive(){

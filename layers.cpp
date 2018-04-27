@@ -6,7 +6,9 @@
 #include "tensor4D.h"
 #include "globals.h"
 #include "mathFunc.h"
-
+#include "activityLayers.h"
+#include "randomGenerator.h"
+#include "activityData.h"
 void layers::SetModel()
 {
     Nlayers=6;
@@ -36,7 +38,7 @@ void layers::Print(){
         layerList[l]->Print();
 }
 
-void layers::SetInput(orderedData* input, activityData* inputActivity, bool testMode){
+void layers::SetInput(orderedData* input, activityLayers* actLayers, bool testMode){
     //in future can be changed to data augmentation function
     //needed for dropping units from input
     tensor* layer_0 = static_cast<tensor*>(layerList[0]);
@@ -83,7 +85,14 @@ void layers::SetInput(orderedData* input, activityData* inputActivity, bool test
     }
 
     if (!testMode)
-        input_layer_0->SetDroppedElementsToZero(inputActivity);
+        input_layer_0->SetDroppedElementsToZero(actLayers->layerList[0], input_layer_0->len);
+
+    if (DROP_DATA_AUGMENTATION){
+        if (! randomGenerator::generateBool(INPUT_UNCHANGED_PROBABILITY)){
+            actLayers->inputActivity->DropUnits();
+            input_layer_0->SetDroppedElementsToZero(actLayers->inputActivity);
+        }
+    }
 
     layerList[0]->SetToZeroStartingFrom(input->len);
 

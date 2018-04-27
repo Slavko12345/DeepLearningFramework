@@ -14,9 +14,16 @@ const double FOCUSED_PROBABILITY_THRESHOLD = 0.5;
 const bool PARALLEL_ARCHITECTURE = 1;
 const int INPUT_DEPTH = 0;
 const bool READ_TO_VECT = 0;
+
 const bool DATA_AUGMENTATION = 0;
 const double AUGMENTATION_SIZE = 0.2;
 const double CORNER_PROBABILITY = 0.5;
+
+const bool DROP_DATA_AUGMENTATION = 0;
+const bool INPUT_UNCHANGED_PROBABILITY = 0.0625;
+const bool INPUT_DROP_RATE = 0.0625;
+const int INPUT_LEN = 3 * 32 * 32;
+
 const bool INPUT_NORMALIZATION = 0;
 const bool LAYERWISE_NORMALIZATION = 0;
 const bool APPEND_INPUT_STATISTICS = 0;

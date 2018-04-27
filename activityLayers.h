@@ -11,6 +11,7 @@ struct activityLayers{
     activityData **layerList;
     vector<double> dropoutRates;
     bool dropping;
+    activityData *inputActivity;
 
     activityLayers();
     void SetModel(layers* layersData);

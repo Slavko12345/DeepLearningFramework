@@ -84,7 +84,7 @@ void NeuralNet::SetRandomWeights(double bound){
 
 void NeuralNet::ForwardPass(orderedData* input){
     layersData->SetInnerLayersToZero();
-    layersData->SetInput(input, layersActivity->layerList[0], testMode);
+    layersData->SetInput(input, layersActivity, testMode);
     computation->ForwardPass();
 //    cout<<"All layers: "<<endl;
 //    for(int j=0; j<Nlayers; ++j){
