@@ -2473,6 +2473,111 @@ StairsFullConvolution::~StairsFullConvolution(){
 
 
 
+StairsFullConvolutionRelu::StairsFullConvolutionRelu
+(int weightsNum_, int startDepth_, int numStairs_, int numStairConvolutions_, int symmetryLevel_, bool biasIncluded_):
+    weightsNum(weightsNum_), startDepth(startDepth_), numStairs(numStairs_),
+    numStairConvolutions(numStairConvolutions_), symmetryLevel(symmetryLevel_), biasIncluded(biasIncluded_){
+}
+
+void StairsFullConvolutionRelu::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner){
+    primalWeight = primalWeightOwner;
+
+    kernel=static_cast<tensor *>(weightsData->weightList[weightsNum].dataWeight);
+    kernelGrad=static_cast<tensor *>(gradient->weightList[weightsNum].dataWeight);
+
+    bias = static_cast<vect *>(weightsData->weightList[weightsNum].bias);
+    biasGrad = static_cast<vect *>(gradient->weightList[weightsNum].bias);
+
+    input=static_cast<tensor*>(layersData->layerList[from]);
+    inputDelta = static_cast<tensor*>(deltas->layerList[from]);
+    inputActivity  = layersActivity->layerList[from];
+
+    int vertLen = 0;
+    for(int stair=0; stair<numStairs; ++stair){
+        vertLen += (startDepth + numStairConvolutions * stair) * numStairConvolutions;
+    }
+
+    if (symmetryLevel<0 || symmetryLevel>4)
+        cout<<"Symmetry level is not implemented yet";
+
+    if (from != to ||
+        kernel->depth!=vertLen||
+        input->depth != startDepth + numStairs * numStairConvolutions )
+        cout<<"Error0 in StairsFullConvolutionRelu from "<<from<<" to "<<to<<endl;
+
+    if ((symmetryLevel == 0 && (kernel->rows != 3 || kernel->cols != 3) ) ||
+        (symmetryLevel == 1 && (kernel->rows != 3 || kernel->cols != 2) ) ||
+        (symmetryLevel == 2 && (kernel->rows != 2 || kernel->cols != 2) ) ||
+        (symmetryLevel == 3 && (kernel->rows != 1 || kernel->cols != 3) ) ||
+        (symmetryLevel == 4 && (kernel->rows != 1 || kernel->cols != 2) ))
+        cout<<"Error1 in StairsFullConvolutionRelu from "<<from<<" to "<<to<<endl;
+
+    if (biasIncluded){
+        if (bias->len != numStairs * numStairConvolutions)
+            cout<<"Bias error in StairsFullConvolutionRelu from "<<from<<" to "<<to<<endl;
+    }
+    else{
+        if (bias->len != 0)
+            cout<<"Bias error in StairsFullConvolutionRelu from "<<from<<" to "<<to<<endl;
+    }
+
+}
+
+void StairsFullConvolutionRelu::ForwardPass(){
+    ForwardStairsFullConvolutionRelu(input, kernel, bias, startDepth, numStairs, numStairConvolutions,
+                             inputActivity, testMode, symmetryLevel);
+}
+
+void StairsFullConvolutionRelu::BackwardPass(bool computeDelta, int trueClass){
+    BackwardStairsFullConvolutionRelu(input, inputDelta, kernel, kernelGrad, biasGrad,
+                startDepth, numStairs, numStairConvolutions, inputActivity, symmetryLevel);
+}
+
+void StairsFullConvolutionRelu::SetToTrainingMode(){
+    if (testMode==0){
+        cout<<"Stairs Convolution is already in train mode"<<endl;
+        return;
+    }
+
+    if (inputActivity->dropping && primalWeight){
+       kernel->Multiply(1.0/(1.0-inputActivity->dropRate));
+    }
+    testMode = 0;
+}
+
+void StairsFullConvolutionRelu::SetToTestMode(){
+    if (testMode==1){
+        cout<<"Stairs Convolution is already in test mode"<<endl;
+        return;
+    }
+    if (inputActivity->dropping && primalWeight){
+       kernel->Multiply(1.0-inputActivity->dropRate);
+    }
+    testMode = 1;
+}
+
+bool StairsFullConvolutionRelu::HasWeightsDependency(){
+    return 1;
+}
+
+bool StairsFullConvolutionRelu::NeedsUnification(){
+    return 0;
+}
+
+void StairsFullConvolutionRelu::Unify(computationalNode * primalCN){
+}
+
+void StairsFullConvolutionRelu::WriteStructuredWeightsToFile(){
+}
+
+StairsFullConvolutionRelu::~StairsFullConvolutionRelu(){
+}
+
+
+
+
+
+
 
 
 StairsSequentialConvolution::StairsSequentialConvolution

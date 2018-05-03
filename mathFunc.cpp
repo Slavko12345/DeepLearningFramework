@@ -2584,6 +2584,77 @@ void BackwardStairsFullConvolution(tensor* input, tensor* inputDelta, tensor* ke
 
 
 
+void ForwardStairsFullConvolutionRelu(tensor* input, tensor* kernel, vect* bias, int startDepth, int numStairs, int numStairConvolutions,
+                             activityData* inputActivity, bool testMode, int symmetryLevel){
+    tensor* input_stair = new tensor();
+    tensor* output_stair = new tensor();
+    tensor* kernel_stair = new tensor();
+    vect* bias_stair = new vect(0);
+    int kernelStartDepth = 0;
+
+    for(int stair=0; stair<numStairs; ++stair){
+        input_stair->SubTensor(input,       startDepth + stair * numStairConvolutions);
+        output_stair->SubTensor(input,      startDepth + stair * numStairConvolutions,  numStairConvolutions);
+        kernel_stair->SubTensor(kernel, kernelStartDepth, (startDepth + stair * numStairConvolutions) * numStairConvolutions);
+        if (bias->len > 0)
+            bias_stair->SubVect(bias, stair * numStairConvolutions, numStairConvolutions);
+        SymmetricConvolution3D(input_stair, output_stair, kernel_stair, bias_stair, symmetryLevel);
+        output_stair->SetToReluFunction();
+        if (!testMode)
+                input->SetDroppedElementsToZero(inputActivity, input->Ind(startDepth + stair * numStairConvolutions), output_stair->len);
+        kernelStartDepth += (startDepth + stair * numStairConvolutions) * numStairConvolutions;
+    }
+
+    DeleteOnlyShell(input_stair);
+    DeleteOnlyShell(output_stair);
+    DeleteOnlyShell(kernel_stair);
+    DeleteOnlyShell(bias_stair);
+}
+
+
+
+void BackwardStairsFullConvolutionRelu(tensor* input, tensor* inputDelta, tensor* kernel, tensor* kernelGrad, vect* biasGrad,
+                               int startDepth, int numStairs, int numStairConvolutions, activityData* inputActivity, int symmetryLevel){
+    tensor* input_stair = new tensor();
+    tensor* inputDelta_stair = new tensor();
+    tensor* output_stair = new tensor();
+    tensor* outputDelta_stair = new tensor();
+    tensor* kernel_stair = new tensor();
+    tensor* kernelGrad_stair = new tensor();
+    vect* biasGrad_stair = new vect(0);
+
+    int kernelStartDepth = kernel->depth;
+
+    for(int stair=numStairs - 1; stair>=0; --stair){
+        input_stair     ->SubTensor(input,      startDepth + stair * numStairConvolutions);
+        inputDelta_stair->SubTensor(inputDelta, startDepth + stair * numStairConvolutions);
+
+        output_stair     ->SubTensor(input,       startDepth + stair * numStairConvolutions, numStairConvolutions);
+        outputDelta_stair->SubTensor(inputDelta,  startDepth + stair * numStairConvolutions,  numStairConvolutions);
+
+        kernelStartDepth -= (startDepth + stair * numStairConvolutions) * numStairConvolutions;
+        kernel_stair    ->SubTensor(kernel,     kernelStartDepth, (startDepth + stair * numStairConvolutions) * numStairConvolutions);
+        kernelGrad_stair->SubTensor(kernelGrad, kernelStartDepth, (startDepth + stair * numStairConvolutions) * numStairConvolutions);
+        if (biasGrad->len > 0)
+            biasGrad_stair->SubVect(biasGrad, stair * numStairConvolutions, numStairConvolutions);
+
+        outputDelta_stair->BackwardRelu(output_stair);
+        BackwardSymmetricConvolution3D(input_stair, inputDelta_stair, outputDelta_stair, kernel_stair, kernelGrad_stair, biasGrad_stair, symmetryLevel);
+        inputDelta->SetDroppedElementsToZero(inputActivity, input->Ind(startDepth + stair * numStairConvolutions));
+    }
+    DeleteOnlyShell(input_stair);
+    DeleteOnlyShell(inputDelta_stair);
+    DeleteOnlyShell(output_stair);
+    DeleteOnlyShell(outputDelta_stair);
+    DeleteOnlyShell(kernel_stair);
+    DeleteOnlyShell(kernelGrad_stair);
+    DeleteOnlyShell(biasGrad_stair);
+}
+
+
+
+
+
 
 
 void ForwardStairsSequentialConvolution(tensor* input, tensor* kernel_vert, tensor* kernel_hor, tensor* verticalConv, int startDepth, int numStairs, int numStairConvolutions,

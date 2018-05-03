@@ -12,6 +12,8 @@ struct layerWeight{
 
     void SetStairsFullConvolution(int startDepth, int numStairs, int numStairConvolutions, int symmetryLevel = 0, bool biasIncluded = 1);
 
+    void SetStairsFullConvolutionRelu(int startDepth, int numStairs, int numStairConvolutions, int symmetryLevel = 0, bool biasIncluded = 1);
+
     void SetStandard(int initialNumber, int nConvolutions);
     void SetStandardLinear(int startNumber, int nConvolutions);
     void SetStandardMultiple(int startDepth, int nConvolutions);

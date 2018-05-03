@@ -14,13 +14,13 @@ void weights::SetModel()
     Nweights=4;
     weightList = new layerWeight[Nweights];
 
-    weightList[0].SetStairsFullConvolution(3, 4, 4);
+    weightList[0].SetStairsFullConvolutionRelu(3, 3, 10);
 
-    weightList[1].SetStairsFullConvolution(35, 4, 4);
+    weightList[1].SetStairsFullConvolutionRelu(33, 3, 10);
 
-    weightList[2].SetStairsFullConvolution(67, 4, 4);
+    weightList[2].SetStairsFullConvolutionRelu(63, 3, 10);
 
-    weightList[3].SetFC(99, 10);
+    weightList[3].SetFC(10, 10);
 }
 
 void layerWeight::SetStairsVert(int startDepth, int numStairs, int numStairConvolutions){
@@ -75,6 +75,30 @@ void layerWeight::SetStairsFullConvolution(int startDepth, int numStairs, int nu
     int vertLen = 0;
     for(int stair=0; stair<numStairs; ++stair){
         vertLen += (startDepth + 2 * numStairConvolutions * stair) * numStairConvolutions;
+    }
+
+    if (symmetryLevel == 0)
+        dataWeight = new tensor(vertLen, 3, 3);
+    if (symmetryLevel == 1)
+        dataWeight = new tensor(vertLen, 3, 2);
+    if (symmetryLevel == 2)
+        dataWeight = new tensor(vertLen, 2, 2);
+    if (symmetryLevel == 3)
+        dataWeight = new tensor(vertLen, 1, 3);
+    if (symmetryLevel == 4)
+        dataWeight = new tensor(vertLen, 1, 2);
+
+    if (biasIncluded)
+        bias = new vect(numStairs * numStairConvolutions);
+    else
+        bias = new vect(0);
+}
+
+
+void layerWeight::SetStairsFullConvolutionRelu(int startDepth, int numStairs, int numStairConvolutions, int symmetryLevel, bool biasIncluded){
+    int vertLen = 0;
+    for(int stair=0; stair<numStairs; ++stair){
+        vertLen += (startDepth + numStairConvolutions * stair) * numStairConvolutions;
     }
 
     if (symmetryLevel == 0)

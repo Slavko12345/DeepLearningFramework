@@ -1115,7 +1115,7 @@ struct StairsSymmetricConvolutionRelu: public computationalNode{
 
 
 struct StairsFullConvolution: public computationalNode{
-    //RELU units
+    //Max-Min units
     //no bottleneck - full layers
     int weightsNum;
 
@@ -1141,6 +1141,37 @@ struct StairsFullConvolution: public computationalNode{
     void Unify(computationalNode * primalCN);
     void WriteStructuredWeightsToFile();
     ~StairsFullConvolution();
+};
+
+
+
+struct StairsFullConvolutionRelu: public computationalNode{
+    //RELU units
+    //no bottleneck - full layers
+    int weightsNum;
+
+    int startDepth;
+    int numStairs;
+    int numStairConvolutions;
+
+    int symmetryLevel;
+    bool biasIncluded;
+
+    tensor* input, *inputDelta;
+    tensor* kernel, *kernelGrad;
+    vect* bias, *biasGrad;
+
+    StairsFullConvolutionRelu(int weightsNum_, int startDepth_, int numStairs_, int numStairConvolutions_, int symmetryLevel_ = 0, bool biasIncluded_ = 1);
+    void Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner);
+    void ForwardPass();
+    void BackwardPass( bool computeDelta, int trueClass);
+    void SetToTrainingMode();
+    void SetToTestMode();
+    bool HasWeightsDependency();
+    bool NeedsUnification();
+    void Unify(computationalNode * primalCN);
+    void WriteStructuredWeightsToFile();
+    ~StairsFullConvolutionRelu();
 };
 
 

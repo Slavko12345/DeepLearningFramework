@@ -15,10 +15,10 @@ void layers::SetModel()
 
     layerList=new orderedData* [Nlayers];
 
-    layerList[0] = new tensor(35, 32, 32);
-    layerList[1] = new tensor(67, 16, 16);
-    layerList[2] = new tensor(99, 8, 8);
-    layerList[3] = new tensor(99, 1, 1);
+    layerList[0] = new tensor(33, 32, 32);
+    layerList[1] = new tensor(63, 16, 16);
+    layerList[2] = new tensor(93, 8, 8);
+    layerList[3] = new tensor(10, 1, 1);
     layerList[4] = new vect(10);
 }
 
@@ -86,7 +86,7 @@ void layers::SetInput(orderedData* input, activityLayers* actLayers, bool testMo
     if (!testMode)
         input_layer_0->SetDroppedElementsToZero(actLayers->layerList[0], input_layer_0->len);
 
-    if (DROP_DATA_AUGMENTATION){
+    if (DROP_DATA_AUGMENTATION && !testMode){
         if (! randomGenerator::generateBool(INPUT_UNCHANGED_PROBABILITY)){
             actLayers->inputActivity->DropUnits();
             input_layer_0->SetDroppedElementsToZero(actLayers->inputActivity);
