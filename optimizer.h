@@ -12,6 +12,7 @@ public:
     Optimizer(int maxEpochs_, int mbSize_);
     virtual void Optimize(NeuralNet* NN, Data* trainingData)=0;
     virtual void OptimizeInParallel(NeuralNet *NN, Data* trainingData);
+    virtual void OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData);
     virtual ~Optimizer();
 };
 
@@ -35,6 +36,7 @@ public:
     ADAM(double learningRate_, int mbSize_, int maxEpochs_);
     void Optimize(NeuralNet* NN, Data* trainingData);
     void OptimizeInParallel(NeuralNet *NN, Data* trainingData);
+    void OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData);
 };
 
 //class CUBIC: public Optimizer{

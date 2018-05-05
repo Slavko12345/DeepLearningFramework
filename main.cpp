@@ -55,14 +55,14 @@ int main()
 
     NeuralNet *NN=new NeuralNet;
     NN->Initiate();
-    //NN->weightsData->ReadFromFile(NET_WEIGHTS_FILE);
+    //NN->weightsData->ReadFromFile((char*)NET_WEIGHTS_FILE);
     cout<<"Net is initiated"<<endl;
     cout<<"Number of coefficients: "<<NN->weightsData->GetWeightLen()<<endl;
 
-    Optimizer* Opt = new ADAM(0.02, 1280, 600);
+    Optimizer* Opt = new ADAM(0.02, 1280, 400);
     //Opt->Optimize(NN, CifarTrain);
-    Opt->OptimizeInParallel(NN, CifarTrain);
-    //NN->weightsData->WriteToFile(NET_WEIGHTS_FILE);
+    Opt->OptimizeInParallel(NN, CifarTrain, CifarTest);
+    NN->weightsData->WriteToFile((char*)NET_WEIGHTS_FILE);
     //Opt->Optimize(NN, Cifar10Train);
     cout<<"Optimization is done"<<endl;
 
