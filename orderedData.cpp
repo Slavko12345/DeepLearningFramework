@@ -904,3 +904,9 @@ void orderedData::BackwardAverageWith(orderedData* inputDelta){
         inputDelta->elem[j] = elem[j];
     }
 }
+
+void orderedData::SetToBalancedMultipliers(activityData* balancedActiveUnits, activityData* balacedUpDown, double alpha){
+    for(int j=0; j<len; ++j){
+        elem[j] = 1.0 + alpha * (1.0 - balancedActiveUnits->activeUnits[j]) * (2.0 * balacedUpDown->activeUnits[j] - 1.0);
+    }
+}

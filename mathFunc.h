@@ -472,6 +472,15 @@ void BackwardStairsFullConvolution(tensor* input, tensor* inputDelta, tensor* ke
 
 
 
+void ForwardStairsFullConvolutionBalancedDrop(tensor* input, tensor* kernel, vect* bias, int startDepth, int numStairs, int numStairConvolutions,
+                             activityData* inputActivity, tensor* multipliers, bool testMode, int symmetryLevel);
+
+void BackwardStairsFullConvolutionBalancedDrop(tensor* input, tensor* inputDelta, tensor* kernel, tensor* kernelGrad, vect* biasGrad,
+                               int startDepth, int numStairs, int numStairConvolutions, activityData* inputActivity, tensor* multipliers, int symmetryLevel);
+
+
+
+
 void ForwardStairsFullConvolutionRelu(tensor* input, tensor* kernel, vect* bias, int startDepth, int numStairs, int numStairConvolutions,
                              activityData* inputActivity, bool testMode, int symmetryLevel);
 

@@ -546,9 +546,9 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
 
                     f<<"epoch: "<<epoch<<"Train Error: "<<totalTrainError<<" Test E: "<<totalTestError<<
                     " l.rate: "<<learningRate<<" Train acc: "<<accuracy<<" Test acc: "<< testAccuracy <<" maxAbs: "<<maxAbsWeight<<endl;
-                    for(int t=0; t<numThreads; ++t)
-                        f<<velocity[t]<<" ";
-                    f<<endl;
+                    //for(int t=0; t<numThreads; ++t)
+                    //    f<<velocity[t]<<" ";
+                    //f<<endl;
                     //NN->weightsData->WriteToFile((char*)NET_WEIGHTS_FILE);
                     learningRate *= RATE_DECAY;
                     //NN->SwitchToTrainingMode();

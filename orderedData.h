@@ -140,6 +140,8 @@ struct orderedData{
     void AverageWith(orderedData * input);
 
     void BackwardAverageWith(orderedData* inputDelta);
+
+    void SetToBalancedMultipliers(activityData* balancedActiveUnits, activityData* balacedUpDown, double alpha);
 };
 
 double InnerProduct(orderedData* inp1, orderedData* inp2);

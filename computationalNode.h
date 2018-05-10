@@ -1145,6 +1145,45 @@ struct StairsFullConvolution: public computationalNode{
 
 
 
+struct StairsFullConvolutionBalancedDrop: public computationalNode{
+    //Max-Min units
+    //no bottleneck - full layers
+    int weightsNum;
+
+    int startDepth;
+    int numStairs;
+    int numStairConvolutions;
+
+    double alpha;
+    double pDrop;
+
+    int symmetryLevel;
+    bool biasIncluded;
+
+    tensor* input, *inputDelta;
+    tensor* kernel, *kernelGrad;
+    vect* bias, *biasGrad;
+
+    activityData * balancedActiveUnits;
+    activityData * balancedUpDown;
+    tensor* multipliers;
+
+    StairsFullConvolutionBalancedDrop(int weightsNum_, int startDepth_, int numStairs_, int numStairConvolutions_,
+                                      double alpha_ = 0.2, double pDrop_ = 0.25, int symmetryLevel_ = 0, bool biasIncluded_ = 1);
+    void Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner);
+    void ForwardPass();
+    void BackwardPass( bool computeDelta, int trueClass);
+    void SetToTrainingMode();
+    void SetToTestMode();
+    bool HasWeightsDependency();
+    bool NeedsUnification();
+    void Unify(computationalNode * primalCN);
+    void WriteStructuredWeightsToFile();
+    ~StairsFullConvolutionBalancedDrop();
+};
+
+
+
 struct StairsFullConvolutionRelu: public computationalNode{
     //RELU units
     //no bottleneck - full layers
@@ -1173,6 +1212,9 @@ struct StairsFullConvolutionRelu: public computationalNode{
     void WriteStructuredWeightsToFile();
     ~StairsFullConvolutionRelu();
 };
+
+
+
 
 
 
