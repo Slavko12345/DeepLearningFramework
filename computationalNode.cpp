@@ -4473,6 +4473,78 @@ FullAveragePoolingBalancedDrop::~FullAveragePoolingBalancedDrop(){
 
 
 
+InputBalancedDrop::InputBalancedDrop(int inputDepth_, double alpha_, double pDrop_):
+    inputDepth(inputDepth_), alpha(alpha_), pDrop(pDrop_){
+}
+
+void InputBalancedDrop::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient,
+                                 activityLayers* layersActivity, int from, int to, bool primalWeightOwner){
+    primalWeight = primalWeightOwner;
+    input=static_cast<tensor*>(layersData->layerList[from]);
+
+    partialInput = new tensor();
+    partialInput->SubTensor(input, inputDepth);
+
+    balancedActiveUnits = new activityData(partialInput->len, pDrop);
+    balancedUpDown = new activityData(partialInput->len, 0.5);
+    multipliers = new tensor(partialInput->depth, partialInput->rows, partialInput->cols);
+
+    if (input->depth < inputDepth ||
+        from != 0 || to != 0 ||
+        alpha > 1.0 || pDrop < 0.0 || pDrop > 1.0)
+        cout<<"Error in InputBalancedDrop from "<<from<<" to "<<to<<endl;
+}
+
+void InputBalancedDrop::ForwardPass(){
+    if (!testMode){
+        balancedActiveUnits->DropUnits();
+        balancedUpDown->DropUnits();
+        multipliers->SetToBalancedMultipliers(balancedActiveUnits, balancedUpDown, alpha);
+        partialInput->PointwiseMultiply(multipliers);
+    }
+}
+
+void InputBalancedDrop::BackwardPass(bool computeDelta, int trueClass){
+    return;
+}
+
+void InputBalancedDrop::SetToTrainingMode(){
+    if (testMode==0){
+        cout<<"Full Average Pooling is already in train mode"<<endl;
+        return;
+    }
+    testMode=0;
+}
+
+void InputBalancedDrop::SetToTestMode(){
+    if (testMode==1){
+        cout<<"Full Average Pooling is already in test mode"<<endl;
+        return;
+    }
+
+    testMode=1;
+}
+
+bool InputBalancedDrop::HasWeightsDependency(){
+    return 0;
+}
+
+
+InputBalancedDrop::~InputBalancedDrop(){
+    DeleteOnlyShell(partialInput);
+    delete balancedActiveUnits;
+    delete balancedUpDown;
+    delete multipliers;
+}
+
+
+
+
+
+
+
+
+
 
 PartialSubPooling::PartialSubPooling(int border_): border(border_){
 }

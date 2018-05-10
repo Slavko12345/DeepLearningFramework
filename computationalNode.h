@@ -391,6 +391,30 @@ struct FullAveragePoolingBalancedDrop: public computationalNode{
 };
 
 
+struct InputBalancedDrop: public computationalNode{
+    tensor* input, * partialInput;
+
+    int inputDepth;
+    double alpha;
+    double pDrop;
+
+    activityData * balancedActiveUnits;
+    activityData * balancedUpDown;
+    tensor* multipliers;
+
+    InputBalancedDrop(int inputDepth_ = 3, double alpha_ = 0.2, double pDrop_ = 0.25);
+    void Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient,
+                  activityLayers* layersActivity, int from, int to, bool primalWeightOwner);
+    void ForwardPass();
+    void BackwardPass( bool computeDelta, int trueClass);
+    void SetToTrainingMode();
+    void SetToTestMode();
+    bool HasWeightsDependency();
+    ~InputBalancedDrop();
+};
+
+
+
 struct PartialSubPooling: public computationalNode{
     tensor* input, *inputDelta;
     tensor* output, *outputDelta;

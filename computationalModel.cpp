@@ -13,6 +13,7 @@ void computationalModel::AddNode(int from, int to, computationalNode* node){
 void computationalModel::SetModel(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, bool primalWeightOwner){
     Nlayers=layersData->Nlayers;
 
+    AddNode(0, 0, new InputBalancedDrop());
     AddNode(0, 0, new StairsFullConvolutionBalancedDrop(0, 3, 10, 1));
     AddNode(0, 1, new FullAveragePoolingBalancedDrop());
     AddNode(1, 1, new StairsFullConvolutionBalancedDrop(1, 23, 10, 1));
