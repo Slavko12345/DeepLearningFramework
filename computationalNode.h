@@ -378,9 +378,11 @@ struct FullAveragePoolingBalancedDrop: public computationalNode{
 
     double alpha;
     double pDrop;
+    double pNotDrop;
+    bool startDropping;
 
 
-    FullAveragePoolingBalancedDrop(double alpha_ = 0.2, double pDrop_ = 0.25);
+    FullAveragePoolingBalancedDrop(double alpha_ = 0.2, double pDrop_ = 0.25, double pNotDrop_ = 0.5);
     void Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner);
     void ForwardPass();
     void BackwardPass( bool computeDelta, int trueClass);
@@ -397,12 +399,14 @@ struct InputBalancedDrop: public computationalNode{
     int inputDepth;
     double alpha;
     double pDrop;
+    double pNotDrop;
 
+    bool startDropping;
     activityData * balancedActiveUnits;
     activityData * balancedUpDown;
     tensor* multipliers;
 
-    InputBalancedDrop(int inputDepth_ = 3, double alpha_ = 0.2, double pDrop_ = 0.25);
+    InputBalancedDrop(int inputDepth_ = 3, double alpha_ = 0.2, double pDrop_ = 0.25, double pNotDrop_ = 0.125);
     void Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient,
                   activityLayers* layersActivity, int from, int to, bool primalWeightOwner);
     void ForwardPass();
@@ -1207,6 +1211,8 @@ struct StairsFullConvolutionBalancedDrop: public computationalNode{
 
     double alpha;
     double pDrop;
+    double pNotDrop;
+    bool startDropping;
 
     int symmetryLevel;
     bool biasIncluded;
@@ -1220,8 +1226,10 @@ struct StairsFullConvolutionBalancedDrop: public computationalNode{
     tensor* multipliers;
 
     StairsFullConvolutionBalancedDrop(int weightsNum_, int startDepth_, int numStairs_, int numStairConvolutions_,
-                                      double alpha_ = 0.2, double pDrop_ = 0.25, int symmetryLevel_ = 0, bool biasIncluded_ = 1);
-    void Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner);
+                                      double alpha_ = 0.2, double pDrop_ = 0.25, double pNotDrop_ = 0.5,
+                                      int symmetryLevel_ = 0, bool biasIncluded_ = 1);
+    void Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient,
+                  activityLayers* layersActivity, int from, int to, bool primalWeightOwner);
     void ForwardPass();
     void BackwardPass( bool computeDelta, int trueClass);
     void SetToTrainingMode();

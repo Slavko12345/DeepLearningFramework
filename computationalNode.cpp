@@ -14,6 +14,7 @@
 #include "activityLayers.h"
 #include "activityData.h"
 #include "globals.h"
+#include "randomGenerator.h"
 using namespace std;
 
 computationalNode::computationalNode(){
@@ -2482,14 +2483,15 @@ StairsFullConvolution::~StairsFullConvolution(){
 
 StairsFullConvolutionBalancedDrop::StairsFullConvolutionBalancedDrop
 (int weightsNum_, int startDepth_, int numStairs_, int numStairConvolutions_,
- double alpha_, double pDrop_, int symmetryLevel_, bool biasIncluded_):
+ double alpha_, double pDrop_, double pNotDrop_, int symmetryLevel_, bool biasIncluded_):
     weightsNum(weightsNum_), startDepth(startDepth_), numStairs(numStairs_),
     numStairConvolutions(numStairConvolutions_),
-    alpha(alpha_), pDrop(pDrop_),
+    alpha(alpha_), pDrop(pDrop_), pNotDrop(pNotDrop_),
     symmetryLevel(symmetryLevel_), biasIncluded(biasIncluded_){
 }
 
-void StairsFullConvolutionBalancedDrop::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner){
+void StairsFullConvolutionBalancedDrop::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient,
+                                                 activityLayers* layersActivity, int from, int to, bool primalWeightOwner){
     primalWeight = primalWeightOwner;
 
     kernel=static_cast<tensor *>(weightsData->weightList[weightsNum].dataWeight);
@@ -2540,9 +2542,15 @@ void StairsFullConvolutionBalancedDrop::Initiate(layers* layersData, layers* del
 
 void StairsFullConvolutionBalancedDrop::ForwardPass(){
     if (!testMode){
-        balancedActiveUnits->DropUnits();
-        balancedUpDown->DropUnits();
-        multipliers->SetToBalancedMultipliers(balancedActiveUnits, balancedUpDown, alpha);
+        startDropping = randomGenerator::generateBool(1.0 - pNotDrop);
+        if (startDropping){
+            balancedActiveUnits->DropUnits();
+            balancedUpDown->DropUnits();
+            multipliers->SetToBalancedMultipliers(balancedActiveUnits, balancedUpDown, alpha);
+        }
+        else
+            multipliers->SetToValue(1.0);
+
     }
     ForwardStairsFullConvolutionBalancedDrop(input, kernel, bias, startDepth, numStairs, numStairConvolutions,
                              inputActivity, multipliers, testMode, symmetryLevel);
@@ -4376,7 +4384,8 @@ FullAveragePooling::~FullAveragePooling(){
 
 
 
-FullAveragePoolingBalancedDrop::FullAveragePoolingBalancedDrop(double alpha_, double pDrop_): alpha(alpha_), pDrop(pDrop_){
+FullAveragePoolingBalancedDrop::FullAveragePoolingBalancedDrop(double alpha_, double pDrop_, double pNotDrop_):
+    alpha(alpha_), pDrop(pDrop_), pNotDrop(pNotDrop_){
 }
 
 void FullAveragePoolingBalancedDrop::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner){
@@ -4414,10 +4423,14 @@ void FullAveragePoolingBalancedDrop::ForwardPass(){
     AveragePool3D(input, partialOutput, kernelRsize, kernelCsize);
 
     if (!testMode){
-        balancedActiveUnits->DropUnits();
-        balancedUpDown->DropUnits();
-        multipliers->SetToBalancedMultipliers(balancedActiveUnits, balancedUpDown, alpha);
-        partialOutput->PointwiseMultiply(multipliers);
+        startDropping = randomGenerator::generateBool(1.0 - pNotDrop);
+        if (startDropping){
+            balancedActiveUnits->DropUnits();
+            balancedUpDown->DropUnits();
+            multipliers->SetToBalancedMultipliers(balancedActiveUnits, balancedUpDown, alpha);
+            partialOutput->PointwiseMultiply(multipliers);
+        }
+
     }
 
 
@@ -4432,8 +4445,8 @@ void FullAveragePoolingBalancedDrop::ForwardPass(){
 
 void FullAveragePoolingBalancedDrop::BackwardPass(bool computeDelta, int trueClass){
     //if (!computeDelta) return;
-
-    partialOutputDelta->PointwiseMultiply(multipliers);
+    if (startDropping)
+        partialOutputDelta->PointwiseMultiply(multipliers);
     BackwardAveragePool3D(inputDelta, partialOutputDelta, kernelRsize, kernelCsize);
     inputDelta->SetDroppedElementsToZero(inputActivity);
 }
@@ -4473,8 +4486,8 @@ FullAveragePoolingBalancedDrop::~FullAveragePoolingBalancedDrop(){
 
 
 
-InputBalancedDrop::InputBalancedDrop(int inputDepth_, double alpha_, double pDrop_):
-    inputDepth(inputDepth_), alpha(alpha_), pDrop(pDrop_){
+InputBalancedDrop::InputBalancedDrop(int inputDepth_, double alpha_, double pDrop_, double pNotDrop_):
+    inputDepth(inputDepth_), alpha(alpha_), pDrop(pDrop_), pNotDrop(pNotDrop_){
 }
 
 void InputBalancedDrop::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient,
@@ -4497,10 +4510,13 @@ void InputBalancedDrop::Initiate(layers* layersData, layers* deltas, weights* we
 
 void InputBalancedDrop::ForwardPass(){
     if (!testMode){
-        balancedActiveUnits->DropUnits();
-        balancedUpDown->DropUnits();
-        multipliers->SetToBalancedMultipliers(balancedActiveUnits, balancedUpDown, alpha);
-        partialInput->PointwiseMultiply(multipliers);
+        startDropping = randomGenerator::generateBool(1.0 - pNotDrop);
+        if (startDropping){
+            balancedActiveUnits->DropUnits();
+            balancedUpDown->DropUnits();
+            multipliers->SetToBalancedMultipliers(balancedActiveUnits, balancedUpDown, alpha);
+            partialInput->PointwiseMultiply(multipliers);
+        }
     }
 }
 
