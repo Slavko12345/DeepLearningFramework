@@ -14,11 +14,11 @@ void computationalModel::SetModel(layers* layersData, layers* deltas, weights* w
     Nlayers=layersData->Nlayers;
 
     AddNode(0, 0, new StairsFullConvolutionBalancedDrop(0, 3, 10, 1));
-    AddNode(0, 1, new FullAveragePooling());
+    AddNode(0, 1, new FullAveragePoolingBalancedDrop());
     AddNode(1, 1, new StairsFullConvolutionBalancedDrop(1, 23, 10, 1));
-    AddNode(1, 2, new FullAveragePooling());
+    AddNode(1, 2, new FullAveragePoolingBalancedDrop());
     AddNode(2, 2, new StairsFullConvolutionBalancedDrop(2, 43, 10, 1));
-    AddNode(2, 3, new FullAveragePooling());
+    AddNode(2, 3, new FullAveragePoolingBalancedDrop());
     AddNode(3, 4, new FullyConnectedSoftMax(3));
 
     this->Compile(layersData, deltas, weightsData, gradient, layersActivity, primalWeightOwner);

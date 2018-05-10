@@ -209,6 +209,12 @@ FullyConnectedSoftMax::~FullyConnectedSoftMax(){
 
 
 
+
+
+
+
+
+
 FullyConnectedNoBiasSoftMax::FullyConnectedNoBiasSoftMax(int weightsNum_): weightsNum(weightsNum_){
 }
 
@@ -2510,7 +2516,8 @@ void StairsFullConvolutionBalancedDrop::Initiate(layers* layersData, layers* del
 
     if (from != to ||
         kernel->depth!=vertLen||
-        input->depth != startDepth + 2 * numStairs * numStairConvolutions )
+        input->depth != startDepth + 2 * numStairs * numStairConvolutions ||
+        alpha > 1.0 || pDrop < 0.0 || pDrop > 1.0 )
         cout<<"Error0 in StairsFullConvolutionBalancedDrop from "<<from<<" to "<<to<<endl;
 
     if ((symmetryLevel == 0 && (kernel->rows != 3 || kernel->cols != 3) ) ||
@@ -4362,6 +4369,106 @@ FullAveragePooling::~FullAveragePooling(){
     DeleteOnlyShell(partialOutput);
     DeleteOnlyShell(partialOutputDelta);
 }
+
+
+
+
+
+
+
+FullAveragePoolingBalancedDrop::FullAveragePoolingBalancedDrop(double alpha_, double pDrop_): alpha(alpha_), pDrop(pDrop_){
+}
+
+void FullAveragePoolingBalancedDrop::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner){
+    primalWeight = primalWeightOwner;
+    input=static_cast<tensor*>(layersData->layerList[from]);
+    output=static_cast<tensor*>(layersData->layerList[to]);
+
+    inputDelta=static_cast<tensor*>(deltas->layerList[from]);
+    outputDelta=static_cast<tensor*>(deltas->layerList[to]);
+
+    inputActivity = layersActivity->layerList[from];
+    outputActivity = layersActivity->layerList[to];
+
+    kernelRsize = input->rows / output->rows;
+    kernelCsize = input->cols / output->cols;
+
+    partialOutput = new tensor();
+    partialOutput->SubTensor(output, input->depth);
+
+    partialOutputDelta = new tensor();
+    partialOutputDelta->SubTensor(outputDelta, input->depth);
+
+    balancedActiveUnits = new activityData(partialOutput->len, pDrop);
+    balancedUpDown = new activityData(partialOutput->len, 0.5);
+    multipliers = new tensor(partialOutput->depth, partialOutput->rows, partialOutput->cols);
+
+    if (partialOutput->rows * kernelRsize != input->rows ||
+        partialOutput->cols * kernelCsize != input->cols||
+        input->depth > output->depth ||
+        alpha > 1.0 || pDrop < 0.0 || pDrop > 1.0)
+        cout<<"Error in FullAveragePoolingBalancedDrop from "<<from<<" to "<<to<<endl;
+}
+
+void FullAveragePoolingBalancedDrop::ForwardPass(){
+    AveragePool3D(input, partialOutput, kernelRsize, kernelCsize);
+
+    if (!testMode){
+        balancedActiveUnits->DropUnits();
+        balancedUpDown->DropUnits();
+        multipliers->SetToBalancedMultipliers(balancedActiveUnits, balancedUpDown, alpha);
+        partialOutput->PointwiseMultiply(multipliers);
+    }
+
+
+
+    if (!testMode)
+        output->SetDroppedElementsToZero(outputActivity, partialOutput->len);
+
+    if (testMode)
+        if (inputActivity->dropping)
+            partialOutput->Multiply(1.0 - inputActivity->dropRate);
+}
+
+void FullAveragePoolingBalancedDrop::BackwardPass(bool computeDelta, int trueClass){
+    //if (!computeDelta) return;
+
+    partialOutputDelta->PointwiseMultiply(multipliers);
+    BackwardAveragePool3D(inputDelta, partialOutputDelta, kernelRsize, kernelCsize);
+    inputDelta->SetDroppedElementsToZero(inputActivity);
+}
+
+void FullAveragePoolingBalancedDrop::SetToTrainingMode(){
+    if (testMode==0){
+        cout<<"Full Average Pooling is already in train mode"<<endl;
+        return;
+    }
+    testMode=0;
+}
+
+void FullAveragePoolingBalancedDrop::SetToTestMode(){
+    if (testMode==1){
+        cout<<"Full Average Pooling is already in test mode"<<endl;
+        return;
+    }
+
+    testMode=1;
+}
+
+bool FullAveragePoolingBalancedDrop::HasWeightsDependency(){
+    return 0;
+}
+
+
+FullAveragePoolingBalancedDrop::~FullAveragePoolingBalancedDrop(){
+    DeleteOnlyShell(partialOutput);
+    DeleteOnlyShell(partialOutputDelta);
+    delete balancedActiveUnits;
+    delete balancedUpDown;
+    delete multipliers;
+}
+
+
 
 
 

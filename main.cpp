@@ -59,7 +59,7 @@ int main()
     cout<<"Net is initiated"<<endl;
     cout<<"Number of coefficients: "<<NN->weightsData->GetWeightLen()<<endl;
 
-    Optimizer* Opt = new ADAM(0.02, 1280, 400);
+    Optimizer* Opt = new ADAM(LEARNING_RATE, MINIBATCH_SIZE, NUM_EPOCHS);
     //Opt->Optimize(NN, CifarTrain);
     Opt->OptimizeInParallel(NN, CifarTrain, CifarTest);
     NN->weightsData->WriteToFile((char*)NET_WEIGHTS_FILE);
