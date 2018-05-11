@@ -3979,6 +3979,117 @@ LastAveragePooling::~LastAveragePooling(){
 
 
 
+
+
+
+AveragePoolingBalancedDrop::AveragePoolingBalancedDrop(int lastLayers_, double alpha_, double pDrop_, double pNotDrop_):
+                                lastLayers(lastLayers_), alpha(alpha_), pDrop(pDrop_), pNotDrop(pNotDrop_){
+}
+
+void AveragePoolingBalancedDrop::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner){
+    primalWeight = primalWeightOwner;
+    input=static_cast<tensor*>(layersData->layerList[from]);
+    output=static_cast<tensor*>(layersData->layerList[to]);
+
+    inputDelta=static_cast<tensor*>(deltas->layerList[from]);
+    outputDelta=static_cast<tensor*>(deltas->layerList[to]);
+
+    inputActivity = layersActivity->layerList[from];
+    outputActivity = layersActivity->layerList[to];
+
+    if (lastLayers == -1)
+        lastLayers = input->depth;
+
+    startingDepth = input->depth - lastLayers;
+    kernelRsize = input->rows / output->rows;
+    kernelCsize = input->cols / output->cols;
+
+    partialInput = new tensor();
+    partialInput->SubLastTensor(input, lastLayers);
+
+    partialInputDelta = new tensor();
+    partialInputDelta->SubLastTensor(inputDelta, lastLayers);
+
+    partialOutput = new tensor();
+    partialOutput->SubTensor(output, lastLayers);
+
+    partialOutputDelta = new tensor();
+    partialOutputDelta->SubTensor(outputDelta, lastLayers);
+
+    balancedActiveUnits = new activityData(partialOutput->len, pDrop);
+    balancedUpDown = new activityData(partialOutput->len, 0.5);
+    multipliers = new tensor(partialOutput->depth, partialOutput->rows, partialOutput->cols);
+
+    if (partialOutput->rows * kernelRsize != partialInput->rows ||
+        partialOutput->cols * kernelCsize != partialInput->cols||
+        output->depth < lastLayers ||
+        alpha > 1.0 || pDrop < 0.0 || pDrop > 1.0)
+        cout<<"Error in AveragePoolingBalancedDrop from "<<from<<" to "<<to<<endl;
+}
+
+void AveragePoolingBalancedDrop::ForwardPass(){
+    AveragePool3D(partialInput, partialOutput, kernelRsize, kernelCsize);
+
+    if (!testMode){
+        startDropping = randomGenerator::generateBool(1.0 - pNotDrop);
+        if (startDropping){
+            balancedActiveUnits->DropUnits();
+            balancedUpDown->DropUnits();
+            multipliers->SetToBalancedMultipliers(balancedActiveUnits, balancedUpDown, alpha);
+            partialOutput->PointwiseMultiply(multipliers);
+        }
+
+    }
+
+
+    if (!testMode)
+        partialOutput->SetDroppedElementsToZero(outputActivity, partialOutput->len);
+
+    if (testMode)
+        if (inputActivity->dropping)
+            partialOutput->Multiply(1.0 - inputActivity->dropRate);
+}
+
+void AveragePoolingBalancedDrop::BackwardPass(bool computeDelta, int trueClass){
+    if (startDropping)
+        partialOutputDelta->PointwiseMultiply(multipliers);
+    BackwardAveragePool3D(partialInputDelta, partialOutputDelta, kernelRsize, kernelCsize);
+    inputDelta->SetDroppedElementsToZero(inputActivity, inputDelta->Ind(startingDepth), partialInput->len);
+}
+
+void AveragePoolingBalancedDrop::SetToTrainingMode(){
+    testMode=0;
+}
+
+void AveragePoolingBalancedDrop::SetToTestMode(){
+    testMode=1;
+}
+
+bool AveragePoolingBalancedDrop::HasWeightsDependency(){
+    return 0;
+}
+
+
+AveragePoolingBalancedDrop::~AveragePoolingBalancedDrop(){
+    DeleteOnlyShell(partialInput);
+    DeleteOnlyShell(partialInputDelta);
+    DeleteOnlyShell(partialOutput);
+    DeleteOnlyShell(partialOutputDelta);
+
+    delete balancedActiveUnits;
+    delete balancedUpDown;
+    delete multipliers;
+}
+
+
+
+
+
+
+
+
+
+
 StructuredDropAveragePooling::StructuredDropAveragePooling(double dropRate_): dropRate(dropRate_){
 }
 
@@ -4138,6 +4249,108 @@ ColumnDrop::~ColumnDrop(){
     DeleteOnlyShell(partialInput);
     DeleteOnlyShell(partialInputDelta);
     delete activityColumns;
+}
+
+
+
+
+
+ColumnDropBalancedDrop::ColumnDropBalancedDrop(int remainNum_, double alpha_, double pDrop_, double pNotDrop_):
+    remainNum(remainNum_), alpha(alpha_), pDrop(pDrop_), pNotDrop(pNotDrop_){
+}
+
+void ColumnDropBalancedDrop::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner){
+    primalWeight = primalWeightOwner;
+    input=static_cast<tensor*>(layersData->layerList[from]);
+    output=static_cast<tensor*>(layersData->layerList[to]);
+
+    inputDelta=static_cast<tensor*>(deltas->layerList[from]);
+    outputDelta=static_cast<tensor*>(deltas->layerList[to]);
+
+    inputActivity = layersActivity->layerList[from];
+    outputActivity = layersActivity->layerList[to];
+
+    lastLayers = output->depth;
+
+    activityColumns = new activityData(input->rows * input->cols, 1);
+
+    partialInput = new tensor();
+    partialInput->SubLastTensor(input, lastLayers);
+
+    partialInputDelta = new tensor();
+    partialInputDelta->SubLastTensor(inputDelta, lastLayers);
+
+    balancedActiveUnits = new activityData(output->len, pDrop);
+    balancedUpDown = new activityData(output->len, 0.5);
+    multipliers = new tensor(output->depth, output->rows, output->cols);
+
+    if (output->rows != 1 ||
+        output->cols != 1 ||
+        input->depth < lastLayers ||
+        alpha > 1.0 || pDrop < 0.0 || pDrop > 1.0)
+        cout<<"Error in ColumnDropBalancedDrop from "<<from<<" to "<<to<<endl;
+}
+
+void ColumnDropBalancedDrop::ForwardPass(){
+    if (!testMode){
+        activityColumns->DropAllExcept(remainNum);
+        partialInput->SetDroppedColumnsToZero(activityColumns);
+    }
+
+    if (!testMode)
+        AveragePool3D_all(partialInput, output, remainNum);
+
+    if (testMode)
+        AveragePool3D_all(partialInput, output);
+
+    if (!testMode)
+        output->SetDroppedElementsToZero(outputActivity);
+
+    if (testMode)
+        if (inputActivity->dropping)
+            output->Multiply(1.0 - inputActivity->dropRate);
+
+    if (!testMode){
+        startDropping = randomGenerator::generateBool(1.0 - pNotDrop);
+        if (startDropping){
+            balancedActiveUnits->DropUnits();
+            balancedUpDown->DropUnits();
+            multipliers->SetToBalancedMultipliers(balancedActiveUnits, balancedUpDown, alpha);
+            output->PointwiseMultiply(multipliers);
+        }
+
+    }
+}
+
+void ColumnDropBalancedDrop::BackwardPass(bool computeDelta, int trueClass){
+    if (startDropping)
+        outputDelta->PointwiseMultiply(multipliers);
+    BackwardAveragePool3D_all(partialInputDelta, outputDelta, remainNum);
+    partialInputDelta->SetDroppedColumnsToZero(activityColumns);
+    inputDelta->SetDroppedElementsToZero(inputActivity, inputDelta->Ind(input->depth - lastLayers), partialInput->len);
+}
+
+void ColumnDropBalancedDrop::SetToTrainingMode(){
+    testMode=0;
+}
+
+void ColumnDropBalancedDrop::SetToTestMode(){
+    testMode=1;
+}
+
+bool ColumnDropBalancedDrop::HasWeightsDependency(){
+    return 0;
+}
+
+
+ColumnDropBalancedDrop::~ColumnDropBalancedDrop(){
+    DeleteOnlyShell(partialInput);
+    DeleteOnlyShell(partialInputDelta);
+    delete activityColumns;
+
+    delete balancedActiveUnits;
+    delete balancedUpDown;
+    delete multipliers;
 }
 
 

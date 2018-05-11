@@ -13,13 +13,13 @@ void computationalModel::AddNode(int from, int to, computationalNode* node){
 void computationalModel::SetModel(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, bool primalWeightOwner){
     Nlayers=layersData->Nlayers;
 
-    AddNode(0, 0, new InputBalancedDrop());
-    AddNode(0, 0, new StairsFullConvolutionBalancedDrop(0, 3, 10, 1));
-    AddNode(0, 1, new FullAveragePoolingBalancedDrop());
-    AddNode(1, 1, new StairsFullConvolutionBalancedDrop(1, 23, 10, 1));
-    AddNode(1, 2, new FullAveragePoolingBalancedDrop());
-    AddNode(2, 2, new StairsFullConvolutionBalancedDrop(2, 43, 10, 1));
-    AddNode(2, 3, new FullAveragePoolingBalancedDrop());
+    //AddNode(0, 0, new InputBalancedDrop());
+    AddNode(0, 0, new StairsFullConvolutionBalancedDrop(0, 3, 3, 4));
+    AddNode(0, 1, new AveragePoolingBalancedDrop());
+    AddNode(1, 1, new StairsFullConvolutionBalancedDrop(1, 27, 3, 4));
+    AddNode(1, 2, new AveragePoolingBalancedDrop());
+    AddNode(2, 2, new StairsFullConvolutionBalancedDrop(2, 51, 3, 4));
+    AddNode(2, 3, new ColumnDrop());
     AddNode(3, 4, new FullyConnectedSoftMax(3));
 
     this->Compile(layersData, deltas, weightsData, gradient, layersActivity, primalWeightOwner);

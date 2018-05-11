@@ -29,9 +29,15 @@ const bool APPEND_INPUT_STATISTICS = 0;
 const bool INPUT_NEG_POS = 1;
 
 const int NUM_EPOCHS = 300;
-const int MINIBATCH_SIZE = 1280;
+const int MINIBATCH_SIZE = 1000;
 const double LEARNING_RATE = 0.02;
 const double RATE_DECAY = 0.97;
+
+const int MAX_THREADS = 25;
+
+const double DEFAULT_ALPHA_DROP = 0.2;
+const double DEFAULT_P_DROP = 0.25;
+const double DEFAULT_P_NOT_DROP = 0.0;
 
 #define NET_WEIGHTS_FILE "data/w_1.txt"
 #define LOG_FILE "data/log_1.txt"

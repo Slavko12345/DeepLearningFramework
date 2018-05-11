@@ -1,6 +1,7 @@
 #ifndef __computationalNode__
 #define __computationalNode__
 #include <vector>
+#include "globals.h"
 using namespace std;
 class layers;
 class weights;
@@ -253,6 +254,40 @@ struct LastAveragePooling: public computationalNode{
 };
 
 
+struct AveragePoolingBalancedDrop: public computationalNode{
+    tensor* input, *inputDelta;
+    tensor* output, *outputDelta;
+    tensor* partialInput, *partialOutput;
+    tensor* partialInputDelta, *partialOutputDelta;
+    int lastLayers;
+    int startingDepth;
+    int kernelRsize, kernelCsize;
+
+    activityData * balancedActiveUnits;
+    activityData * balancedUpDown;
+    tensor* multipliers;
+
+    double alpha;
+    double pDrop;
+    double pNotDrop;
+    bool startDropping;
+
+    AveragePoolingBalancedDrop(int lastLayers_ = -1, double alpha_ = DEFAULT_ALPHA_DROP,
+                                   double pDrop_ = DEFAULT_P_DROP,
+                                   double pNotDrop_ = DEFAULT_P_NOT_DROP);
+    void Initiate(layers* layersData, layers* deltas,
+                  weights* weightsData, weights* gradient,
+                  activityLayers* layersActivity,
+                  int from, int to, bool primalWeightOwner);
+    void ForwardPass();
+    void BackwardPass( bool computeDelta, int trueClass);
+    void SetToTrainingMode();
+    void SetToTestMode();
+    bool HasWeightsDependency();
+    ~AveragePoolingBalancedDrop();
+};
+
+
 struct StructuredDropAveragePooling: public computationalNode{
     tensor* input, *inputDelta;
     tensor* output, *outputDelta;
@@ -295,6 +330,40 @@ struct ColumnDrop: public computationalNode{
     void SetToTestMode();
     bool HasWeightsDependency();
     ~ColumnDrop();
+};
+
+
+struct ColumnDropBalancedDrop: public computationalNode{
+    tensor* input, *inputDelta;
+    tensor* output, *outputDelta;
+    tensor* partialInput;
+    tensor* partialInputDelta;
+    activityData * activityColumns;
+
+    int lastLayers;
+    int remainNum;
+
+    activityData * balancedActiveUnits;
+    activityData * balancedUpDown;
+    tensor* multipliers;
+
+    double alpha;
+    double pDrop;
+    double pNotDrop;
+    bool startDropping;
+
+    ColumnDropBalancedDrop(int remainNum_ = 1, double alpha_ = DEFAULT_ALPHA_DROP,
+                                   double pDrop_ = DEFAULT_P_DROP,
+                                   double pNotDrop_ = DEFAULT_P_NOT_DROP);
+    void Initiate(layers* layersData, layers* deltas, weights* weightsData,
+                  weights* gradient, activityLayers* layersActivity,
+                  int from, int to, bool primalWeightOwner);
+    void ForwardPass();
+    void BackwardPass(bool computeDelta, int trueClass);
+    void SetToTrainingMode();
+    void SetToTestMode();
+    bool HasWeightsDependency();
+    ~ColumnDropBalancedDrop();
 };
 
 
@@ -382,7 +451,7 @@ struct FullAveragePoolingBalancedDrop: public computationalNode{
     bool startDropping;
 
 
-    FullAveragePoolingBalancedDrop(double alpha_ = 0.2, double pDrop_ = 0.25, double pNotDrop_ = 0.5);
+    FullAveragePoolingBalancedDrop(double alpha_ = DEFAULT_ALPHA_DROP, double pDrop_ = DEFAULT_P_DROP, double pNotDrop_ = DEFAULT_P_NOT_DROP);
     void Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner);
     void ForwardPass();
     void BackwardPass( bool computeDelta, int trueClass);
@@ -406,7 +475,7 @@ struct InputBalancedDrop: public computationalNode{
     activityData * balancedUpDown;
     tensor* multipliers;
 
-    InputBalancedDrop(int inputDepth_ = 3, double alpha_ = 0.2, double pDrop_ = 0.25, double pNotDrop_ = 0.125);
+    InputBalancedDrop(int inputDepth_ = 3, double alpha_ = DEFAULT_ALPHA_DROP, double pDrop_ = DEFAULT_P_DROP, double pNotDrop_ = DEFAULT_P_NOT_DROP);
     void Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient,
                   activityLayers* layersActivity, int from, int to, bool primalWeightOwner);
     void ForwardPass();
@@ -1226,7 +1295,7 @@ struct StairsFullConvolutionBalancedDrop: public computationalNode{
     tensor* multipliers;
 
     StairsFullConvolutionBalancedDrop(int weightsNum_, int startDepth_, int numStairs_, int numStairConvolutions_,
-                                      double alpha_ = 0.2, double pDrop_ = 0.25, double pNotDrop_ = 0.5,
+                                      double alpha_ = DEFAULT_ALPHA_DROP, double pDrop_ = DEFAULT_P_DROP, double pNotDrop_ = DEFAULT_P_NOT_DROP,
                                       int symmetryLevel_ = 0, bool biasIncluded_ = 1);
     void Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient,
                   activityLayers* layersActivity, int from, int to, bool primalWeightOwner);

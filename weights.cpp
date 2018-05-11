@@ -14,13 +14,13 @@ void weights::SetModel()
     Nweights=4;
     weightList = new layerWeight[Nweights];
 
-    weightList[0].SetStairsFullConvolution(3, 10, 1);
+    weightList[0].SetStairsFullConvolution(3, 3, 4);
 
-    weightList[1].SetStairsFullConvolution(23, 10, 1);
+    weightList[1].SetStairsFullConvolution(27, 3, 4);
 
-    weightList[2].SetStairsFullConvolution(43, 10, 1);
+    weightList[2].SetStairsFullConvolution(51, 3, 4);
 
-    weightList[3].SetFC(63, 10);
+    weightList[3].SetFC(8, 10);
 }
 
 void layerWeight::SetStairsVert(int startDepth, int numStairs, int numStairConvolutions){

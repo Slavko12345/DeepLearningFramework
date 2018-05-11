@@ -43,9 +43,10 @@ int main()
     randomGenerator::SetRandomSeed();
     double time_start = omp_get_wtime(), error, accuracy;
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-    putenv((char*)"OMP_PROC_BIND=TRUE");
+    //putenv((char*)"OMP_PROC_BIND=TRUE");
     putenv((char*)"OMP_DYNAMIC=FALSE");
     putenv((char*)"OMP_WAIT_POLICY=ACTIVE");
+    omp_set_num_threads(MAX_THREADS);
 
     Data* CifarTrain = new Data;
     CifarTrain->ReadTrainingCifar10();
