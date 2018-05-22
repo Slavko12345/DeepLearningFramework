@@ -45,8 +45,17 @@ void computationalNode::WriteStructuredWeightsToFile(){
     cout<<"Error: call of WriteStructuredWeightsToFile for abstract class"<<endl;
 }
 
+bool computationalNode::UsesBalancedDrop(){
+    return 0;
+}
+
+void computationalNode::UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_){
+    cout<<"Error: call of UpdateBalancedDropParameters for abstract class"<<endl;
+}
+
 computationalNode::~computationalNode(){
 }
+
 
 
 
@@ -2592,6 +2601,18 @@ bool StairsFullConvolutionBalancedDrop::NeedsUnification(){
     return 0;
 }
 
+bool StairsFullConvolutionBalancedDrop::UsesBalancedDrop(){
+    return 1;
+}
+
+void StairsFullConvolutionBalancedDrop::UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_){
+    alpha = alpha_;
+    pDrop = pDrop_;
+    pNotDrop = pNotDrop_;
+    balancedActiveUnits->dropRate = pDrop;
+    balancedActiveUnits->dropping = (pDrop > 0.0);
+}
+
 void StairsFullConvolutionBalancedDrop::Unify(computationalNode * primalCN){
 }
 
@@ -4069,6 +4090,18 @@ bool AveragePoolingBalancedDrop::HasWeightsDependency(){
     return 0;
 }
 
+bool AveragePoolingBalancedDrop::UsesBalancedDrop(){
+    return 1;
+}
+
+void AveragePoolingBalancedDrop::UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_){
+    alpha = alpha_;
+    pDrop = pDrop_;
+    pNotDrop = pNotDrop_;
+    balancedActiveUnits->dropRate = pDrop;
+    balancedActiveUnits->dropping = (pDrop > 0.0);
+}
+
 
 AveragePoolingBalancedDrop::~AveragePoolingBalancedDrop(){
     DeleteOnlyShell(partialInput);
@@ -4340,6 +4373,18 @@ void ColumnDropBalancedDrop::SetToTestMode(){
 
 bool ColumnDropBalancedDrop::HasWeightsDependency(){
     return 0;
+}
+
+bool ColumnDropBalancedDrop::UsesBalancedDrop(){
+    return 1;
+}
+
+void ColumnDropBalancedDrop::UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_){
+    alpha = alpha_;
+    pDrop = pDrop_;
+    pNotDrop = pNotDrop_;
+    balancedActiveUnits->dropRate = pDrop;
+    balancedActiveUnits->dropping = (pDrop > 0.0);
 }
 
 
@@ -4685,6 +4730,17 @@ bool FullAveragePoolingBalancedDrop::HasWeightsDependency(){
     return 0;
 }
 
+bool FullAveragePoolingBalancedDrop::UsesBalancedDrop(){
+    return 1;
+}
+
+void FullAveragePoolingBalancedDrop::UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_){
+    alpha = alpha_;
+    pDrop = pDrop_;
+    pNotDrop = pNotDrop_;
+    balancedActiveUnits->dropRate = pDrop;
+    balancedActiveUnits->dropping = (pDrop > 0.0);
+}
 
 FullAveragePoolingBalancedDrop::~FullAveragePoolingBalancedDrop(){
     DeleteOnlyShell(partialOutput);
@@ -4756,6 +4812,18 @@ void InputBalancedDrop::SetToTestMode(){
 
 bool InputBalancedDrop::HasWeightsDependency(){
     return 0;
+}
+
+bool InputBalancedDrop::UsesBalancedDrop(){
+    return 1;
+}
+
+void InputBalancedDrop::UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_){
+    alpha = alpha_;
+    pDrop = pDrop_;
+    pNotDrop = pNotDrop_;
+    balancedActiveUnits->dropRate = pDrop;
+    balancedActiveUnits->dropping = (pDrop > 0.0);
 }
 
 

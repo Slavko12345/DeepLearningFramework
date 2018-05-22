@@ -29,8 +29,13 @@ struct computationalNode{
     virtual void Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner);
     virtual void SetToTrainingMode();
     virtual void SetToTestMode();
+
     virtual bool NeedsUnification();
     virtual void Unify(computationalNode * primalCN);
+
+    virtual bool UsesBalancedDrop();
+    virtual void UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_);
+
     virtual void WriteStructuredWeightsToFile();
     virtual ~computationalNode();
 };
@@ -284,6 +289,8 @@ struct AveragePoolingBalancedDrop: public computationalNode{
     void SetToTrainingMode();
     void SetToTestMode();
     bool HasWeightsDependency();
+    bool UsesBalancedDrop();
+    void UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_);
     ~AveragePoolingBalancedDrop();
 };
 
@@ -363,6 +370,8 @@ struct ColumnDropBalancedDrop: public computationalNode{
     void SetToTrainingMode();
     void SetToTestMode();
     bool HasWeightsDependency();
+    bool UsesBalancedDrop();
+    void UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_);
     ~ColumnDropBalancedDrop();
 };
 
@@ -458,6 +467,8 @@ struct FullAveragePoolingBalancedDrop: public computationalNode{
     void SetToTrainingMode();
     void SetToTestMode();
     bool HasWeightsDependency();
+    bool UsesBalancedDrop();
+    void UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_);
     ~FullAveragePoolingBalancedDrop();
 };
 
@@ -483,6 +494,8 @@ struct InputBalancedDrop: public computationalNode{
     void SetToTrainingMode();
     void SetToTestMode();
     bool HasWeightsDependency();
+    bool UsesBalancedDrop();
+    void UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_);
     ~InputBalancedDrop();
 };
 
@@ -1307,6 +1320,8 @@ struct StairsFullConvolutionBalancedDrop: public computationalNode{
     bool NeedsUnification();
     void Unify(computationalNode * primalCN);
     void WriteStructuredWeightsToFile();
+    bool UsesBalancedDrop();
+    void UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_);
     ~StairsFullConvolutionBalancedDrop();
 };
 

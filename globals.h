@@ -7,7 +7,7 @@ const double NORMALIZATION_RADIUS = 1.0;
 const double MAX_ABS_RANDOM_WEIGHTS = 0.01;
 const bool LAPTOP = 1;
 const bool LOCAL_DATA = 1;
-const bool ADAPT_PROCESSORS_LOAD = 1;
+const bool ADAPT_PROCESSORS_LOAD = 0;
 const bool FOCUSED_TRAINING = 0;
 const double FOCUSED_PROBABILITY_THRESHOLD = 0.5;
 const bool PARALLEL_ARCHITECTURE = 1;
@@ -30,14 +30,26 @@ const bool INPUT_NEG_POS = 1;
 
 const int NUM_EPOCHS = 300;
 const int MINIBATCH_SIZE = 1000;
-const double LEARNING_RATE = 0.02;
+const double LEARNING_RATE = 0.01;
 const double RATE_DECAY = 0.97;
 
-const int MAX_THREADS = 25;
+const int MAX_THREADS = 50;
 
 const double DEFAULT_ALPHA_DROP = 0.2;
 const double DEFAULT_P_DROP = 0.25;
 const double DEFAULT_P_NOT_DROP = 0.0;
+
+
+const bool UNIFORM_DROP_INCREASE = 1;
+
+const double DEFAULT_ALPHA_START = 0.0;
+const double DEFAULT_ALPHA_END = 1.0;
+
+const double DEFAULT_PDROP_START = 0.0;
+const double DEFAULT_PDROP_END = 1.0;
+
+const double DEFAULT_PNOTDROP_START = 1.0;
+const double DEFAULT_PNOTDROP_END = 0.0;
 
 #define NET_WEIGHTS_FILE "data/w_1.txt"
 #define LOG_FILE "data/log_1.txt"

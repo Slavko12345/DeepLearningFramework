@@ -42,6 +42,7 @@ class NeuralNet
         void PrintProbabilities();
         void SwitchToTrainingMode();
         void SwitchToTestMode();
+        void UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_);
         ~NeuralNet();
 };
 

@@ -169,6 +169,11 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData){
         NNList[j]->Initiate(NN);
         NNList[j]->SwitchToTrainingMode();
     }
+
+    if (UNIFORM_DROP_INCREASE){
+        for(int j=0; j<numThreads; ++j)
+            NNList[j]->UpdateBalancedDropParameters(DEFAULT_ALPHA_START, DEFAULT_PDROP_START, DEFAULT_PNOTDROP_START);
+    }
     cout<<"Parallel nets are initiated"<<endl;
 
     Data* mbData = new Data;
@@ -201,6 +206,8 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData){
 
     mbData->SelectMiniBatch(trainingData, 0, mbSize);
     mbData->SubDivide(mbDataList, numThreads);
+
+    double alpha = DEFAULT_ALPHA_START, pDrop = DEFAULT_PDROP_START, pNotDrop = DEFAULT_PNOTDROP_START;
 
     #pragma omp parallel num_threads(numThreads)
     {
@@ -322,9 +329,22 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData){
                     newTime = omp_get_wtime();
                     cout<<"Last 5 epochs time: "<<newTime - oldTime<<" finish in: "<<(maxEpochs - epoch) / 5 * (newTime - oldTime)<<" s"<<endl<<endl;
                     oldTime = newTime;
+
+                    if (UNIFORM_DROP_INCREASE)
+                    {
+                        alpha = (epoch + 1) / (maxEpochs) * (DEFAULT_ALPHA_END - DEFAULT_ALPHA_START) + DEFAULT_ALPHA_START;
+                        pDrop = (epoch + 1) / (maxEpochs) * (DEFAULT_PDROP_END - DEFAULT_PDROP_START) + DEFAULT_PDROP_START;
+                        pNotDrop = (epoch + 1) / (maxEpochs) * (DEFAULT_PNOTDROP_END - DEFAULT_PNOTDROP_START) + DEFAULT_PNOTDROP_START;
+                        cout<<"alpha: "<<alpha<<" pDrop: "<<pDrop<<" pNotDrop: "<<pNotDrop<<endl;
+                    }
+
+
+
                 }
                 #pragma omp barrier
                 NNList[ID]->SwitchToTrainingMode();
+                if (UNIFORM_DROP_INCREASE)
+                    NNList[ID]->UpdateBalancedDropParameters(alpha, pDrop, pNotDrop);
                 #pragma omp barrier
             }
         }

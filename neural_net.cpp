@@ -267,6 +267,10 @@ void NeuralNet::SwitchToTestMode(){
     computation->SetToTestMode();
 }
 
+void NeuralNet::UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_){
+    computation->UpdateBalancedDropParameters(alpha_, pDrop_, pNotDrop_);
+}
+
 NeuralNet::~NeuralNet(){
     delete layersData;
     delete deltas;
