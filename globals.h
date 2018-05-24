@@ -42,13 +42,13 @@ const double DEFAULT_P_NOT_DROP = 0.0;
 
 const bool UNIFORM_DROP_INCREASE = 1;
 
-const double DEFAULT_ALPHA_START = 0.0;
+const double DEFAULT_ALPHA_START = 1.0;
 const double DEFAULT_ALPHA_END = 1.0;
 
-const double DEFAULT_PDROP_START = 0.0;
-const double DEFAULT_PDROP_END = 1.0;
+const double DEFAULT_PDROP_START = 0.0625;
+const double DEFAULT_PDROP_END = 0.5;
 
-const double DEFAULT_PNOTDROP_START = 1.0;
+const double DEFAULT_PNOTDROP_START = 0.0;
 const double DEFAULT_PNOTDROP_END = 0.0;
 
 #define NET_WEIGHTS_FILE "data/w_1.txt"

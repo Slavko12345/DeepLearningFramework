@@ -23,8 +23,38 @@ void activityData::DropAllExcept(int num){
         activeUnits[remainIndex[j] ] = 1;
 }
 
+double activityData::dropRateInFact(double dropRate_){
+    if (fabs(1.0 - dropRate_)<1E-10)
+        return 1.0;
+
+    if (fabs(dropRate_)<1E-10)
+        return 0.0;
+
+    if (dropRate_>0.5+1E-8)
+        return 1.0 - dropRateInFact(1.0 - dropRate_);
+
+    const int toCompr = round(8 * dropRate_);
+    const int toCompr16 = round(16 * dropRate_);
+
+    if (toCompr16 == 1){
+        return 0.0625;
+    }
+
+    return toCompr / 8.0;
+}
+
 void activityData::DropUnits(){
     if (!dropping) return;
+
+    if (fabs(1.0 - dropRate)<1E-10){
+        this->SetAllNonActive();
+        return;
+    }
+
+    if (fabs(dropRate<1E-10)){
+        this->SetAllActive();
+        return;
+    }
 
     if (dropRate>0.5+1E-8){
         dropRate = 1 - dropRate;
@@ -33,6 +63,8 @@ void activityData::DropUnits(){
         dropRate = 1 - dropRate;
         return;
     }
+
+
 
     uint32_t gen;
     const int toCompr = round(8 * dropRate);

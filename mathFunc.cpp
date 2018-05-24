@@ -4424,7 +4424,7 @@ void BackwardMaxPool2D(matrix* inputDelta, matrix* outputDelta, int* rowInd, int
 
 void MaxAbsPool2D_2_2(matrix* input, matrix* output, matrix* maxAbs, int* rowInd, int *colInd){
 
-    int minIR, maxIR, minIC, maxIC, outRows = output->rows, outCols = output->cols;
+    int outRows = output->rows, outCols = output->cols;
     double *out_oR , *in_iR, *maxAbs_oR;
     int *rowInd_oR, *colInd_oR;
     int iR, iC;
@@ -4901,7 +4901,6 @@ void FillRandom(int* index, int startInd, int endInd, int len){
     for(int j=startInd; j<endInd; ++j)
         tempArray[j-startInd] = j;
     int randInd;
-    int tempInd;
     for(int j=0; j<len; ++j){
         randInd = (randomGenerator::rand() % (endInd - (startInd + j) ) ) + j;
         Switch(tempArray[j], tempArray[randInd]);

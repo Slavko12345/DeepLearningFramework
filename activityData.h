@@ -27,6 +27,7 @@ struct activityData{
     double ActiveProportion();
     int ActiveLen();
     void SubActivityData(activityData* act, int startIndex_, int len_);
+    static double dropRateInFact(double dropRate_);
     ~activityData();
 };
 
