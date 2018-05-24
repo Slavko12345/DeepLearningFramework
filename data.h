@@ -27,7 +27,7 @@ public:
     void ReadTestCifar10();
 
     void SubDivide(Data** dataList, int numThreads);
-    void SubDivide(Data** dataList, int numThreads, double* velocity);
+    void SubDivide(Data** dataList, int numThreads, float* velocity);
 
     int totalSize();
 

@@ -9,7 +9,7 @@ class activityData;
 struct activityLayers{
     int Nlayers;
     activityData **layerList;
-    vector<double> dropoutRates;
+    vector<float> dropoutRates;
     bool dropping;
     activityData *inputActivity;
 

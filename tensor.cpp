@@ -25,7 +25,7 @@ void tensor::SetSize(int depth_, int rows_, int cols_){
     len = depth_*rows_*cols_;
 }
 
-void tensor::PointToTensor(double * elem_){
+void tensor::PointToTensor(float * elem_){
     elem = elem_;
 }
 
@@ -41,7 +41,7 @@ void tensor::Print()
     DeleteOnlyShell(t_d);
 }
 
-double& tensor::At(int d, int r, int c){
+float& tensor::At(int d, int r, int c){
     return elem[(d*rows+r)*cols+c];
 }
 
@@ -53,7 +53,7 @@ int tensor::Ind(int d){
     return d*rows*cols;
 }
 
-double* tensor::Layer(int d){
+float* tensor::Layer(int d){
     return elem+d*rows*cols;
 }
 
@@ -72,8 +72,8 @@ void tensor::SaveAsImage(char filename[]){
 }
 
 void tensor::TransformByPoints(tensor* inputImage, matrix* coordsPoints){
-    double a_x, a_y, a_xy, a_1;
-    double b_x, b_y, b_xy, b_1;
+    float a_x, a_y, a_xy, a_1;
+    float b_x, b_y, b_xy, b_1;
 
     a_1 =   coordsPoints->At(0, 0);       b_1 = coordsPoints->At(0, 1);
     a_x =   coordsPoints->At(1, 0) - a_1; b_x = coordsPoints->At(1, 1) - b_1;
@@ -81,8 +81,8 @@ void tensor::TransformByPoints(tensor* inputImage, matrix* coordsPoints){
     a_xy =  coordsPoints->At(3, 0) - a_x - a_y - a_1;
     b_xy =  coordsPoints->At(3, 1) - b_x - b_y - b_1;
 
-    double x_source, y_source, x_dest, y_dest;
-    double step_x = 1.0 / (cols - 1.0), step_y = 1.0 / (rows - 1.0);
+    float x_source, y_source, x_dest, y_dest;
+    float step_x = 1.0 / (cols - 1.0), step_y = 1.0 / (rows - 1.0);
     matrix* input_ch = new matrix();
 
     for(int ch = 0; ch < depth; ++ch){
@@ -102,11 +102,11 @@ void tensor::TransformByPoints(tensor* inputImage, matrix* coordsPoints){
 
 void tensor::RandomlyTranform(tensor* inputImage){
     matrix* coords = new matrix(4, 2);
-    double c_x, c_y;
+    float c_x, c_y;
     bool corner;
     for(int j=0; j<4; ++j){
-        c_x = randomGenerator::generatePositiveDouble(AUGMENTATION_SIZE);
-        c_y = randomGenerator::generatePositiveDouble(AUGMENTATION_SIZE);
+        c_x = randomGenerator::generatePositiveFloat(AUGMENTATION_SIZE);
+        c_y = randomGenerator::generatePositiveFloat(AUGMENTATION_SIZE);
         corner = randomGenerator::generateBool(CORNER_PROBABILITY);
         c_x *= (1 - corner);
         c_y *= (1 - corner);

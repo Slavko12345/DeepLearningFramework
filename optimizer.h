@@ -18,22 +18,22 @@ public:
 
 class SGD: public Optimizer{
 public:
-    double learningRate;
-    SGD(double learningRate_, int mbSize_, int maxEpochs_);
+    float learningRate;
+    SGD(float learningRate_, int mbSize_, int maxEpochs_);
     void Optimize(NeuralNet* NN, Data* trainingData);
 };
 
 class RMSPROP: public Optimizer{
 public:
-    double learningRate;
-    RMSPROP(double learningRate_, int mbSize_, int maxEpochs_);
+    float learningRate;
+    RMSPROP(float learningRate_, int mbSize_, int maxEpochs_);
     void Optimize(NeuralNet* NN, Data* trainingData);
 };
 
 class ADAM: public Optimizer{
 public:
-    double learningRate;
-    ADAM(double learningRate_, int mbSize_, int maxEpochs_);
+    float learningRate;
+    ADAM(float learningRate_, int mbSize_, int maxEpochs_);
     void Optimize(NeuralNet* NN, Data* trainingData);
     void OptimizeInParallel(NeuralNet *NN, Data* trainingData);
     void OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData);

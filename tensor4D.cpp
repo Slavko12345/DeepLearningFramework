@@ -13,11 +13,11 @@ tensor4D::tensor4D(int number_, int depth_, int rows_, int cols_):
     orderedData(number_*depth_*rows_*cols_), number(number_), depth(depth_), rows(rows_), cols(cols_){
 }
 
-double * tensor4D::TLayer(int n){
+float * tensor4D::TLayer(int n){
     return elem+n*depth*rows*cols;
 }
 
-double& tensor4D::At(int n, int d, int r, int c){
+float& tensor4D::At(int n, int d, int r, int c){
     return elem[((n*depth+d)*rows+r)*cols+c];
 }
 

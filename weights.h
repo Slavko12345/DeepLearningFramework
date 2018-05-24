@@ -55,25 +55,25 @@ public:
     layerWeight * weightList;
     void SetModel();
     void SetToZero();
-    void SetToRandomValues(double maxAbs);
+    void SetToRandomValues(float maxAbs);
     void Print();
 
     void Add(weights* addon);
-    void Add(double lamb, weights* addon);
+    void Add(float lamb, weights* addon);
 
-    double MaxAbs();
-    void Multiply(double lamb);
+    float MaxAbs();
+    void Multiply(float lamb);
 
-    void RmspropUpdate(weights* grad, weights* MS, double k1, double k2, double Step);
-    void AdamUpdate(weights* grad, weights* Moment, weights* MS, double k1, double k2, double Step);
+    void RmspropUpdate(weights* grad, weights* MS, float k1, float k2, float Step);
+    void AdamUpdate(weights* grad, weights* Moment, weights* MS, float k1, float k2, float Step);
 
     void Copy(weights* W);
-    void CopyMultiplied(double lamb, weights* W);
+    void CopyMultiplied(float lamb, weights* W);
 
     void WriteToFile(char fileName[]);
     void ReadFromFile(char filename[]);
 
-    void SetToLinearCombination(double a1, double a2, weights* W1, weights* W2);
+    void SetToLinearCombination(float a1, float a2, weights* W1, weights* W2);
 
     int GetWeightLen();
 
@@ -83,10 +83,10 @@ public:
 #endif // __weights__
 
 //Wc=Wa+Wb*lambda
-void AddWeights(weights* Wa, weights *Wb, double lambda, weights* Wc);
+void AddWeights(weights* Wa, weights *Wb, float lambda, weights* Wc);
 
-void FormOrthonormalBasis(weights* grad, weights* moment, weights* d1, weights* d2, double & g_g);
+void FormOrthonormalBasis(weights* grad, weights* moment, weights* d1, weights* d2, float & g_g);
 
-double InnerProduct(weights* w1, weights* w2);
+float InnerProduct(weights* w1, weights* w2);
 
 void FormHessianInSubspace(weights* d1, weights* d2, weights* Hd1, weights* Hd2, matrix* B);

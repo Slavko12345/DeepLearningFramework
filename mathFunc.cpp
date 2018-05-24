@@ -14,49 +14,49 @@
 #include "matrix.h"
 using namespace std;
 
-double Sigma::f(const double & x){
+float Sigma::f(const float & x){
     if (x>0) return 1.0/(1.0+exp(-x));
     return exp(x)/(1.0+exp(x));
 }
 
-double Sigma::df(const double & x){
-    double s=f(x);
+float Sigma::df(const float & x){
+    float s=f(x);
     return s*(1.0-s);
 }
 
-double Sigma::ddf(const double & x){
-    double s=f(x);
+float Sigma::ddf(const float & x){
+    float s=f(x);
     return s*(1.0-s)*(1.0-2.0*s);
 }
 
 
 
-double Tanh::f(const double & x){
+float Tanh::f(const float & x){
     return tanh(x);
 }
 
-double Tanh::df(const double & x){
-    double t=tanh(x);
+float Tanh::df(const float & x){
+    float t=tanh(x);
     return 1.0-t*t;
 }
 
 
-double Tanh::ddf(const double & x){
-    double t=tanh(x);
+float Tanh::ddf(const float & x){
+    float t=tanh(x);
     return -2.0*t*(1-t*t);
 }
 
 
 
-double Relu::f(const double & x){
+float Relu::f(const float & x){
     return (x>0)*x;
 }
 
-double Relu::df(const double & x){
+float Relu::df(const float & x){
     return (x>0);
 }
 
-double Relu::ddf(const double & x){
+float Relu::ddf(const float & x){
     return 0;
 }
 
@@ -64,9 +64,9 @@ double Relu::ddf(const double & x){
 
 void SoftMax(orderedData* inp, orderedData* out)
 {
-    double maxIn=inp->Max(), sumExp=0;
-    double* inp_elem = inp->elem;
-    double *out_elem = out->elem;
+    float maxIn=inp->Max(), sumExp=0;
+    float* inp_elem = inp->elem;
+    float *out_elem = out->elem;
     for(int j=0; j<inp->len; ++j)
     {
         out_elem[j] = exp(inp_elem[j]-maxIn);
@@ -87,15 +87,15 @@ void DeleteOnlyShellActivity(activityData* link){
     delete link;
 }
 
-double TrustRegionFunc(double lamb, vect* eigenValues, vect* rV, double eps){
-    double res = 0;
+float TrustRegionFunc(float lamb, vect* eigenValues, vect* rV, float eps){
+    float res = 0;
     for(int j=0; j<eigenValues->len; ++j)
         res += sqr(rV->elem[j] / (eigenValues->elem[j] + lamb));
     return res - sqr(eps);
 }
 
-double TrustRegionFuncDeriv(double lamb, vect* eigenValues, vect* rV, double eps){
-    double res = 0;
+float TrustRegionFuncDeriv(float lamb, vect* eigenValues, vect* rV, float eps){
+    float res = 0;
     for(int j=0; j<eigenValues->len; ++j){
         //cout<<lamb<<endl;
         res -= sqr(rV->elem[j] / (eigenValues->elem[j] + lamb)) / (eigenValues->elem[j] + lamb);
@@ -107,9 +107,9 @@ double TrustRegionFuncDeriv(double lamb, vect* eigenValues, vect* rV, double eps
 
 void Convolute2D2D(matrix* input, matrix* output, matrix* reversedKernel, realNumber* bias, int paddingR, int paddingC, vector<int> & indexInputRow){
 
-    double * input_iR, *output_oR, *revKernel_iR__oR, *output_elem;
-    double   input_iR_iC;
-    const double eps = 1E-10;
+    float * input_iR, *output_oR, *revKernel_iR__oR, *output_elem;
+    float   input_iR_iC;
+    const float eps = 1E-10;
     int tempInd, indexInputSize, minOutRow, maxOutRow, minOutCol, maxOutCol;
     int kR = reversedKernel->rows, kC = reversedKernel->cols;
     int input_rows = input->rows, input_cols = input->cols;
@@ -121,7 +121,7 @@ void Convolute2D2D(matrix* input, matrix* output, matrix* reversedKernel, realNu
     output_elem = output->elem;
 
     if (bias){
-        double bias_ =  bias->elem[0];
+        float bias_ =  bias->elem[0];
         for(int j=0; j<output->len; ++j)
             output_elem[j] += bias_;
     }
@@ -159,9 +159,9 @@ void Convolute2D2D(matrix* input, matrix* output, matrix* reversedKernel, realNu
 }
 
 //
-//void ForwardConvoluteStandardByIndex(double* input, double* output, const int siz, double* revKernel, const vector<int> & indexInputRow){
+//void ForwardConvoluteStandardByIndex(float* input, float* output, const int siz, float* revKernel, const vector<int> & indexInputRow){
 //    const int indexInputSize = indexInputRow.size();
-//    double input_c = input[0];
+//    float input_c = input[0];
 //    output[0] += input_c * revKernel[1];
 //    output[1] += input_c * revKernel[2];
 //    for(int iCIndex=0, iC; iCIndex<indexInputSize; ++iCIndex){
@@ -177,10 +177,10 @@ void Convolute2D2D(matrix* input, matrix* output, matrix* reversedKernel, realNu
 //}
 //
 //
-//void ForwardConvoluteStandardCreateIndex(double* input, double* output, const int siz, double* revKernel, vector<int> & indexInputRow){
+//void ForwardConvoluteStandardCreateIndex(float* input, float* output, const int siz, float* revKernel, vector<int> & indexInputRow){
 //    indexInputRow.resize(0);
-//    const double eps = 1E-10;
-//    double input_c = input[0];
+//    const float eps = 1E-10;
+//    float input_c = input[0];
 //    output[0] += input_c * revKernel[1];
 //    output[1] += input_c * revKernel[2];
 //    for(int iC=1; iC<siz-1; ++iC){
@@ -197,7 +197,7 @@ void Convolute2D2D(matrix* input, matrix* output, matrix* reversedKernel, realNu
 //    output[siz-1] += input_c * revKernel[1];
 //}
 
-void ConvoluteStandard(double* input, double* output, const int siz, double* kernel){
+void ConvoluteStandard(float* input, float* output, const int siz, float* kernel){
     output[0]+=input[0] * kernel[1] + input[1] * kernel[2];
     for(int oC=1; oC<siz-1; ++oC)
         output[oC] += input[oC-1] * kernel[0] + input[oC] * kernel[1] + input[oC+1] * kernel[2];
@@ -205,19 +205,19 @@ void ConvoluteStandard(double* input, double* output, const int siz, double* ker
 }
 
 
-void ConvoluteStandardSymmetric(double* input, double* output, const int siz, double* kernel){
+void ConvoluteStandardSymmetric(float* input, float* output, const int siz, float* kernel){
     output[0]+=input[0] * kernel[1] + input[1] * kernel[0];
     for(int oC=1; oC<siz-1; ++oC)
         output[oC] += (input[oC-1] + input[oC+1]) * kernel[0] + input[oC] * kernel[1];
     output[siz-1] += input[siz-2] * kernel[0] + input[siz-1] * kernel[1];
 }
 
-void ConvoluteSymmetricNoPadding(double* input, double* output, const int siz, double* kernel){
+void ConvoluteSymmetricNoPadding(float* input, float* output, const int siz, float* kernel){
     for(int oC=1; oC<siz-1; ++oC)
         output[oC] += (input[oC-1] + input[oC+1]) * kernel[0] + input[oC] * kernel[1];
 }
 
-void ConvoluteStandardFullySymmetric0(double* input, double* output, const int siz, double* kernel){
+void ConvoluteStandardFullySymmetric0(float* input, float* output, const int siz, float* kernel){
     output[0]+=(input[0] + input[1]) * kernel[0];
     for(int oC=1; oC<siz-1; ++oC)
         output[oC] += (input[oC-1] + input[oC] + input[oC+1]) * kernel[0];
@@ -234,7 +234,7 @@ void ConvoluteStandardFullySymmetric0(double* input, double* output, const int s
 //        output->Add(bias->elem[0]);
 //    int input_rows = input->rows, input_cols = input->cols;
 //
-//    double* input_iR = input->Row(0);
+//    float* input_iR = input->Row(0);
 //    ForwardConvoluteStandardCreateIndex (input_iR, output->Row(0), input_cols, reversedKernel->Row(1), indexInputRow);
 //    ForwardConvoluteStandardByIndex     (input_iR, output->Row(1), input_cols, reversedKernel->Row(2), indexInputRow);
 //
@@ -257,7 +257,7 @@ void ConvoluteStandard2D2D(matrix* input, matrix* output, matrix* kernel){
 
     int input_rows = input->rows, input_cols = input->cols;
 
-    double* output_oR = output->Row(0);
+    float* output_oR = output->Row(0);
     ConvoluteStandard(input->Row(0), output_oR, input_cols, kernel->Row(1));
     ConvoluteStandard(input->Row(1), output_oR, input_cols, kernel->Row(2));
 
@@ -276,7 +276,7 @@ void ConvoluteStandard2D2D(matrix* input, matrix* output, matrix* kernel){
 void ConvoluteStandard2D2DSymmetric(matrix* input, matrix* output, matrix* kernel){
     int input_rows = input->rows, input_cols = input->cols;
 
-    double* output_oR = output->Row(0);
+    float* output_oR = output->Row(0);
     ConvoluteStandardSymmetric(input->Row(0), output_oR, input_cols, kernel->Row(1));
     ConvoluteStandardSymmetric(input->Row(1), output_oR, input_cols, kernel->Row(2));
 
@@ -295,7 +295,7 @@ void ConvoluteStandard2D2DSymmetric(matrix* input, matrix* output, matrix* kerne
 void ConvoluteStandard2D2DSymmetric2(matrix* input, matrix* output, matrix* kernel){
     int input_rows = input->rows, input_cols = input->cols;
 
-    double* output_oR = output->Row(0);
+    float* output_oR = output->Row(0);
     ConvoluteStandardSymmetric(input->Row(0), output_oR, input_cols, kernel->Row(1));
     ConvoluteStandardSymmetric(input->Row(1), output_oR, input_cols, kernel->Row(0));
 
@@ -314,7 +314,7 @@ void ConvoluteStandard2D2DSymmetric2(matrix* input, matrix* output, matrix* kern
 void ConvoluteStandard2D2DSymmetric3(matrix* input, matrix* output, matrix* kernel){
     int input_rows = input->rows, input_cols = input->cols;
 
-    double* output_oR = output->Row(0);
+    float* output_oR = output->Row(0);
     ConvoluteStandardSymmetric(input->Row(0), output_oR, input_cols, kernel->elem + 1);
     ConvoluteStandardSymmetric(input->Row(1), output_oR, input_cols, kernel->elem);
 
@@ -333,7 +333,7 @@ void ConvoluteStandard2D2DSymmetric3(matrix* input, matrix* output, matrix* kern
 
 void PyramidalConvolution2D2D(matrix* input, matrix* output, matrix* kernel, int stair){
     int input_rows = input->rows, input_cols = input->cols;
-    double* output_oR;
+    float* output_oR;
     for(int oR = 1 + stair; oR < input_rows - (1 + stair); ++oR){
         output_oR = output->Row(oR);
         ConvoluteSymmetricNoPadding(input->Row(oR-1) + stair, output_oR + stair, input_cols - 2 * stair, kernel->Row(0));
@@ -347,7 +347,7 @@ void PyramidalConvolution2D2D(matrix* input, matrix* output, matrix* kernel, int
 void ConvoluteStandard2D2DFullySymmetric(matrix* input, matrix* output, matrix* kernel){
     int input_rows = input->rows, input_cols = input->cols;
 
-    double* output_oR = output->Row(0);
+    float* output_oR = output->Row(0);
     ConvoluteStandardSymmetric(input->Row(0), output_oR, input_cols, kernel->elem);
     ConvoluteStandardFullySymmetric0(input->Row(1), output_oR, input_cols, kernel->elem);
 
@@ -364,8 +364,8 @@ void ConvoluteStandard2D2DFullySymmetric(matrix* input, matrix* output, matrix* 
 }
 
 
-void BackwardConvoluteStandard(double* input, double* inputDelta, double* outputDelta, double* kernel, double* kernelGrad, const int siz){
-    double input_iR_0 = input[0], input_iR_1 = input[1], input_iR_2 = input[2], input_iR_3 = input[3];
+void BackwardConvoluteStandard(float* input, float* inputDelta, float* outputDelta, float* kernel, float* kernelGrad, const int siz){
+    float input_iR_0 = input[0], input_iR_1 = input[1], input_iR_2 = input[2], input_iR_3 = input[3];
     kernelGrad[2] +=                                outputDelta[0] * input_iR_1 + outputDelta[1] * input_iR_2 + outputDelta[2] * input_iR_3;
     kernelGrad[1] += outputDelta[0] * input_iR_0 +  outputDelta[1] * input_iR_1 + outputDelta[2] * input_iR_2 + outputDelta[3] * input_iR_3;
     kernelGrad[0] += outputDelta[1] * input_iR_0 +  outputDelta[2] * input_iR_1 + outputDelta[3] * input_iR_2 + outputDelta[4] * input_iR_3;
@@ -390,8 +390,8 @@ void BackwardConvoluteStandard(double* input, double* inputDelta, double* output
 
 
 
-void BackwardConvoluteStandardSymmetric(double* input, double* inputDelta, double* outputDelta, double* kernel, double* kernelGrad, const int siz){
-    double input_iR_0 = input[0], input_iR_1 = input[1], input_iR_2 = input[2], input_iR_3 = input[3];
+void BackwardConvoluteStandardSymmetric(float* input, float* inputDelta, float* outputDelta, float* kernel, float* kernelGrad, const int siz){
+    float input_iR_0 = input[0], input_iR_1 = input[1], input_iR_2 = input[2], input_iR_3 = input[3];
 
     kernelGrad[0] += outputDelta[1] * input_iR_0 +  (outputDelta[0] + outputDelta[2]) * input_iR_1 +
     (outputDelta[1] + outputDelta[3]) * input_iR_2 + (outputDelta[2] + outputDelta[4]) * input_iR_3;
@@ -418,7 +418,7 @@ void BackwardConvoluteStandardSymmetric(double* input, double* inputDelta, doubl
 }
 
 
-void BackwardConvoluteSymmetricNoPadding(double* input, double* inputDelta, double* outputDelta, double* kernel, double* kernelGrad, const int siz){
+void BackwardConvoluteSymmetricNoPadding(float* input, float* inputDelta, float* outputDelta, float* kernel, float* kernelGrad, const int siz){
     for(int oC=1; oC<siz-1; ++oC){
         inputDelta[oC-1] += outputDelta[oC] * kernel[0];
         inputDelta[oC]   += outputDelta[oC] * kernel[1];
@@ -431,7 +431,7 @@ void BackwardConvoluteSymmetricNoPadding(double* input, double* inputDelta, doub
 
 
 
-void BackwardConvoluteStandardFullySymmetric0(double* input, double* inputDelta, double* outputDelta, double* kernel, double* kernelGrad, const int siz){
+void BackwardConvoluteStandardFullySymmetric0(float* input, float* inputDelta, float* outputDelta, float* kernel, float* kernelGrad, const int siz){
     kernelGrad[0] += (outputDelta[0] + outputDelta[1]) * input[0];
     for(int iR=1; iR<siz-1; ++iR)
         kernelGrad[0] += (outputDelta[iR-1] + outputDelta[iR] + outputDelta[iR+1]) * input[iR];
@@ -444,8 +444,8 @@ void BackwardConvoluteStandardFullySymmetric0(double* input, double* inputDelta,
 }
 
 
-void BackwardConvoluteStandard_4(double* input, double* inputDelta, double* outputDelta, double* kernel, double* kernelGrad){
-    double input_iR_0 = input[0], input_iR_1 = input[1], input_iR_2 = input[2], input_iR_3 = input[3];
+void BackwardConvoluteStandard_4(float* input, float* inputDelta, float* outputDelta, float* kernel, float* kernelGrad){
+    float input_iR_0 = input[0], input_iR_1 = input[1], input_iR_2 = input[2], input_iR_3 = input[3];
     kernelGrad[2] +=                                outputDelta[0] * input_iR_1 + outputDelta[1] * input_iR_2 + outputDelta[2] * input_iR_3;
     kernelGrad[1] += outputDelta[0] * input_iR_0 +  outputDelta[1] * input_iR_1 + outputDelta[2] * input_iR_2 + outputDelta[3] * input_iR_3;
     kernelGrad[0] += outputDelta[1] * input_iR_0 +  outputDelta[2] * input_iR_1 + outputDelta[3] * input_iR_2;
@@ -457,8 +457,8 @@ void BackwardConvoluteStandard_4(double* input, double* inputDelta, double* outp
 }
 
 
-void BackwardConvoluteGradStandard_4(double* input, double* outputDelta, double* kernelGrad){
-    double input_iR_0 = input[0], input_iR_1 = input[1], input_iR_2 = input[2], input_iR_3 = input[3];
+void BackwardConvoluteGradStandard_4(float* input, float* outputDelta, float* kernelGrad){
+    float input_iR_0 = input[0], input_iR_1 = input[1], input_iR_2 = input[2], input_iR_3 = input[3];
     kernelGrad[2] +=                                outputDelta[0] * input_iR_1 + outputDelta[1] * input_iR_2 + outputDelta[2] * input_iR_3;
     kernelGrad[1] += outputDelta[0] * input_iR_0 +  outputDelta[1] * input_iR_1 + outputDelta[2] * input_iR_2 + outputDelta[3] * input_iR_3;
     kernelGrad[0] += outputDelta[1] * input_iR_0 +  outputDelta[2] * input_iR_1 + outputDelta[3] * input_iR_2;
@@ -467,8 +467,8 @@ void BackwardConvoluteGradStandard_4(double* input, double* outputDelta, double*
 
 
 
-void BackwardConvoluteGradStandard(double* input, double* outputDelta, double* kernelGrad, const int siz){
-    double input_iR_0 = input[0], input_iR_1 = input[1], input_iR_2 = input[2], input_iR_3 = input[3];
+void BackwardConvoluteGradStandard(float* input, float* outputDelta, float* kernelGrad, const int siz){
+    float input_iR_0 = input[0], input_iR_1 = input[1], input_iR_2 = input[2], input_iR_3 = input[3];
     kernelGrad[2] +=                                outputDelta[0] * input_iR_1 + outputDelta[1] * input_iR_2 + outputDelta[2] * input_iR_3;
     kernelGrad[1] += outputDelta[0] * input_iR_0 +  outputDelta[1] * input_iR_1 + outputDelta[2] * input_iR_2 + outputDelta[3] * input_iR_3;
     kernelGrad[0] += outputDelta[1] * input_iR_0 +  outputDelta[2] * input_iR_1 + outputDelta[3] * input_iR_2;
@@ -495,8 +495,8 @@ void BackwardConvoluteStandard2D2D(matrix* input, matrix* inputDelta, matrix* ou
 
     if (biasGrad)
             biasGrad->elem[0]+=outputDelta->Sum();
-    double* inputDelta_iR = inputDelta->Row(0);
-    double* input_iR = input->Row(0);
+    float* inputDelta_iR = inputDelta->Row(0);
+    float* input_iR = input->Row(0);
     int input_rows = input->rows, input_cols = input->cols;
     BackwardConvoluteStandard(input_iR, inputDelta_iR, outputDelta->Row(0), kernel->Row(1), kernelGrad->Row(1), input_cols);
     BackwardConvoluteStandard(input_iR, inputDelta_iR, outputDelta->Row(1), kernel->Row(0), kernelGrad->Row(0), input_cols);
@@ -519,8 +519,8 @@ void BackwardConvoluteStandard2D2DSymmetric(matrix* input, matrix* inputDelta, m
                            realNumber* biasGrad){
     if (biasGrad)
             biasGrad->elem[0]+=outputDelta->Sum();
-    double* inputDelta_iR = inputDelta->Row(0);
-    double* input_iR = input->Row(0);
+    float* inputDelta_iR = inputDelta->Row(0);
+    float* input_iR = input->Row(0);
     int input_rows = input->rows, input_cols = input->cols;
     BackwardConvoluteStandardSymmetric(input_iR, inputDelta_iR, outputDelta->Row(0), kernel->Row(1), kernelGrad->Row(1), input_cols);
     BackwardConvoluteStandardSymmetric(input_iR, inputDelta_iR, outputDelta->Row(1), kernel->Row(0), kernelGrad->Row(0), input_cols);
@@ -542,8 +542,8 @@ void BackwardConvoluteStandard2D2DSymmetric(matrix* input, matrix* inputDelta, m
 void BackwardConvoluteStandard2D2DSymmetric2(matrix* input, matrix* inputDelta, matrix* outputDelta, matrix* kernel, matrix* kernelGrad, realNumber* biasGrad){
     if (biasGrad)
             biasGrad->elem[0]+=outputDelta->Sum();
-    double* inputDelta_iR = inputDelta->Row(0);
-    double* input_iR = input->Row(0);
+    float* inputDelta_iR = inputDelta->Row(0);
+    float* input_iR = input->Row(0);
     int input_rows = input->rows, input_cols = input->cols;
     BackwardConvoluteStandardSymmetric(input_iR, inputDelta_iR, outputDelta->Row(0), kernel->Row(1), kernelGrad->Row(1), input_cols);
     BackwardConvoluteStandardSymmetric(input_iR, inputDelta_iR, outputDelta->Row(1), kernel->Row(0), kernelGrad->Row(0), input_cols);
@@ -565,8 +565,8 @@ void BackwardConvoluteStandard2D2DSymmetric2(matrix* input, matrix* inputDelta, 
 void BackwardConvoluteStandard2D2DSymmetric3(matrix* input, matrix* inputDelta, matrix* outputDelta, matrix* kernel, matrix* kernelGrad, realNumber* biasGrad){
     if (biasGrad)
             biasGrad->elem[0]+=outputDelta->Sum();
-    double* inputDelta_iR = inputDelta->Row(0);
-    double* input_iR = input->Row(0);
+    float* inputDelta_iR = inputDelta->Row(0);
+    float* input_iR = input->Row(0);
     int input_rows = input->rows, input_cols = input->cols;
     BackwardConvoluteStandardSymmetric(input_iR, inputDelta_iR, outputDelta->Row(0), kernel->elem+1, kernelGrad->elem+1, input_cols);
     BackwardConvoluteStandardSymmetric(input_iR, inputDelta_iR, outputDelta->Row(1), kernel->elem, kernelGrad->elem, input_cols);
@@ -589,7 +589,7 @@ void BackwardConvoluteStandard2D2DSymmetric3(matrix* input, matrix* inputDelta, 
 
 
 void BackwardPyramidalConvolution2D2D(matrix* input, matrix* inputDelta, matrix* outputDelta, matrix* kernel, matrix* kernelGrad, int stair){
-    double* outputDelta_oR;
+    float* outputDelta_oR;
     int input_rows = input->rows, input_cols = input->cols;
     for(int oR = 1 + stair; oR < input_rows - (1 + stair); ++oR){
         outputDelta_oR = outputDelta->Row(oR);
@@ -606,8 +606,8 @@ void BackwardConvoluteStandard2D2DFullySymmetric(matrix* input, matrix* inputDel
                            realNumber* biasGrad){
     if (biasGrad)
             biasGrad->elem[0]+=outputDelta->Sum();
-    double* inputDelta_iR = inputDelta->Row(0);
-    double* input_iR = input->Row(0);
+    float* inputDelta_iR = inputDelta->Row(0);
+    float* input_iR = input->Row(0);
     int input_rows = input->rows, input_cols = input->cols;
     BackwardConvoluteStandardSymmetric(input_iR, inputDelta_iR, outputDelta->Row(0), kernel->elem, kernelGrad->elem, input_cols);
     BackwardConvoluteStandardFullySymmetric0(input_iR, inputDelta_iR, outputDelta->Row(1), kernel->elem, kernelGrad->elem, input_cols);
@@ -629,7 +629,7 @@ void BackwardConvoluteStandard2D2DFullySymmetric(matrix* input, matrix* inputDel
 void BackwardConvoluteGradStandard2D2D(matrix* input, matrix* outputDelta, matrix* kernelGrad, realNumber* biasGrad){
     if (biasGrad)
             biasGrad->elem[0]+=outputDelta->Sum();
-    double* input_iR = input->Row(0);
+    float* input_iR = input->Row(0);
     int input_rows = input->rows, input_cols = input->cols;
     BackwardConvoluteGradStandard(input_iR, outputDelta->Row(0), kernelGrad->Row(1), input_cols);
     BackwardConvoluteGradStandard(input_iR, outputDelta->Row(1), kernelGrad->Row(0), input_cols);
@@ -650,10 +650,10 @@ void BackwardConvolute2D2D(matrix* input, matrix* inputDelta, matrix* outputDelt
                            realNumber* biasGrad, int paddingR, int paddingC, vector<int> & indexOutputRow){
 
         int minInputRow, maxInputRow, minInputCol, maxInputCol, CC, indexOutputSize;
-        double* inputDelta_iR, *outputDelta_oR, *input_iR;
-        double outputDelta_oR_oC;
-        const double eps = 1E-10;
-        double *kernel_RR, *kernelGrad_RR;
+        float* inputDelta_iR, *outputDelta_oR, *input_iR;
+        float outputDelta_oR_oC;
+        const float eps = 1E-10;
+        float *kernel_RR, *kernelGrad_RR;
         int kR = kernel->rows, kC = kernel->cols;
         int minR = kR - 1 - paddingR, minC =  kC - 1 - paddingC;
         int inp_rows_1 = input->rows - 1, inp_cols_1 = input->cols - 1;
@@ -703,9 +703,9 @@ void BackwardConvoluteGrad2D2D(matrix* input, matrix* outputDelta, matrix* kerne
                            realNumber* biasGrad, int paddingR, int paddingC, vector<int> &indexOutputRow){
 
         int minInputRow, maxInputRow, minInputCol, maxInputCol, CC, indexOutputSize;
-        double *outputDelta_oR, *input_iR, *kernelGrad_RR;
-        double outputDelta_oR_oC;
-        const double eps = 1E-10;
+        float *outputDelta_oR, *input_iR, *kernelGrad_RR;
+        float outputDelta_oR_oC;
+        const float eps = 1E-10;
         int kR = kernelGrad->rows, kC = kernelGrad->cols;
         int minR = kR - 1 - paddingR, minC =  kC - 1 - paddingC;
         int inp_rows_1 = input->rows - 1, inp_cols_1 = input->cols - 1;
@@ -751,9 +751,9 @@ void BackwardConvoluteGrad2D2D(matrix* input, matrix* outputDelta, matrix* kerne
 void ConvoluteQuadratic2D2D(matrix* input, matrix* output, matrix* linearReversedKernel, matrix* quadraticReversedKernel,
                             realNumber* bias, int paddingR, int paddingC, vector<int> & indexInputRow){
 
-    double * input_iR, *output_oR, *linRevKernel_iR__oR, *quadRevKernel_iR__oR, *output_elem;
-    double   input_iR_iC;
-    const double eps = 1E-10;
+    float * input_iR, *output_oR, *linRevKernel_iR__oR, *quadRevKernel_iR__oR, *output_elem;
+    float   input_iR_iC;
+    const float eps = 1E-10;
     int tempInd, indexInputSize, minOutRow, maxOutRow, minOutCol, maxOutCol;
     int kR = linearReversedKernel->rows, kC = linearReversedKernel->cols;
     int input_rows = input->rows, input_cols = input->cols;
@@ -764,7 +764,7 @@ void ConvoluteQuadratic2D2D(matrix* input, matrix* output, matrix* linearReverse
     output_elem = output->elem;
 
     if (bias){
-        double bias_ = bias->elem[0];
+        float bias_ = bias->elem[0];
         for(int j=0; j<output->len; ++j)
             output_elem[j] += bias_;
     }
@@ -808,9 +808,9 @@ void BackwardConvoluteQuadratic2D2D(matrix* input, matrix* inputDelta, matrix* o
                                     matrix* linearKernelGrad, matrix* quadraticKernelGrad, realNumber* biasGrad, int paddingR, int paddingC, vector<int> & indexOutputRow){
 
         int minInputRow, maxInputRow, minInputCol, maxInputCol, CC, indexOutputSize;
-        double* inputDelta_iR, *outputDelta_oR, *input_iR, *linearKernel_RR, *quadraticKernel_RR, *linearKernelGrad_RR, *quadraticKernelGrad_RR;
-        double outputDelta_oR_oC;
-        const double eps = 1E-10;
+        float* inputDelta_iR, *outputDelta_oR, *input_iR, *linearKernel_RR, *quadraticKernel_RR, *linearKernelGrad_RR, *quadraticKernelGrad_RR;
+        float outputDelta_oR_oC;
+        const float eps = 1E-10;
         int kR = linearKernel->rows, kC = linearKernel->cols;
         int minR = kR - 1 - paddingR, minC =  kC - 1 - paddingC;
         int inp_rows_1 = input->rows - 1, inp_cols_1 = input->cols - 1;
@@ -868,9 +868,9 @@ void BackwardConvoluteQuadraticGrad2D2D(matrix* input, matrix* outputDelta, matr
                            realNumber* biasGrad, int paddingR, int paddingC, vector<int> &indexOutputRow){
 
         int minInputRow, maxInputRow, minInputCol, maxInputCol, CC, indexOutputSize;
-        double *outputDelta_oR, *input_iR, *linearKernelGrad_RR, *quadraticKernelGrad_RR;
-        double outputDelta_oR_oC;
-        const double eps = 1E-10;
+        float *outputDelta_oR, *input_iR, *linearKernelGrad_RR, *quadraticKernelGrad_RR;
+        float outputDelta_oR_oC;
+        const float eps = 1E-10;
         int kR = linearKernelGrad->rows, kC = linearKernelGrad->cols;
         int minR = kR - 1 - paddingR, minC =  kC - 1 - paddingC;
         int inp_rows_1 = input->rows - 1, inp_cols_1 = input->cols - 1;
@@ -983,8 +983,8 @@ void BackwardConvoluteGrad2D3D(matrix* input, tensor* outputDelta, tensor* kerne
 
 
 void ConvoluteStandard3D2D_2_2(tensor* input, matrix* output, tensor* kernel, realNumber* bias){
-    double* output_ = output->elem;
-    double* input_d, *kernel_d;
+    float* output_ = output->elem;
+    float* input_d, *kernel_d;
 
     output->Add(bias->elem[0]);
     for(int d=0; d<kernel->depth; ++d){
@@ -1000,11 +1000,11 @@ void ConvoluteStandard3D2D_2_2(tensor* input, matrix* output, tensor* kernel, re
 
 void BackwardConvoluteStandard3D2D_2_2(tensor* input, tensor* inputDelta, matrix* outputDelta, tensor* kernel, tensor* kernelGrad, realNumber* biasGrad){
     biasGrad->elem[0]+=outputDelta->Sum();
-    double * outputDelta_ = outputDelta->elem;
-    double * inputDelta_d;
-    double* kernel_d;
-    double* kernelGrad_d;
-    double* input_d;
+    float * outputDelta_ = outputDelta->elem;
+    float * inputDelta_d;
+    float* kernel_d;
+    float* kernelGrad_d;
+    float* input_d;
     for(int d=0; d<kernel->depth; ++d){
         inputDelta_d = inputDelta->Layer(d);
         kernel_d = kernel->Layer(d);
@@ -1032,9 +1032,9 @@ void BackwardConvoluteStandard3D2D_2_2(tensor* input, tensor* inputDelta, matrix
 
 void BackwardConvoluteGradStandard3D2D_2_2(tensor* input, matrix* outputDelta, tensor* kernelGrad, realNumber* biasGrad){
     biasGrad->elem[0]+=outputDelta->Sum();
-    double* input_d;
-    double * outputDelta_ = outputDelta->elem;
-    double* kernelGrad_d;
+    float* input_d;
+    float * outputDelta_ = outputDelta->elem;
+    float* kernelGrad_d;
     for(int d=0; d<kernelGrad->depth; ++d){
         kernelGrad_d = kernelGrad->Layer(d);
         input_d = input->Layer(d);
@@ -1104,10 +1104,10 @@ void AddConvolutionStandardVertical1D(tensor* input, tensor* kernel, matrix* out
 }
 
 
-void BackwardVertical2D(matrix* input, matrix* inputDelta, matrix* outputDelta, double kernel, double & kernelGrad){
-    double* outputDelta_elem = outputDelta->elem;
-    double* inputDelta_elem = inputDelta->elem;
-    double* input_elem = input->elem;
+void BackwardVertical2D(matrix* input, matrix* inputDelta, matrix* outputDelta, float kernel, float & kernelGrad){
+    float* outputDelta_elem = outputDelta->elem;
+    float* inputDelta_elem = inputDelta->elem;
+    float* input_elem = input->elem;
     int input_len = input->len;
     for(int j=0; j<input_len; ++j){
         inputDelta_elem[j] += kernel * outputDelta_elem[j];
@@ -1489,7 +1489,7 @@ void ConvoluteStandard3D2D(tensor* input, matrix* output, tensor* kernel, realNu
 
     output->Add(bias->elem[0]);
     const int input_rows = input->rows, input_cols = input->cols;
-    double * output_oR, * input_d, * kernel_d;
+    float * output_oR, * input_d, * kernel_d;
     for(int d=0; d<kernel->depth; d++){
         input_d = input->Layer(d);
         kernel_d = kernel->Layer(d);
@@ -1600,9 +1600,9 @@ void BackwardConvolute3D2D(tensor* input, tensor* inputDelta, matrix* outputDelt
 void BackwardConvoluteStandard3D2D_4_4(tensor* input, tensor* inputDelta, matrix* outputDelta, tensor* kernel, tensor* kernelGrad, realNumber* biasGrad){
     biasGrad->elem[0]+=outputDelta->Sum();
 
-    double* inputDelta_iR;
-    double* input_iR;
-    double * input_d, * inputDelta_d, * kernel_d, * kernelGrad_d;
+    float* inputDelta_iR;
+    float* input_iR;
+    float * input_d, * inputDelta_d, * kernel_d, * kernelGrad_d;
 
     for(int d=0; d<kernel->depth; d++){
         input_d = input->Layer(d);
@@ -1629,8 +1629,8 @@ void BackwardConvoluteStandard3D2D_4_4(tensor* input, tensor* inputDelta, matrix
 }
 
 void BackwardConvoluteStandard2D2D_4_4(matrix* input, matrix* inputDelta, matrix* outputDelta, matrix* kernel, matrix* kernelGrad, realNumber* biasGrad){
-    double* inputDelta_iR;
-    double* input_iR;
+    float* inputDelta_iR;
+    float* input_iR;
     if (biasGrad)
         biasGrad->elem[0]+=outputDelta->Sum();
 
@@ -1666,9 +1666,9 @@ void BackwardConvoluteStandard3D2D(tensor* input, tensor* inputDelta, matrix* ou
 
     biasGrad->elem[0]+=outputDelta->Sum();
 
-    double* inputDelta_iR;
-    double* input_iR;
-    double * input_d, * inputDelta_d, * kernel_d, * kernelGrad_d;
+    float* inputDelta_iR;
+    float* input_iR;
+    float * input_d, * inputDelta_d, * kernel_d, * kernelGrad_d;
     int input_rows = input->rows, input_cols = input->cols;
 
     for(int d=0; d<kernel->depth; d++){
@@ -1720,8 +1720,8 @@ void BackwardConvoluteStandard3D2D(tensor* input, tensor* inputDelta, matrix* ou
 void BackwardConvoluteGradStandard3D2D_4_4(tensor* input, matrix* outputDelta, tensor* kernelGrad, realNumber* biasGrad){
     biasGrad->elem[0]+=outputDelta->Sum();
 
-    double* input_iR;
-    double * input_d, * kernelGrad_d;
+    float* input_iR;
+    float * input_d, * kernelGrad_d;
 
     for(int d=0; d<kernelGrad->depth; d++){
         input_d = input->Layer(d);
@@ -1756,8 +1756,8 @@ void BackwardConvoluteGradStandard3D2D(tensor* input, matrix* outputDelta, tenso
 
     biasGrad->elem[0]+=outputDelta->Sum();
 
-    double* input_iR;
-    double * input_d, * kernelGrad_d;
+    float* input_iR;
+    float * input_d, * kernelGrad_d;
     int input_rows = input->rows, input_cols = input->cols;
 
     for(int d=0; d<kernelGrad->depth; d++){
@@ -2091,14 +2091,14 @@ void SequentialConvolutionStandard(tensor* input, tensor* kernel, vect* bias, in
 void SequentialMaxMinStandard(tensor* input, vect* kernel, vect* bias, int startDepth, int nConvolutions, activityData* inputActivity, bool testMode){
     tensor* input_j = new tensor();
     vect* kernel_j = new vect();
-    double bias_j;
+    float bias_j;
     for(int j=0; j<nConvolutions; ++j){
         input_j->SubTensor(input, startDepth + 2 * j);
         kernel_j->SubVect(kernel, j * (startDepth + j - 1), startDepth + 2 * j);
         bias_j = bias->elem[j];
         input->elem[startDepth + 2 * j] = InnerProduct(input_j, kernel_j) + bias_j;
-        input->elem[startDepth + 2 * j + 1] = min(input->elem[startDepth + 2 * j], 0.0);
-        input->elem[startDepth + 2 * j]     = max(input->elem[startDepth + 2 * j], 0.0);
+        input->elem[startDepth + 2 * j + 1] = min(input->elem[startDepth + 2 * j], float(0.0));
+        input->elem[startDepth + 2 * j]     = max(input->elem[startDepth + 2 * j], float(0.0));
         if (!testMode && inputActivity->dropping){
             input->elem[startDepth + 2 * j]     *= inputActivity->activeUnits[startDepth + 2 * j];
             input->elem[startDepth + 2 * j + 1] *= inputActivity->activeUnits[startDepth + 2 * j + 1];
@@ -4140,11 +4140,11 @@ void BackwardSequentialConvolution(tensor* input, tensor* inputDelta, tensor* ke
 
 
 void AveragePool2D(matrix* input, matrix* output, int kernelR, int kernelC){
-    double fact = 1.0/(kernelR*kernelC);
+    float fact = 1.0/(kernelR*kernelC);
     int minIR, maxIR;
     int minIC, maxIC;
-    double * out_oR, * in_iR;
-    //double temp;
+    float * out_oR, * in_iR;
+    //float temp;
     //bool * outAct_oR;
     //output->SetToZero();
     for(int oR=0; oR<output->rows; ++oR){
@@ -4172,8 +4172,8 @@ void AveragePool2D(matrix* input, matrix* output, int kernelR, int kernelC){
 
 
 void AveragePool2D_2_2(matrix* input, matrix* output){
-    double fact = 0.25;
-    double * out_oR, * in_iR;
+    float fact = 0.25;
+    float * out_oR, * in_iR;
     int out_rows = output->rows;
     int out_cols = output->cols;
 
@@ -4194,12 +4194,12 @@ void AveragePool2D_2_2(matrix* input, matrix* output){
 
 
 void BackwardAveragePool2D(matrix* inputDelta, matrix* outputDelta, int kernelR, int kernelC){
-    double fact = 1.0/(kernelR*kernelC);
+    float fact = 1.0/(kernelR*kernelC);
 
     int minIR, maxIR;
     int minIC, maxIC;
-    double * outDelta_oR, * inDelta_iR;
-    //double temp;
+    float * outDelta_oR, * inDelta_iR;
+    //float temp;
     //bool * outAct_oR;
 
     for(int oR=0; oR<outputDelta->rows; ++oR){
@@ -4225,8 +4225,8 @@ void BackwardAveragePool2D(matrix* inputDelta, matrix* outputDelta, int kernelR,
 }
 
 void BackwardAveragePool2D_2_2(matrix* inputDelta, matrix* outputDelta){
-    double fact = 0.25;
-    double * outDelta_oR, * inDelta_iR;
+    float fact = 0.25;
+    float * outDelta_oR, * inDelta_iR;
     int out_rows = outputDelta->rows;
     int out_cols = outputDelta->cols;
 
@@ -4263,7 +4263,7 @@ void AveragePool3D_2_2(tensor* input, tensor* output){
 }
 
 void AveragePool3D_all(tensor* input, tensor* output){
-    double fact = 1.0/(input->rows * input->cols);
+    float fact = 1.0/(input->rows * input->cols);
     matrix* input_d = new matrix();
 
     for(int d=0; d<input->depth; ++d){
@@ -4276,7 +4276,7 @@ void AveragePool3D_all(tensor* input, tensor* output){
 }
 
 void AveragePool3D_all(tensor* input, tensor* output, int numNonZero){
-    double fact = 1.0/(numNonZero);
+    float fact = 1.0/(numNonZero);
     matrix* input_d = new matrix();
 
     for(int d=0; d<input->depth; ++d){
@@ -4328,7 +4328,7 @@ void BackwardAveragePool3D_2_2(tensor* inputDelta, tensor* outputDelta){
 }
 
 void BackwardAveragePool3D_all(tensor* inputDelta, tensor* outputDelta){
-    double fact = 1.0/(inputDelta->rows * inputDelta->cols);
+    float fact = 1.0/(inputDelta->rows * inputDelta->cols);
     matrix* inputDelta_d = new matrix();
     for(int d=0; d<inputDelta->depth; ++d){
         inputDelta_d->SetToTensorLayer(inputDelta, d);
@@ -4338,7 +4338,7 @@ void BackwardAveragePool3D_all(tensor* inputDelta, tensor* outputDelta){
 }
 
 void BackwardAveragePool3D_all(tensor* inputDelta, tensor* outputDelta, int numNonZero){
-    double fact = 1.0/(numNonZero);
+    float fact = 1.0/(numNonZero);
     matrix* inputDelta_d = new matrix();
     for(int d=0; d<inputDelta->depth; ++d){
         inputDelta_d->SetToTensorLayer(inputDelta, d);
@@ -4376,7 +4376,7 @@ void BackwardAveragePool3D(tensor* inputDelta, tensor* outputDelta, int kernelR,
 void MaxPool2D(matrix* input, matrix* output, int* rowInd, int *colInd, int kernelRsize, int kernelCsize){
 
     int minIR, maxIR, minIC, maxIC, outRows = output->rows, outCols = output->cols;
-    double *out_oR , *in_iR;
+    float *out_oR , *in_iR;
     int *rowInd_oR, *colInd_oR;
 
     output->SetToValue(-1E10);
@@ -4407,7 +4407,7 @@ void MaxPool2D(matrix* input, matrix* output, int* rowInd, int *colInd, int kern
 
 
 void BackwardMaxPool2D(matrix* inputDelta, matrix* outputDelta, int* rowInd, int*colInd){
-    double *outputDelta_r;
+    float *outputDelta_r;
     int *rowInd_r, *colInd_r;
     int outRows = outputDelta->rows, outCols = outputDelta->cols;
     for(int r=0; r<outRows; ++r){
@@ -4425,7 +4425,7 @@ void BackwardMaxPool2D(matrix* inputDelta, matrix* outputDelta, int* rowInd, int
 void MaxAbsPool2D_2_2(matrix* input, matrix* output, matrix* maxAbs, int* rowInd, int *colInd){
 
     int outRows = output->rows, outCols = output->cols;
-    double *out_oR , *in_iR, *maxAbs_oR;
+    float *out_oR , *in_iR, *maxAbs_oR;
     int *rowInd_oR, *colInd_oR;
     int iR, iC;
 
@@ -4479,7 +4479,7 @@ void MaxAbsPool2D_2_2(matrix* input, matrix* output, matrix* maxAbs, int* rowInd
 void MaxAbsPool2D(matrix* input, matrix* output, matrix* maxAbs, int* rowInd, int *colInd, int kernelRsize, int kernelCsize){
 
     int minIR, maxIR, minIC, maxIC, outRows = output->rows, outCols = output->cols;
-    double *out_oR , *in_iR, *maxAbs_oR;
+    float *out_oR , *in_iR, *maxAbs_oR;
     int *rowInd_oR, *colInd_oR;
 
     maxAbs->SetToValue(-1);
@@ -4520,7 +4520,7 @@ void BackwardMaxAbsPool2D(matrix* inputDelta, matrix* outputDelta, int* rowInd, 
 
 
 
-//void MaxPoolSoftMaxIndex2D(matrix* input, double& output, double& softMaxRow, double& softMaxCol,
+//void MaxPoolSoftMaxIndex2D(matrix* input, float& output, float& softMaxRow, float& softMaxCol,
 //                         matrix* softMaxInput, int& rowInd, int& colInd, int kernelRsize, int kernelCsize){
 //    output = input->elem[0][0];
 //
@@ -4618,15 +4618,15 @@ void MaxAbsPoolIndex3D(tensor* input, tensor* output, tensor* maxAbs, int* rowIn
     MaxAbsPool3D(input, maxOut, maxAbs, rowInd, colInd, kernelRsize, kernelCsize);
 
     int startingIndex = maxOut->len;
-    double* out_start = output->elem + startingIndex;
-    double row0 = rowInd[0], col0 = colInd[0];
+    float* out_start = output->elem + startingIndex;
+    float row0 = rowInd[0], col0 = colInd[0];
 
     for(int j=0; j<maxOut->len; ++j)
-        out_start[j] = (rowInd[j] - row0) / (double) input->rows;
+        out_start[j] = (rowInd[j] - row0) / (float) input->rows;
 
     out_start = output->elem + 2 * startingIndex;
     for(int j=0; j<maxOut->len; ++j)
-        out_start[j] = (colInd[j] - col0) / (double) input->cols;
+        out_start[j] = (colInd[j] - col0) / (float) input->cols;
 
     DeleteOnlyShell(maxOut);
 }
@@ -4642,10 +4642,10 @@ void BackwardMaxAbsPoolIndex3D(tensor* inputDelta, tensor* outputDelta, int* row
 
 
 
-void CalculateSoftIndex(matrix* input, matrix* softMaxInput, double & softMaxRow, double & softMaxCol, double & maxVal, double logFactor){
-    double sum=0;
-    double* input_r, *softMaxInput_r;
-    double iR = input->rows, iC = input->cols;
+void CalculateSoftIndex(matrix* input, matrix* softMaxInput, float & softMaxRow, float & softMaxCol, float & maxVal, float logFactor){
+    float sum=0;
+    float* input_r, *softMaxInput_r;
+    float iR = input->rows, iC = input->cols;
     for(int r=0; r<input->rows; ++r){
         input_r = input->Row(r);
         softMaxInput_r = softMaxInput->Row(r);
@@ -4657,8 +4657,8 @@ void CalculateSoftIndex(matrix* input, matrix* softMaxInput, double & softMaxRow
 
     softMaxRow = 0.5;
     softMaxCol = 0.5;
-    double addon_r;
-    double addon_c[input->cols];
+    float addon_r;
+    float addon_c[input->cols];
     for(int c=0; c<input->cols; ++c)
         addon_c[c]=0;
     for(int r=0; r<input->rows; ++r){
@@ -4681,7 +4681,7 @@ void CalculateSoftIndex(matrix* input, matrix* softMaxInput, double & softMaxRow
 }
 
 
-void MaxAbsPoolSoftIndex3D(tensor* input, vect* output, vect* maxAbs, tensor* softMaxInput, int* rowInd, int* colInd, double logFactor){
+void MaxAbsPoolSoftIndex3D(tensor* input, vect* output, vect* maxAbs, tensor* softMaxInput, int* rowInd, int* colInd, float logFactor){
     int iD = input->depth;
     tensor* maxOut = new tensor();
     maxOut->SetSize(iD, 1, 1);
@@ -4709,11 +4709,11 @@ void MaxAbsPoolSoftIndex3D(tensor* input, vect* output, vect* maxAbs, tensor* so
 }
 
 
-void BackwardSoftIndex(matrix* input, matrix* softMaxInput, const double softRow, const double softCol, matrix* inputDelta,
-                       const double deltaSoftRow, const double deltaSoftCol, double logFactor){
-    double *inputDelta_r, *softMaxInput_r, *input_r;
-    double iR = input->rows, iC = input->cols;
-    double tempR, coefC;
+void BackwardSoftIndex(matrix* input, matrix* softMaxInput, const float softRow, const float softCol, matrix* inputDelta,
+                       const float deltaSoftRow, const float deltaSoftCol, float logFactor){
+    float *inputDelta_r, *softMaxInput_r, *input_r;
+    float iR = input->rows, iC = input->cols;
+    float tempR, coefC;
 
     coefC = deltaSoftCol / iC * logFactor;
 
@@ -4721,17 +4721,17 @@ void BackwardSoftIndex(matrix* input, matrix* softMaxInput, const double softRow
         inputDelta_r = inputDelta->Row(r);
         softMaxInput_r = softMaxInput->Row(r);
         input_r = input->Row(r);
-        tempR = logFactor * deltaSoftRow * ( double(r) / iR - softRow) - deltaSoftCol * softCol;
+        tempR = logFactor * deltaSoftRow * ( float(r) / iR - softRow) - deltaSoftCol * softCol;
 
         for(int c=0; c<input->cols; ++c){
-            //inputDelta_r[c] += logFactor * sign(input_r[c]) * softMaxInput_r[c] * (deltaSoftRow * ( double(r) / iR - softRow) + deltaSoftCol * (double(c) / iC - softCol) );
+            //inputDelta_r[c] += logFactor * sign(input_r[c]) * softMaxInput_r[c] * (deltaSoftRow * ( float(r) / iR - softRow) + deltaSoftCol * (float(c) / iC - softCol) );
             inputDelta_r[c] += sign(input_r[c]) * softMaxInput_r[c] * (tempR + coefC * c);
         }
     }
 }
 
 
-void BackwardMaxAbsPoolSoftIndex3D(tensor* input, tensor* softMaxInput, vect* output, tensor* inputDelta, vect* outputDelta, int* rowInd, int* colInd, double logFactor){
+void BackwardMaxAbsPoolSoftIndex3D(tensor* input, tensor* softMaxInput, vect* output, tensor* inputDelta, vect* outputDelta, int* rowInd, int* colInd, float logFactor){
     int iD = input->depth;
     tensor* maxOutDelta = new tensor();
     maxOutDelta->SetSize(iD, 1, 1);
@@ -4760,14 +4760,14 @@ void BackwardMaxAbsPoolSoftIndex3D(tensor* input, tensor* softMaxInput, vect* ou
 
 
 
-void MaxAbsPoolSoftDiffIndex3D(tensor* input, vect* output, vect* tempOutput, vect* maxAbs, tensor* softMaxInput, int* rowInd, int* colInd, double logFactor){
+void MaxAbsPoolSoftDiffIndex3D(tensor* input, vect* output, vect* tempOutput, vect* maxAbs, tensor* softMaxInput, int* rowInd, int* colInd, float logFactor){
     tempOutput->SetToZero();
     MaxAbsPoolSoftIndex3D(input, tempOutput, maxAbs, softMaxInput, rowInd, colInd, logFactor);
     output->Copy(tempOutput);
 
     int iD = input->depth;
-    double softRow0 = output->elem[iD];
-    double softCol0 = output->elem[2 * iD];
+    float softRow0 = output->elem[iD];
+    float softCol0 = output->elem[2 * iD];
 
     for(int d=0; d<input->depth; ++d){
         output->elem[d + iD] -= softRow0;
@@ -4776,11 +4776,11 @@ void MaxAbsPoolSoftDiffIndex3D(tensor* input, vect* output, vect* tempOutput, ve
 }
 
 void BackwardMaxAbsPoolSoftDiffIndex3D(tensor* input, tensor* softMaxInput, vect* tempOutput, tensor* inputDelta, vect* outputDelta, vect* tempOutputDelta,
-                                   int* rowInd, int* colInd, double logFactor){
+                                   int* rowInd, int* colInd, float logFactor){
     tempOutputDelta->Copy(outputDelta);
 
     int iD = input->depth;
-    double rowDeltaSum=0, colDeltaSum=0;
+    float rowDeltaSum=0, colDeltaSum=0;
     for(int d=1; d<input->depth; ++d){
         rowDeltaSum += outputDelta->elem[d + iD];
         colDeltaSum += outputDelta->elem[d + 2 * iD];
@@ -4826,7 +4826,7 @@ void MinPool2D(matrix* input, matrix* output, int* rowInd, int *colInd, int kern
     int minIR, maxIR;
     int minIC, maxIC;
     output->SetToValue(1E10);
-    double *out_oR , *in_iR;
+    float *out_oR , *in_iR;
     int outRows = output->rows, outCols = output->cols;
     int *rowInd_oR, *colInd_oR;
     for(int oR=0; oR<outRows; ++oR){
@@ -4857,7 +4857,7 @@ void MinPool2D(matrix* input, matrix* output, int* rowInd, int *colInd, int kern
 
 
 void BackwardMinPool2D(matrix* inputDelta, matrix* outputDelta, int* rowInd, int*colInd){
-    double *outputDelta_r;
+    float *outputDelta_r;
     int *rowInd_r, *colInd_r;
     int outRows = outputDelta->rows, outCols = outputDelta->cols;
     for(int r=0; r<outRows; r++){
@@ -4915,8 +4915,8 @@ void Switch(int & a, int & b){
     b = temp;
 }
 
-void MeanVarPool(orderedData* input, double * mean, double * var){
-    double mean_ = 0, meanQuad_ = 0;
+void MeanVarPool(orderedData* input, float * mean, float * var){
+    float mean_ = 0, meanQuad_ = 0;
     for(int j=0; j<input->len; ++j){
         mean_ += input->elem[j];
         meanQuad_ += sqr(input->elem[j]);
@@ -4934,9 +4934,9 @@ void MeanVarPoolTensor(tensor* input, tensor* output){
     DeleteOnlyShell(input_j);
 }
 
-void BackwardMeanVarPool(orderedData* input, double * mean, double * var, orderedData* inputDelta, double * meanDelta, double * varDelta){
-    double a = (*meanDelta) / input->len - (*varDelta) * 2.0 / input->len * (*mean);
-    double b = (*varDelta) / input->len * 2.0;
+void BackwardMeanVarPool(orderedData* input, float * mean, float * var, orderedData* inputDelta, float * meanDelta, float * varDelta){
+    float a = (*meanDelta) / input->len - (*varDelta) * 2.0 / input->len * (*mean);
+    float b = (*varDelta) / input->len * 2.0;
     for(int j=0; j<input->len; ++j){
         inputDelta->elem[j] += a + b * input->elem[j];
     }
@@ -4959,8 +4959,8 @@ void BackwardMeanVarPoolTensor(tensor* input, tensor* output, tensor* inputDelta
 
 
 
-void MeanQuadStatsPool(matrix* input, double * stats){
-    double mean = 0, var = 0, covHor = 0, covVert = 0;
+void MeanQuadStatsPool(matrix* input, float * stats){
+    float mean = 0, var = 0, covHor = 0, covVert = 0;
     for(int j=0; j<input->len; ++j){
         mean += input->elem[j];
         var += sqr(input->elem[j]);
@@ -4969,7 +4969,7 @@ void MeanQuadStatsPool(matrix* input, double * stats){
     var /= input->len;
     //var -= sqr(mean);
 
-    double * input_r;
+    float * input_r;
     for(int r=0; r<input->rows; ++r){
         input_r = input->Row(r);
         for(int c=0; c<input->cols - 1; ++c)
@@ -4978,7 +4978,7 @@ void MeanQuadStatsPool(matrix* input, double * stats){
     covHor /= input->rows * (input->cols - 1);
     //covHor -= sqr(mean);
 
-    double * input_r1;
+    float * input_r1;
     for(int r=0; r<input->rows - 1; ++r){
         input_r = input->Row(r);
         input_r1 = input->Row(r+1);
@@ -5005,16 +5005,16 @@ void MeanQuadStatsPoolTensor(tensor* input, tensor* output){
 }
 
 
-void BackwardMeanQuadStatsPool(matrix* input, double * stats, matrix* inputDelta, double * statsDelta){
-    double a = (statsDelta[0]) / input->len;// - 2.0 * stats[0] / input->len * (statsDelta[1] + statsDelta[2] + statsDelta[3]);
-    double b = (statsDelta[1]) / input->len * 2.0;
+void BackwardMeanQuadStatsPool(matrix* input, float * stats, matrix* inputDelta, float * statsDelta){
+    float a = (statsDelta[0]) / input->len;// - 2.0 * stats[0] / input->len * (statsDelta[1] + statsDelta[2] + statsDelta[3]);
+    float b = (statsDelta[1]) / input->len * 2.0;
     for(int j=0; j<input->len; ++j){
         inputDelta->elem[j] += a + b * input->elem[j];
     }
 
-    double * input_r, * input_r1;
-    double * inputDelta_r, * inputDelta_r1;
-    double mult = statsDelta[2] / (input->rows * (input->cols - 1));
+    float * input_r, * input_r1;
+    float * inputDelta_r, * inputDelta_r1;
+    float mult = statsDelta[2] / (input->rows * (input->cols - 1));
     for(int r=0; r<input->rows; ++r){
         input_r = input->Row(r);
         inputDelta_r = inputDelta->Row(r);
@@ -5057,8 +5057,8 @@ void BackwardMeanQuadStatsPoolTensor(tensor* input, tensor* output, tensor* inpu
 
 
 
-void MeanStDevPool(orderedData* input, double * mean, double * stDev){
-    double mean_ = 0, meanQuad_ = 0;
+void MeanStDevPool(orderedData* input, float * mean, float * stDev){
+    float mean_ = 0, meanQuad_ = 0;
     for(int j=0; j<input->len; ++j){
         mean_ += input->elem[j];
         meanQuad_ += sqr(input->elem[j]);
@@ -5077,9 +5077,9 @@ void MeanStDevPoolTensor(tensor* input, tensor* output){
     DeleteOnlyShell(input_j);
 }
 
-void BackwardMeanStDevPool(orderedData* input, double * mean, double * stDev, orderedData* inputDelta, double * meanDelta, double * stDevDelta){
-    double a = (*meanDelta) / input->len;
-    double b = (*stDevDelta) / (input->len * (*stDev));
+void BackwardMeanStDevPool(orderedData* input, float * mean, float * stDev, orderedData* inputDelta, float * meanDelta, float * stDevDelta){
+    float a = (*meanDelta) / input->len;
+    float b = (*stDevDelta) / (input->len * (*stDev));
     for(int j=0; j<input->len; ++j){
         inputDelta->elem[j] += a + b * (input->elem[j] - (*mean));
     }
@@ -5105,9 +5105,9 @@ void BackwardMeanStDevPoolTensor(tensor* input, tensor* output, tensor* inputDel
 
 
 
-void AverageMaxAbsPoolMatrixAll(matrix* input, double * stats, int * rowInd, int * colInd){
-    double maxAbs = -1, sum = 0;
-    double * input_r;
+void AverageMaxAbsPoolMatrixAll(matrix* input, float * stats, int * rowInd, int * colInd){
+    float maxAbs = -1, sum = 0;
+    float * input_r;
     for(int r=0; r<input->rows; ++r){
         input_r = input->Row(r);
         for(int c=0; c<input->cols; ++c){
@@ -5124,9 +5124,9 @@ void AverageMaxAbsPoolMatrixAll(matrix* input, double * stats, int * rowInd, int
 }
 
 void AverageMaxAbsPoolMatrix_2_2(matrix* input, matrix* outputAverage, matrix* outputMaxAbs, int * rowInd, int * colInd){
-    double * input_2r, * input_2r_1, * outputAverage_r, * outputMaxAbs_r;
+    float * input_2r, * input_2r_1, * outputAverage_r, * outputMaxAbs_r;
     int * rowInd_r, * colInd_r;
-    double maxAbs;
+    float maxAbs;
 
 
     for(int r = 0; r < outputAverage->rows; ++r){
@@ -5241,7 +5241,7 @@ void BackwardAverageMaxAbsPool(tensor* inputDelta, tensor* outputDelta,
     int outMatrixSize = outputDelta->rows * outputDelta->cols;
 
     if (kernelRsize == inputDelta->rows && kernelCsize == inputDelta->cols){
-        double fact = 1.0 / (inputDelta->rows * inputDelta->cols);
+        float fact = 1.0 / (inputDelta->rows * inputDelta->cols);
         for(int j = onlyAveragePoolingDepth; j < inputDelta->depth; ++j){
             inputDelta_j->SetToTensorLayer(inputDelta, j);
             indShift_j = (j - onlyAveragePoolingDepth);
@@ -5284,10 +5284,10 @@ void BackwardAverageMaxAbsPool(tensor* inputDelta, tensor* outputDelta,
 }
 
 
-void CenterPool(matrix* input, double * centers, double * sum){
-    double sum_0 = 0;
-    double sum_r = 0, sum_c = 0;
-    double * input_r;
+void CenterPool(matrix* input, float * centers, float * sum){
+    float sum_0 = 0;
+    float sum_r = 0, sum_c = 0;
+    float * input_r;
     for(int r=0; r<input->rows; ++r){
         input_r = input->Row(r);
         for(int c=0; c<input->cols; ++c){
@@ -5311,16 +5311,16 @@ void CenterPoolTensor(tensor* input, tensor* output, vect* sum){
     DeleteOnlyShell(input_j);
 }
 
-void BackwardCenterPool(double * centers, double * sum, matrix * inputDelta, double * centersDelta){
-    double * inputDelta_r;
-    double row_addon;
-    double col_addon[inputDelta->cols];
+void BackwardCenterPool(float * centers, float * sum, matrix * inputDelta, float * centersDelta){
+    float * inputDelta_r;
+    float row_addon;
+    float col_addon[inputDelta->cols];
     for(int c = 0; c<inputDelta->cols; ++c)
-        col_addon[c] = centersDelta[1] * (double(c) / double(inputDelta->cols) - centers[1]) / sum[0];
+        col_addon[c] = centersDelta[1] * (float(c) / float(inputDelta->cols) - centers[1]) / sum[0];
 
     for(int r=0; r<inputDelta->rows; ++r){
         inputDelta_r = inputDelta->Row(r);
-        row_addon = centersDelta[0] * (double(r) / double(inputDelta->rows) - centers[0]) / sum[0];
+        row_addon = centersDelta[0] * (float(r) / float(inputDelta->rows) - centers[0]) / sum[0];
         for(int c=0; c<inputDelta->cols; ++c)
             inputDelta_r[c] += row_addon + col_addon[c];
     }
@@ -5397,7 +5397,7 @@ void QuartilesNonzeroPoolTensor(tensor * input, tensor * output, int * index, in
 void BackwardQuartilesPoolTensor(tensor * inputDelta, tensor * outputDelta, int * index, int numQuartiles){
     matrix * inputDelta_j = new matrix();
     int * index_j;
-    double * outputDelta_j;
+    float * outputDelta_j;
     for(int j=0; j<inputDelta->depth; ++j){
         inputDelta_j->SetToTensorLayer(inputDelta, j);
         index_j = index + j * numQuartiles;
@@ -5412,8 +5412,8 @@ void BackwardQuartilesPoolTensor(tensor * inputDelta, tensor * outputDelta, int 
 void BackwardQuartilesNonzeroPoolTensor(tensor * output, tensor * inputDelta, tensor * outputDelta, int * index, int numQuartiles){
     matrix * inputDelta_j = new matrix();
     int * index_j;
-    double * outputDelta_j;
-    double * output_j;
+    float * outputDelta_j;
+    float * output_j;
     for(int j=0; j<inputDelta->depth; ++j){
         inputDelta_j->SetToTensorLayer(inputDelta, j);
         index_j = index + j * numQuartiles;
@@ -5429,10 +5429,10 @@ void BackwardQuartilesNonzeroPoolTensor(tensor * output, tensor * inputDelta, te
 
 
 
-void FullSubAveragePool2D(matrix* input, double* output, int border){
-    double fact = 1.0 / ( (input->rows - 2 * border) * (input->cols - 2 * border) );
-    double * input_r;
-    double sum = 0;
+void FullSubAveragePool2D(matrix* input, float* output, int border){
+    float fact = 1.0 / ( (input->rows - 2 * border) * (input->cols - 2 * border) );
+    float * input_r;
+    float sum = 0;
     for(int r = border; r < input->rows - border; ++r){
         input_r = input->Row(r);
         for(int c = border; c<input->cols - border; ++c)
@@ -5452,10 +5452,10 @@ void FullSubAveragePool(tensor* input, tensor* output, int border){
     DeleteOnlyShell(input_j);
 }
 
-void BackwardFullSubAveragePool2D(matrix* inputDelta, double * outputDelta, int border){
-    double fact = 1.0 / ( (inputDelta->rows - 2 * border) * (inputDelta->cols - 2 * border) );
-    double * inputDelta_r;
-    double addon = outputDelta[0] * fact;
+void BackwardFullSubAveragePool2D(matrix* inputDelta, float * outputDelta, int border){
+    float fact = 1.0 / ( (inputDelta->rows - 2 * border) * (inputDelta->cols - 2 * border) );
+    float * inputDelta_r;
+    float addon = outputDelta[0] * fact;
     for(int r = border; r < inputDelta->rows - border; ++r){
         inputDelta_r = inputDelta->Row(r);
         for(int c = border; c < inputDelta->cols - border; ++c)
@@ -5489,7 +5489,7 @@ void BackwardFullSubAveragePool(tensor* inputDelta, tensor* outputDelta, int bor
 
 
 //
-//void Convolute2D2D(matrix* input, matrix* output, matrix* kernel, double* bias, int paddingR, int paddingC, int strideR, int strideC){
+//void Convolute2D2D(matrix* input, matrix* output, matrix* kernel, float* bias, int paddingR, int paddingC, int strideR, int strideC){
 //    for(int iR=-paddingR, oR=0; iR<input->rows+paddingR-kernel->rows+1; iR+=strideR, ++oR)
 //        for(int iC=-paddingC, oC=0; iC<input->cols+paddingC-kernel->cols+1; iC+=strideC, ++oC){
 //                output->elem[oR][oC]+=*bias;
@@ -5500,7 +5500,7 @@ void BackwardFullSubAveragePool(tensor* inputDelta, tensor* outputDelta, int bor
 //}
 //
 //
-//void Convolute2D2D(matrix* input, matrix* output, matrix* kernel, double* bias, int paddingR, int paddingC, int strideR, int strideC){
+//void Convolute2D2D(matrix* input, matrix* output, matrix* kernel, float* bias, int paddingR, int paddingC, int strideR, int strideC){
 //    for(int oR=0; oR<output->rows; oR++){
 //        for(int iR=)
 //    }
@@ -5520,7 +5520,7 @@ void BackwardFullSubAveragePool(tensor* inputDelta, tensor* outputDelta, int bor
 //}
 //
 //
-//void DroppedConvolute2D2D(matrix* input, matrix* output, matrix* kernel, double* bias, int paddingR, int paddingC, int strideR, int strideC,
+//void DroppedConvolute2D2D(matrix* input, matrix* output, matrix* kernel, float* bias, int paddingR, int paddingC, int strideR, int strideC,
 //                          vector<vector<bool> > &activeInput, vector<vector<bool> > &activeOutput){
 //    for(int iR=-paddingR, oR=0; iR<input->rows+paddingR-kernel->rows+1; iR+=strideR, ++oR)
 //        for(int iC=-paddingC, oC=0; iC<input->cols+paddingC-kernel->cols+1; iC+=strideC, ++oC){
@@ -5536,7 +5536,7 @@ void BackwardFullSubAveragePool(tensor* inputDelta, tensor* outputDelta, int bor
 //
 //
 //void BackwardConvolute2D2D(matrix* input, matrix* inputDelta, matrix* outputDelta, matrix* kernel, matrix* kernelGrad,
-//                           double* bias, double* biasGrad, int paddingR, int paddingC, int strideR, int strideC){
+//                           float* bias, float* biasGrad, int paddingR, int paddingC, int strideR, int strideC){
 //        for(int iR=-paddingR, oR=0; iR<input->rows+paddingR-kernel->rows+1; iR+=strideR, ++oR)
 //            for(int iC=-paddingC, oC=0; iC<input->cols+paddingC-kernel->cols+1; iC+=strideC, ++oC){
 //                if (fabs(outputDelta->elem[oR][oC])<1E-10) continue;
@@ -5550,7 +5550,7 @@ void BackwardFullSubAveragePool(tensor* inputDelta, tensor* outputDelta, int bor
 //}
 //
 //void DroppedBackwardConvolute2D2D(matrix* input, matrix* inputDelta, matrix* outputDelta, matrix* kernel, matrix* kernelGrad,
-//                           double* bias, double* biasGrad, int paddingR, int paddingC, int strideR, int strideC,
+//                           float* bias, float* biasGrad, int paddingR, int paddingC, int strideR, int strideC,
 //                           vector<vector<bool> > &activeInput, vector<vector<bool> > &activeOutput){
 //        for(int iR=-paddingR, oR=0; iR<input->rows+paddingR-kernel->rows+1; iR+=strideR, ++oR)
 //            for(int iC=-paddingC, oC=0; iC<input->cols+paddingC-kernel->cols+1; iC+=strideC, ++oC){
@@ -5566,7 +5566,7 @@ void BackwardFullSubAveragePool(tensor* inputDelta, tensor* outputDelta, int bor
 //}
 //
 //void BackwardConvoluteGrad2D2D(matrix* input, matrix* outputDelta, matrix* kernel, matrix* kernelGrad,
-//                           double* bias, double* biasGrad, int paddingR, int paddingC, int strideR, int strideC){
+//                           float* bias, float* biasGrad, int paddingR, int paddingC, int strideR, int strideC){
 //        for(int iR=-paddingR, oR=0; iR<input->rows+paddingR-kernel->rows+1; iR+=strideR, ++oR)
 //            for(int iC=-paddingC, oC=0; iC<input->cols+paddingC-kernel->cols+1; iC+=strideC, ++oC){
 //                if (fabs(outputDelta->elem[oR][oC])<1E-10) continue;
@@ -5578,7 +5578,7 @@ void BackwardFullSubAveragePool(tensor* inputDelta, tensor* outputDelta, int bor
 //}
 //
 //void DroppedBackwardConvoluteGrad2D2D(matrix* input, matrix* outputDelta, matrix* kernel, matrix* kernelGrad,
-//                           double* bias, double* biasGrad, int paddingR, int paddingC, int strideR, int strideC,
+//                           float* bias, float* biasGrad, int paddingR, int paddingC, int strideR, int strideC,
 //                           vector<vector<bool> > &activeInput, vector<vector<bool> > &activeOutput){
 //        for(int iR=-paddingR, oR=0; iR<input->rows+paddingR-kernel->rows+1; iR+=strideR, ++oR)
 //            for(int iC=-paddingC, oC=0; iC<input->cols+paddingC-kernel->cols+1; iC+=strideC, ++oC){
@@ -5637,10 +5637,10 @@ void BackwardFullSubAveragePool(tensor* inputDelta, tensor* outputDelta, int bor
 //
 //
 //
-//void Convolute3D2D(tensor* input, matrix* output, tensor* kernel, double* bias, int paddingR, int paddingC, int strideR, int strideC){
-//    double temp=0;
-//    double ** inputElemkD;
-//    double ** kernelElemkD;
+//void Convolute3D2D(tensor* input, matrix* output, tensor* kernel, float* bias, int paddingR, int paddingC, int strideR, int strideC){
+//    float temp=0;
+//    float ** inputElemkD;
+//    float ** kernelElemkD;
 //    int kRmin, kRmax;
 //    int kCmin, kCmax;
 //
@@ -5665,7 +5665,7 @@ void BackwardFullSubAveragePool(tensor* inputDelta, tensor* outputDelta, int bor
 //
 //
 //
-//void DroppedConvolute3D2D(tensor* input, matrix* output, tensor* kernel, double* bias, int paddingR, int paddingC, int strideR, int strideC,
+//void DroppedConvolute3D2D(tensor* input, matrix* output, tensor* kernel, float* bias, int paddingR, int paddingC, int strideR, int strideC,
 //                          vector<vector<vector<bool> > > &activeInput, vector<vector<bool> > &activeOutput){
 //    for(int iR=-paddingR, oR=0; iR<input->rows+paddingR-kernel->rows+1; iR+=strideR, ++oR)
 //        for(int iC=-paddingC, oC=0; iC<input->cols+paddingC-kernel->cols+1; iC+=strideC, ++oC){
@@ -5682,7 +5682,7 @@ void BackwardFullSubAveragePool(tensor* inputDelta, tensor* outputDelta, int bor
 //
 //
 //void BackwardConvolute3D2D(tensor* input, tensor* inputDelta, matrix* outputDelta, tensor* kernel, tensor* kernelGrad,
-//                           double* bias, double* biasGrad, int paddingR, int paddingC, int strideR, int strideC){
+//                           float* bias, float* biasGrad, int paddingR, int paddingC, int strideR, int strideC){
 //    for(int iR=-paddingR, oR=0; iR<input->rows+paddingR-kernel->rows+1; iR+=strideR, ++oR)
 //        for(int iC=-paddingC, oC=0; iC<input->cols+paddingC-kernel->cols+1; iC+=strideC, ++oC){
 //                if (fabs(outputDelta->elem[oR][oC])<1E-10) continue;
@@ -5697,7 +5697,7 @@ void BackwardFullSubAveragePool(tensor* inputDelta, tensor* outputDelta, int bor
 //}
 //
 //void DroppedBackwardConvolute3D2D(tensor* input, tensor* inputDelta, matrix* outputDelta, tensor* kernel, tensor* kernelGrad,
-//                           double* bias, double* biasGrad, int paddingR, int paddingC, int strideR, int strideC,
+//                           float* bias, float* biasGrad, int paddingR, int paddingC, int strideR, int strideC,
 //                           vector<vector<vector<bool> > > &activeInput, vector<vector<bool> > &activeOutput){
 //    for(int iR=-paddingR, oR=0; iR<input->rows+paddingR-kernel->rows+1; iR+=strideR, ++oR)
 //        for(int iC=-paddingC, oC=0; iC<input->cols+paddingC-kernel->cols+1; iC+=strideC, ++oC){
@@ -5715,7 +5715,7 @@ void BackwardFullSubAveragePool(tensor* inputDelta, tensor* outputDelta, int bor
 //
 //
 //void BackwardConvoluteGrad3D2D(tensor* input, matrix* outputDelta, tensor* kernel, tensor* kernelGrad,
-//                           double* bias, double* biasGrad, int paddingR, int paddingC, int strideR, int strideC){
+//                           float* bias, float* biasGrad, int paddingR, int paddingC, int strideR, int strideC){
 //    for(int iR=-paddingR, oR=0; iR<input->rows+paddingR-kernel->rows+1; iR+=strideR, ++oR)
 //        for(int iC=-paddingC, oC=0; iC<input->cols+paddingC-kernel->cols+1; iC+=strideC, ++oC){
 //                if (fabs(outputDelta->elem[oR][oC])<1E-10) continue;
@@ -5728,7 +5728,7 @@ void BackwardFullSubAveragePool(tensor* inputDelta, tensor* outputDelta, int bor
 //}
 //
 //void DroppedBackwardConvoluteGrad3D2D(tensor* input, matrix* outputDelta, tensor* kernel, tensor* kernelGrad,
-//                           double* bias, double* biasGrad, int paddingR, int paddingC, int strideR, int strideC,
+//                           float* bias, float* biasGrad, int paddingR, int paddingC, int strideR, int strideC,
 //                           vector<vector<vector<bool> > > &activeInput, vector<vector<bool> > &activeOutput){
 //    for(int iR=-paddingR, oR=0; iR<input->rows+paddingR-kernel->rows+1; iR+=strideR, ++oR)
 //        for(int iC=-paddingC, oC=0; iC<input->cols+paddingC-kernel->cols+1; iC+=strideC, ++oC){
@@ -5797,7 +5797,7 @@ void BackwardFullSubAveragePool(tensor* inputDelta, tensor* outputDelta, int bor
 //
 //void MaxPool2D(matrix* input, matrix* output, int ** rowInd, int **colInd,
 //             int kernelRsize, int kernelCsize, int strideR, int strideC){
-//    double maxVal;
+//    float maxVal;
 //    int maxR, maxC;
 //
 //    for(int iR=0, oR=0; iR<input->rows-kernelRsize+1; iR+=strideR, ++oR)
@@ -5821,7 +5821,7 @@ void BackwardFullSubAveragePool(tensor* inputDelta, tensor* outputDelta, int bor
 //void DroppedMaxPool2D(matrix* input, matrix* output, int ** rowInd, int **colInd,
 //             int kernelRsize, int kernelCsize, int strideR, int strideC,
 //             vector<vector<bool> > &activeInput, vector<vector<bool> > &activeOutput){
-//    double maxVal;
+//    float maxVal;
 //    int maxR, maxC;
 //    bool activated;
 //
@@ -5894,11 +5894,11 @@ void BackwardFullSubAveragePool(tensor* inputDelta, tensor* outputDelta, int bor
 //        DroppedBackwardMaxPool2D(&(inputDelta->elem[d]), &(outputDelta->elem[d]), rowInd[d], colInd[d], activeInput[d], activeOutput[d]);
 //}
 
-double sqr(double x){
+float sqr(float x){
     return x*x;
 }
 
-int sign(double x){
+int sign(float x){
     if (x>0) return 1;
     return -1;
 }

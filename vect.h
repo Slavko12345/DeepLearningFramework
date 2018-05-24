@@ -15,8 +15,8 @@ struct vect: public orderedData
     vect();
     vect(int len_);
 
-    double & operator[](int index);
-    const double &operator[](int index) const;
+    float & operator[](int index);
+    const float &operator[](int index) const;
 
     void StaticCastToVect(orderedData* arg);
 
@@ -28,7 +28,7 @@ struct vect: public orderedData
 
     void SetToMatrixRow(matrix* M, int r);
 
-    double * elemLink(int j);
+    float * elemLink(int j);
 
     void SubVect(vect* V, int len_);
     void SubVect(vect* V, int startInd, int len_);

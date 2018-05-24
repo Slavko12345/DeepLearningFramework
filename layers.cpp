@@ -54,7 +54,7 @@ void layers::SetInput(orderedData* input, activityLayers* actLayers, bool testMo
 
     if (INPUT_NORMALIZATION){
         if (!LAYERWISE_NORMALIZATION){
-            double mean, stDev;
+            float mean, stDev;
             input_layer_0->NormalizeMeanStDev(input_layer_0, mean, stDev);
             if (APPEND_INPUT_STATISTICS){
                 int linearLayerLen = layerList[Nlayers-2]->len;
@@ -64,7 +64,7 @@ void layers::SetInput(orderedData* input, activityLayers* actLayers, bool testMo
         }
         else{
             int mean[numLayers], stDev[numLayers];
-            double mean_, stDev_;
+            float mean_, stDev_;
             matrix* input_j = new matrix();
             for(int j=0; j<numLayers; ++j){
                 input_j->SetToTensorLayer(input_layer_0, j);

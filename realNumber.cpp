@@ -10,7 +10,7 @@ using namespace std;
 realNumber::realNumber(){
 }
 
-realNumber::realNumber(double val): orderedData(1){
+realNumber::realNumber(float val): orderedData(1){
     elem[0]=val;
 }
 
@@ -18,7 +18,7 @@ int realNumber::Dimensionality(){
     return 0;
 }
 
-double& realNumber::At(){
+float& realNumber::At(){
     return elem[0];
 }
 

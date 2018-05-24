@@ -7,7 +7,7 @@
 activityData::activityData(){
 }
 
-activityData::activityData(int len_, double dropRate_): dropRate(dropRate_), len(len_){
+activityData::activityData(int len_, float dropRate_): dropRate(dropRate_), len(len_){
     dropping = (dropRate>1E-10);
 
     activeUnits = new bool[len];
@@ -23,7 +23,7 @@ void activityData::DropAllExcept(int num){
         activeUnits[remainIndex[j] ] = 1;
 }
 
-double activityData::dropRateInFact(double dropRate_){
+float activityData::dropRateInFact(float dropRate_){
     if (fabs(1.0 - dropRate_)<1E-10)
         return 1.0;
 
@@ -253,11 +253,11 @@ void activityData::FlipActivities(){
         activeUnits[j] = !activeUnits[j];
 }
 
-double activityData::ActiveProportion(){
+float activityData::ActiveProportion(){
     int active = 0;
     for(int j=0; j<len; ++j)
         active += activeUnits[j];
-    return double(active) / len;
+    return float(active) / len;
 }
 
 int activityData::ActiveLen(){

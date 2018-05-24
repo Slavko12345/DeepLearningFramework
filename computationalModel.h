@@ -24,7 +24,7 @@ struct computationalModel{
     void BackwardPass(int trueClass);
     void SetToTrainingMode();
     void SetToTestMode();
-    void UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_);
+    void UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_);
     void Compile(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, bool primalWeightOwner);
     void WriteCoefficientsToFile();
     ~computationalModel();

@@ -13,14 +13,14 @@ vect::vect(){
 vect::vect(int len_): orderedData(len_){
 }
 
-double& vect::operator[] (int index)
+float& vect::operator[] (int index)
 {
     //cout<<"Operator []"<<endl;
     cout<<"mutator"<<endl;
     return elem[index];
 }
 
-const double& vect::operator[] (int index) const
+const float& vect::operator[] (int index) const
 {
     cout<<"accessor"<<endl;
     return elem[index];
@@ -35,8 +35,8 @@ void vect::Add(vect* addon, vector<int> &indexOutput){
 
 //
 //void vect::AddTrMatrVectProduct(matrix* A, vect* B, vector<int> &toBeComputed, vector<int> &bIndices){
-//    double bElemI;
-//    double *AelemI;
+//    float bElemI;
+//    float *AelemI;
 //    int toBeComputedSize = toBeComputed.size();
 //    int bIndicesSize = bIndices.size();
 //
@@ -64,7 +64,7 @@ void vect::SetToMatrixRow(matrix* M, int r){
     len = M->cols;
 }
 
-double* vect::elemLink(int j){
+float* vect::elemLink(int j){
     return elem + j;
 }
 

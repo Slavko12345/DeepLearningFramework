@@ -7,12 +7,12 @@ using namespace std;
 
 struct activityData{
     bool dropping;
-    double dropRate;
+    float dropRate;
     int len;
     bool* activeUnits;
 
     activityData();
-    activityData(int len_, double dropRate_);
+    activityData(int len_, float dropRate_);
     void DropUnits();
     void DropUnitsStandard_0_0625();
     void DropUnitsStandard_0_125();
@@ -24,10 +24,10 @@ struct activityData{
     void SetAllNonActive();
     void PrintActivities();
     void FlipActivities();
-    double ActiveProportion();
+    float ActiveProportion();
     int ActiveLen();
     void SubActivityData(activityData* act, int startIndex_, int len_);
-    static double dropRateInFact(double dropRate_);
+    static float dropRateInFact(float dropRate_);
     ~activityData();
 };
 

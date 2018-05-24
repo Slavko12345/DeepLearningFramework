@@ -273,9 +273,9 @@ void weights::SetToZero(){
     }
 }
 
-double weights::MaxAbs(){
-    double maxAbs = -1;
-    double weightsMax, biasMax;
+float weights::MaxAbs(){
+    float maxAbs = -1;
+    float weightsMax, biasMax;
     for(int w=0; w<Nweights; w++){
         weightsMax = weightList[w].dataWeight->MaxAbs();
         biasMax = weightList[w].bias->MaxAbs();
@@ -285,7 +285,7 @@ double weights::MaxAbs(){
     return maxAbs;
 }
 
-void weights::SetToRandomValues(double maxAbs){
+void weights::SetToRandomValues(float maxAbs){
     for(int w=0; w<Nweights; w++){
         weightList[w].dataWeight->SetToRandomValues(maxAbs);
         weightList[w].bias->SetToRandomValues(maxAbs);
@@ -300,14 +300,14 @@ void weights::Add(weights* addon){
     }
 }
 
-void weights::Add(double lamb, weights* addon){
+void weights::Add(float lamb, weights* addon){
     for(int w=0; w<Nweights; w++){
         weightList[w].dataWeight->Add(lamb, addon->weightList[w].dataWeight);
         weightList[w].bias->Add(lamb, addon->weightList[w].bias);
     }
 }
 
-void weights::SetToLinearCombination(double a1, double a2, weights* W1, weights* W2){
+void weights::SetToLinearCombination(float a1, float a2, weights* W1, weights* W2){
     for(int w=0; w<Nweights; ++w){
         weightList[w].dataWeight->SetToLinearCombination(a1, a2, W1->weightList[w].dataWeight,  W2->weightList[w].dataWeight);
         weightList[w].bias      ->SetToLinearCombination(a1, a2, W1->weightList[w].bias,        W2->weightList[w].bias);
@@ -321,7 +321,7 @@ void weights::Copy(weights* W){
     }
 }
 
-void weights::CopyMultiplied(double lamb, weights* W){
+void weights::CopyMultiplied(float lamb, weights* W){
     for(int w=0; w<Nweights; w++){
         weightList[w].dataWeight->CopyMultiplied(lamb, W->weightList[w].dataWeight);
         weightList[w].bias->CopyMultiplied(lamb, W->weightList[w].bias);
@@ -355,14 +355,14 @@ void weights::ReadFromFile(char filename[]){
     f.close();
 }
 
-void weights::RmspropUpdate(weights* grad, weights* MS, double k1, double k2, double Step){
+void weights::RmspropUpdate(weights* grad, weights* MS, float k1, float k2, float Step){
     for(int j=0; j<Nweights; j++){
         weightList[j].dataWeight->RmspropUpdate(grad->weightList[j].dataWeight, MS->weightList[j].dataWeight, k1, k2, Step);
         weightList[j].bias->RmspropUpdate(grad->weightList[j].bias, MS->weightList[j].bias, k1, k2, Step);
     }
 }
 
-void weights::AdamUpdate(weights* grad, weights* Moment, weights* MS, double k1, double k2, double Step){
+void weights::AdamUpdate(weights* grad, weights* Moment, weights* MS, float k1, float k2, float Step){
     for(int j=0; j<Nweights; ++j){
         weightList[j].dataWeight->AdamUpdate(grad->weightList[j].dataWeight, Moment->weightList[j].dataWeight, MS->weightList[j].dataWeight, k1, k2, Step);
         weightList[j].bias->AdamUpdate(grad->weightList[j].bias, Moment->weightList[j].bias, MS->weightList[j].bias, k1, k2, Step);
@@ -388,7 +388,7 @@ int weights::GetWeightLen(){
 }
 
 
-void weights::Multiply(double lamb){
+void weights::Multiply(float lamb){
     for(int j=0; j<Nweights; ++j){
         weightList[j].dataWeight->Multiply(lamb);
         weightList[j].bias->Multiply(lamb);
@@ -397,8 +397,8 @@ void weights::Multiply(double lamb){
 
 
 
-double InnerProduct(weights* w1, weights* w2){
-    double res = 0;
+float InnerProduct(weights* w1, weights* w2){
+    float res = 0;
     for(int j=0; j<w1->Nweights; ++j){
         res += InnerProduct(w1->weightList[j].dataWeight, w2->weightList[j].dataWeight);
         res += InnerProduct(w1->weightList[j].bias, w2->weightList[j].bias);
@@ -407,14 +407,14 @@ double InnerProduct(weights* w1, weights* w2){
 }
 
 
-void FormOrthonormalBasis(weights* grad, weights* moment, weights* d1, weights* d2, double & g_g){
+void FormOrthonormalBasis(weights* grad, weights* moment, weights* d1, weights* d2, float & g_g){
     g_g = InnerProduct(grad, grad);
-    double g_m = InnerProduct(grad, moment);
-    double m_m = InnerProduct(moment, moment);
+    float g_m = InnerProduct(grad, moment);
+    float m_m = InnerProduct(moment, moment);
 
-    double det = m_m * g_g - sqr(g_m);
-    double a1 = sqrt( g_g / det );
-    double a2 = -g_m / sqrt(g_g * det);
+    float det = m_m * g_g - sqr(g_m);
+    float a1 = sqrt( g_g / det );
+    float a2 = -g_m / sqrt(g_g * det);
 
     d1->CopyMultiplied(1.0/sqrt(g_g), grad);
     d2->SetToLinearCombination(a1, a2, moment, grad);

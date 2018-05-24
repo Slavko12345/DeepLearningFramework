@@ -36,7 +36,7 @@ void computationalModel::SetModel(layers* layersData, layers* deltas, weights* w
     }
 }
 
-void computationalModel::UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_){
+void computationalModel::UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_){
     computationalNode * node;
     for(int j=0; j<computationList.size(); ++j){
         node = get<2>(computationList[j]);

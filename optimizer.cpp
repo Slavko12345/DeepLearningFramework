@@ -27,12 +27,12 @@ void Optimizer::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* test
 }
 
 
-SGD::SGD(double learningRate_, int mbSize_, int maxEpochs_): Optimizer(maxEpochs_, mbSize_), learningRate(learningRate_){
+SGD::SGD(float learningRate_, int mbSize_, int maxEpochs_): Optimizer(maxEpochs_, mbSize_), learningRate(learningRate_){
 }
 
 void SGD::Optimize(NeuralNet* NN, Data* trainingData){
-    int itersPerEpoch = ceil(trainingData->totalSize()/double(mbSize));
-    double trainError, accuracy;
+    int itersPerEpoch = ceil(trainingData->totalSize()/float(mbSize));
+    float trainError, accuracy;
 
     Data * mbData = new Data;
     mbData->Initiate();
@@ -55,13 +55,13 @@ void SGD::Optimize(NeuralNet* NN, Data* trainingData){
 }
 
 
-RMSPROP::RMSPROP(double learningRate_, int mbSize_, int maxEpochs_): Optimizer(maxEpochs_, mbSize_), learningRate(learningRate_){
+RMSPROP::RMSPROP(float learningRate_, int mbSize_, int maxEpochs_): Optimizer(maxEpochs_, mbSize_), learningRate(learningRate_){
 }
 
 void RMSPROP::Optimize(NeuralNet* NN, Data* trainingData){
-    int itersPerEpoch = ceil(trainingData->totalSize()/double(mbSize));
+    int itersPerEpoch = ceil(trainingData->totalSize()/float(mbSize));
 
-    double trainError, accuracy;
+    float trainError, accuracy;
 
 
     Data * mbData = new Data;
@@ -97,12 +97,12 @@ void RMSPROP::Optimize(NeuralNet* NN, Data* trainingData){
     delete MS;
 }
 
-ADAM::ADAM(double learningRate_, int mbSize_, int maxEpochs_): Optimizer(maxEpochs_, mbSize_), learningRate(learningRate_){
+ADAM::ADAM(float learningRate_, int mbSize_, int maxEpochs_): Optimizer(maxEpochs_, mbSize_), learningRate(learningRate_){
 }
 
 void ADAM::Optimize(NeuralNet* NN, Data* trainingData){
-    int itersPerEpoch = ceil(trainingData->totalSize()/double(mbSize));
-    double trainError, accuracy;
+    int itersPerEpoch = ceil(trainingData->totalSize()/float(mbSize));
+    float trainError, accuracy;
 
     Data * mbData = new Data;
     mbData->Initiate();
@@ -117,7 +117,7 @@ void ADAM::Optimize(NeuralNet* NN, Data* trainingData){
 
     NN->SwitchToTrainingMode();
 
-    double timeStart = omp_get_wtime();
+    float timeStart = omp_get_wtime();
     mbData->SelectMiniBatch(trainingData, 0, mbSize);
     NN->CalculateGradient(mbData);
     NN->weightsData->AdamUpdate(NN->gradient, Moment, MS, 0.0, 1.0, learningRate);
@@ -138,7 +138,7 @@ void ADAM::Optimize(NeuralNet* NN, Data* trainingData){
         }
     }
 
-    double timeEnd = omp_get_wtime();
+    float timeEnd = omp_get_wtime();
     cout<<"Pure optimization time: "<<timeEnd - timeStart<<endl;
 
     DeleteOnlyDataShell(mbData);
@@ -156,8 +156,8 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData){
     }
     cout<<"Num Threads: "<<numThreads<<endl;
 
-    int itersPerEpoch = ceil(trainingData->totalSize()/double(mbSize));
-    double totalTrainError, accuracy, trainError[numThreads], maxAbsWeight, velocity[numThreads], time_Grad[numThreads];
+    int itersPerEpoch = ceil(trainingData->totalSize()/float(mbSize));
+    float totalTrainError, accuracy, trainError[numThreads], maxAbsWeight, velocity[numThreads], time_Grad[numThreads];
     int correct[numThreads], totalCorrect;
 
     ofstream f(LOG_FILE);
@@ -201,14 +201,14 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData){
     Moment->SetModel();
     Moment->SetToZero();
 
-    double timeStart = omp_get_wtime();
+    float timeStart = omp_get_wtime();
 
     //NN->SwitchToTrainingMode();
 
     mbData->SelectMiniBatch(trainingData, 0, mbSize);
     mbData->SubDivide(mbDataList, numThreads);
 
-    double alpha = DEFAULT_ALPHA_DROP, pDrop = DEFAULT_P_DROP, pNotDrop = DEFAULT_P_NOT_DROP;
+    float alpha = DEFAULT_ALPHA_DROP, pDrop = DEFAULT_P_DROP, pNotDrop = DEFAULT_P_NOT_DROP;
 
     if (UNIFORM_DROP_INCREASE){
         alpha = DEFAULT_ALPHA_START;
@@ -220,13 +220,13 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData){
     #pragma omp parallel num_threads(numThreads)
     {
         //cout<<"Threads: "<<omp_get_num_threads()<<endl;
-        double gradTimeStart = omp_get_wtime();
+        float gradTimeStart = omp_get_wtime();
         int ID = omp_get_thread_num();
         //mbDataList[ID]->SelectMiniBatch(trainingData, mbSubSize[ID]);
         NNList[ID]->CalculateGradient(mbDataList[ID]);
         if (ADAPT_PROCESSORS_LOAD){
             time_Grad[ID] = omp_get_wtime() - gradTimeStart;
-            velocity[ID] = (double) mbDataList[ID]->totalSize() / time_Grad[ID];
+            velocity[ID] = (float) mbDataList[ID]->totalSize() / time_Grad[ID];
 //            totalVelocity = 0;
 //            for(int j=0; j<numThreads; ++j)
 //                totalVelocity+=velocity[j];
@@ -238,7 +238,7 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData){
     for(int j=1; j<numThreads; ++j)
         NN->gradient->Add(NNList[j]->gradient);
     NN->weightsData->AdamUpdate(NN->gradient, Moment, MS, 0.0, 1.0, learningRate);
-    double oldTime=omp_get_wtime(), newTime;
+    float oldTime=omp_get_wtime(), newTime;
 
     #pragma omp parallel num_threads(numThreads)
     {
@@ -250,7 +250,7 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData){
         }
 
         int ID = omp_get_thread_num(), correct_ID;
-        double trainError_ID, gradTimeStart;
+        float trainError_ID, gradTimeStart;
 
         for(int epoch=0; epoch<maxEpochs; ++epoch){
             for(int iter=0; iter<itersPerEpoch; ++iter){
@@ -271,7 +271,7 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData){
                 NNList[ID]->CalculateGradient(mbDataList[ID]);
                 if (ADAPT_PROCESSORS_LOAD){
                     time_Grad[ID] = omp_get_wtime() - gradTimeStart;
-                    velocity[ID] = 0.8 * velocity[ID] + 0.2 * (double) mbDataList[ID]->totalSize() / time_Grad[ID];
+                    velocity[ID] = 0.8 * velocity[ID] + 0.2 * (float) mbDataList[ID]->totalSize() / time_Grad[ID];
                 }
 
                 #pragma omp barrier
@@ -320,7 +320,7 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData){
                         totalTrainError += trainError[j];
                     }
                     totalTrainError /= trainingData->totalSize();
-                    accuracy = (double) totalCorrect / trainingData->totalSize();
+                    accuracy = (float) totalCorrect / trainingData->totalSize();
                     maxAbsWeight = NN->weightsData->MaxAbs();
                     if (NEW_ERROR_FUNCTION)
                         cout<<"epoch: "<<epoch + 1<<" Error: "<<- totalTrainError<<" l.rate: "<<learningRate<<" acc: "<<accuracy<<" maxAbs: "<<maxAbsWeight<<endl;
@@ -340,9 +340,9 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData){
 
                     if (UNIFORM_DROP_INCREASE)
                     {
-                        alpha = (epoch + 1) / double (maxEpochs) * (DEFAULT_ALPHA_END - DEFAULT_ALPHA_START) + DEFAULT_ALPHA_START;
-                        pDrop = (epoch + 1) / double (maxEpochs) * (DEFAULT_PDROP_END - DEFAULT_PDROP_START) + DEFAULT_PDROP_START;
-                        pNotDrop = (epoch + 1) / double (maxEpochs) * (DEFAULT_PNOTDROP_END - DEFAULT_PNOTDROP_START) + DEFAULT_PNOTDROP_START;
+                        alpha = (epoch + 1) / float (maxEpochs) * (DEFAULT_ALPHA_END - DEFAULT_ALPHA_START) + DEFAULT_ALPHA_START;
+                        pDrop = (epoch + 1) / float (maxEpochs) * (DEFAULT_PDROP_END - DEFAULT_PDROP_START) + DEFAULT_PDROP_START;
+                        pNotDrop = (epoch + 1) / float (maxEpochs) * (DEFAULT_PNOTDROP_END - DEFAULT_PNOTDROP_START) + DEFAULT_PNOTDROP_START;
                         cout<<"alpha: "<<alpha<<" pDrop: "<<activityData::dropRateInFact(pDrop)<<"pNotDrop: "<<pNotDrop<<endl;
                     }
 
@@ -358,7 +358,7 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData){
         }
     }
 
-    double timeEnd = omp_get_wtime();
+    float timeEnd = omp_get_wtime();
     cout<<"Pure optimization time: "<<timeEnd - timeStart<<endl;
     f<<"Pure optimization time: "<<timeEnd - timeStart<<endl;
 
@@ -393,8 +393,8 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
     }
     cout<<"Num Threads: "<<numThreads<<endl;
 
-    int itersPerEpoch = ceil(trainingData->totalSize()/double(mbSize));
-    double totalTrainError, totalTestError, accuracy, testAccuracy, trainError[numThreads], testError[numThreads], maxAbsWeight, velocity[numThreads], time_Grad[numThreads];
+    int itersPerEpoch = ceil(trainingData->totalSize()/float(mbSize));
+    float totalTrainError, totalTestError, accuracy, testAccuracy, trainError[numThreads], testError[numThreads], maxAbsWeight, velocity[numThreads], time_Grad[numThreads];
     int correct[numThreads], testCorrect[numThreads], totalCorrect, totalTestCorrect;
 
     ofstream f(LOG_FILE);
@@ -445,14 +445,14 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
     Moment->SetModel();
     Moment->SetToZero();
 
-    double timeStart = omp_get_wtime();
+    float timeStart = omp_get_wtime();
 
     //NN->SwitchToTrainingMode();
 
     mbData->SelectMiniBatch(trainingData, 0, mbSize);
     mbData->SubDivide(mbDataList, numThreads);
 
-    double alpha = DEFAULT_ALPHA_DROP, pDrop = DEFAULT_P_DROP, pNotDrop = DEFAULT_P_NOT_DROP;
+    float alpha = DEFAULT_ALPHA_DROP, pDrop = DEFAULT_P_DROP, pNotDrop = DEFAULT_P_NOT_DROP;
 
     if (UNIFORM_DROP_INCREASE){
         alpha = DEFAULT_ALPHA_START;
@@ -463,13 +463,13 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
     #pragma omp parallel num_threads(numThreads)
     {
         //cout<<"Threads: "<<omp_get_num_threads()<<endl;
-        double gradTimeStart = omp_get_wtime();
+        float gradTimeStart = omp_get_wtime();
         int ID = omp_get_thread_num();
         //mbDataList[ID]->SelectMiniBatch(trainingData, mbSubSize[ID]);
         NNList[ID]->CalculateGradient(mbDataList[ID]);
         if (ADAPT_PROCESSORS_LOAD){
             time_Grad[ID] = omp_get_wtime() - gradTimeStart;
-            velocity[ID] = (double) mbDataList[ID]->totalSize() / time_Grad[ID];
+            velocity[ID] = (float) mbDataList[ID]->totalSize() / time_Grad[ID];
 //            totalVelocity = 0;
 //            for(int j=0; j<numThreads; ++j)
 //                totalVelocity+=velocity[j];
@@ -481,7 +481,7 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
     for(int j=1; j<numThreads; ++j)
         NN->gradient->Add(NNList[j]->gradient);
     NN->weightsData->AdamUpdate(NN->gradient, Moment, MS, 0.0, 1.0, learningRate);
-    double oldTime=omp_get_wtime(), newTime;
+    float oldTime=omp_get_wtime(), newTime;
 
     #pragma omp parallel num_threads(numThreads)
     {
@@ -493,7 +493,7 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
         }
 
         int ID = omp_get_thread_num(), correct_ID, testCorrect_ID;
-        double trainError_ID, testError_ID, gradTimeStart;
+        float trainError_ID, testError_ID, gradTimeStart;
 
         for(int epoch=0; epoch<maxEpochs; ++epoch){
             for(int iter=0; iter<itersPerEpoch; ++iter){
@@ -514,7 +514,7 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
                 NNList[ID]->CalculateGradient(mbDataList[ID]);
                 if (ADAPT_PROCESSORS_LOAD){
                     time_Grad[ID] = omp_get_wtime() - gradTimeStart;
-                    velocity[ID] = 0.8 * velocity[ID] + 0.2 * (double) mbDataList[ID]->totalSize() / time_Grad[ID];
+                    velocity[ID] = 0.8 * velocity[ID] + 0.2 * (float) mbDataList[ID]->totalSize() / time_Grad[ID];
                 }
 
                 #pragma omp barrier
@@ -574,10 +574,10 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
                         totalTestError += testError[j];
                     }
                     totalTrainError /= trainingData->totalSize();
-                    accuracy = (double) totalCorrect / trainingData->totalSize();
+                    accuracy = (float) totalCorrect / trainingData->totalSize();
 
                     totalTestError /= testData->totalSize();
-                    testAccuracy = (double) totalTestCorrect / testData->totalSize();
+                    testAccuracy = (float) totalTestCorrect / testData->totalSize();
 
                     maxAbsWeight = NN->weightsData->MaxAbs();
                     if (NEW_ERROR_FUNCTION)
@@ -600,9 +600,9 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
 
                     if (UNIFORM_DROP_INCREASE)
                     {
-                        alpha = (epoch + 1) / double (maxEpochs) * (DEFAULT_ALPHA_END - DEFAULT_ALPHA_START) + DEFAULT_ALPHA_START;
-                        pDrop = (epoch + 1) / double (maxEpochs) * (DEFAULT_PDROP_END - DEFAULT_PDROP_START) + DEFAULT_PDROP_START;
-                        pNotDrop = (epoch + 1) / double (maxEpochs) * (DEFAULT_PNOTDROP_END - DEFAULT_PNOTDROP_START) + DEFAULT_PNOTDROP_START;
+                        alpha = (epoch + 1) / float (maxEpochs) * (DEFAULT_ALPHA_END - DEFAULT_ALPHA_START) + DEFAULT_ALPHA_START;
+                        pDrop = (epoch + 1) / float (maxEpochs) * (DEFAULT_PDROP_END - DEFAULT_PDROP_START) + DEFAULT_PDROP_START;
+                        pNotDrop = (epoch + 1) / float (maxEpochs) * (DEFAULT_PNOTDROP_END - DEFAULT_PNOTDROP_START) + DEFAULT_PNOTDROP_START;
                         cout<<"alpha: "<<alpha<<" pDrop: "<<activityData::dropRateInFact(pDrop)<<" pNotDrop: "<<pNotDrop<<endl;
                     }
                 }
@@ -615,7 +615,7 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
         }
     }
 
-    double timeEnd = omp_get_wtime();
+    float timeEnd = omp_get_wtime();
     cout<<"Pure optimization time: "<<timeEnd - timeStart<<endl;
     f<<"Pure optimization time: "<<timeEnd - timeStart<<endl;
 
@@ -649,8 +649,8 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
 //void CUBIC::Optimize(NeuralNet* NN, Data* trainingData){
 //    int itersPerEpoch = trainingData->totalSize/(trainingData->C * mbSize);
 //    maxIterations = itersPerEpoch * maxEpochs;
-//    double trainError, accuracy;
-//    double epsHessian = 0.1;
+//    float trainError, accuracy;
+//    float epsHessian = 0.1;
 //    Data * mbData = new Data;
 //    mbData->AllocateMemory(trainingData->C, mbSize, mbSize);
 //
@@ -691,11 +691,11 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
 //    vect* eigenValues = new vect(2);
 //    matrix* eigenVectors = new matrix(2, 2);
 //
-//    double g_g;
-//    double trust_region_size = 1.0;
-//    double eps;
-//    double f0, f1, f2;
-//    double new_f, new_acc;
+//    float g_g;
+//    float trust_region_size = 1.0;
+//    float eps;
+//    float f0, f1, f2;
+//    float new_f, new_acc;
 //    for(int iter=0; iter<maxIterations; iter++){
 //        mbData->SelectRandomMiniBatch(trainingData, mbSize);
 //

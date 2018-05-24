@@ -7,9 +7,9 @@ struct randomGenerator{
     static void SetRandomSeed();
     static uint32_t rand();
     static uint32_t MaxValue;
-    static double generateDouble(double maxAbs);
-    static double generatePositiveDouble(double maxVal);
-    static bool generateBool(double p); //p - probability of 1
+    static float generateFloat(float maxAbs);
+    static float generatePositiveFloat(float maxVal);
+    static bool generateBool(float p); //p - probability of 1
 };
 
 #endif // __randomGenerator__

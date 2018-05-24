@@ -49,7 +49,7 @@ bool computationalNode::UsesBalancedDrop(){
     return 0;
 }
 
-void computationalNode::UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_){
+void computationalNode::UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_){
     cout<<"Error: call of UpdateBalancedDropParameters for abstract class"<<endl;
 }
 
@@ -2492,7 +2492,7 @@ StairsFullConvolution::~StairsFullConvolution(){
 
 StairsFullConvolutionBalancedDrop::StairsFullConvolutionBalancedDrop
 (int weightsNum_, int startDepth_, int numStairs_, int numStairConvolutions_,
- double alpha_, double pDrop_, double pNotDrop_, int symmetryLevel_, bool biasIncluded_):
+ float alpha_, float pDrop_, float pNotDrop_, int symmetryLevel_, bool biasIncluded_):
     weightsNum(weightsNum_), startDepth(startDepth_), numStairs(numStairs_),
     numStairConvolutions(numStairConvolutions_),
     alpha(alpha_), pDrop(pDrop_), pNotDrop(pNotDrop_),
@@ -2605,7 +2605,7 @@ bool StairsFullConvolutionBalancedDrop::UsesBalancedDrop(){
     return 1;
 }
 
-void StairsFullConvolutionBalancedDrop::UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_){
+void StairsFullConvolutionBalancedDrop::UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_){
     alpha = alpha_;
     pDrop = pDrop_;
     pNotDrop = pNotDrop_;
@@ -3424,10 +3424,10 @@ void ConvoluteDependentMaxMinMerge::BackwardPass(bool computeDelta, int trueClas
     minOutputDelta->SubTensor(outputDelta, convolutionKernel->number, convolutionKernel->number);
     int startingIndex = convolutionOutputDelta->len;
 
-    double* convOutDelta_elem = convolutionOutputDelta->elem;
-    double *out_elem = output->elem;
-    double* minOutDelta_elem = minOutputDelta->elem;
-    double* out_elem_start = out_elem + startingIndex;
+    float* convOutDelta_elem = convolutionOutputDelta->elem;
+    float *out_elem = output->elem;
+    float* minOutDelta_elem = minOutputDelta->elem;
+    float* out_elem_start = out_elem + startingIndex;
 
     for(int j=0; j<convolutionOutputDelta->len; ++j)
         convOutDelta_elem[j] *= (out_elem[j]>0);
@@ -4003,7 +4003,7 @@ LastAveragePooling::~LastAveragePooling(){
 
 
 
-AveragePoolingBalancedDrop::AveragePoolingBalancedDrop(int lastLayers_, double alpha_, double pDrop_, double pNotDrop_):
+AveragePoolingBalancedDrop::AveragePoolingBalancedDrop(int lastLayers_, float alpha_, float pDrop_, float pNotDrop_):
                                 lastLayers(lastLayers_), alpha(alpha_), pDrop(pDrop_), pNotDrop(pNotDrop_){
 }
 
@@ -4094,7 +4094,7 @@ bool AveragePoolingBalancedDrop::UsesBalancedDrop(){
     return 1;
 }
 
-void AveragePoolingBalancedDrop::UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_){
+void AveragePoolingBalancedDrop::UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_){
     alpha = alpha_;
     pDrop = pDrop_;
     pNotDrop = pNotDrop_;
@@ -4123,7 +4123,7 @@ AveragePoolingBalancedDrop::~AveragePoolingBalancedDrop(){
 
 
 
-StructuredDropAveragePooling::StructuredDropAveragePooling(double dropRate_): dropRate(dropRate_){
+StructuredDropAveragePooling::StructuredDropAveragePooling(float dropRate_): dropRate(dropRate_){
 }
 
 void StructuredDropAveragePooling::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner){
@@ -4288,7 +4288,7 @@ ColumnDrop::~ColumnDrop(){
 
 
 
-ColumnDropBalancedDrop::ColumnDropBalancedDrop(int remainNum_, double alpha_, double pDrop_, double pNotDrop_):
+ColumnDropBalancedDrop::ColumnDropBalancedDrop(int remainNum_, float alpha_, float pDrop_, float pNotDrop_):
     remainNum(remainNum_), alpha(alpha_), pDrop(pDrop_), pNotDrop(pNotDrop_){
 }
 
@@ -4379,7 +4379,7 @@ bool ColumnDropBalancedDrop::UsesBalancedDrop(){
     return 1;
 }
 
-void ColumnDropBalancedDrop::UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_){
+void ColumnDropBalancedDrop::UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_){
     alpha = alpha_;
     pDrop = pDrop_;
     pNotDrop = pNotDrop_;
@@ -4403,7 +4403,7 @@ ColumnDropBalancedDrop::~ColumnDropBalancedDrop(){
 
 
 
-StructuredDropAverageSubPooling::StructuredDropAverageSubPooling(int border_, double dropRate_): border(border_), dropRate(dropRate_){
+StructuredDropAverageSubPooling::StructuredDropAverageSubPooling(int border_, float dropRate_): border(border_), dropRate(dropRate_){
 }
 
 void StructuredDropAverageSubPooling::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner){
@@ -4642,7 +4642,7 @@ FullAveragePooling::~FullAveragePooling(){
 
 
 
-FullAveragePoolingBalancedDrop::FullAveragePoolingBalancedDrop(double alpha_, double pDrop_, double pNotDrop_):
+FullAveragePoolingBalancedDrop::FullAveragePoolingBalancedDrop(float alpha_, float pDrop_, float pNotDrop_):
     alpha(alpha_), pDrop(pDrop_), pNotDrop(pNotDrop_){
 }
 
@@ -4734,7 +4734,7 @@ bool FullAveragePoolingBalancedDrop::UsesBalancedDrop(){
     return 1;
 }
 
-void FullAveragePoolingBalancedDrop::UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_){
+void FullAveragePoolingBalancedDrop::UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_){
     alpha = alpha_;
     pDrop = pDrop_;
     pNotDrop = pNotDrop_;
@@ -4755,7 +4755,7 @@ FullAveragePoolingBalancedDrop::~FullAveragePoolingBalancedDrop(){
 
 
 
-InputBalancedDrop::InputBalancedDrop(int inputDepth_, double alpha_, double pDrop_, double pNotDrop_):
+InputBalancedDrop::InputBalancedDrop(int inputDepth_, float alpha_, float pDrop_, float pNotDrop_):
     inputDepth(inputDepth_), alpha(alpha_), pDrop(pDrop_), pNotDrop(pNotDrop_){
 }
 
@@ -4818,7 +4818,7 @@ bool InputBalancedDrop::UsesBalancedDrop(){
     return 1;
 }
 
-void InputBalancedDrop::UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_){
+void InputBalancedDrop::UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_){
     alpha = alpha_;
     pDrop = pDrop_;
     pNotDrop = pNotDrop_;
@@ -5664,16 +5664,16 @@ void MaxMinPoolingIndex3D::ForwardPass(){
     MaxPool3D(input, maxOut, rowInd, colInd, kernelRsize, kernelCsize);
     MinPool3D(input, minOut, rowInd + startingIndex, colInd + startingIndex, kernelRsize, kernelCsize);
 
-    double* out_elem_start = output->elem + 2*startingIndex;
-    double row_0 = rowInd[0];
-    double col_0 = colInd[0];
+    float* out_elem_start = output->elem + 2*startingIndex;
+    float row_0 = rowInd[0];
+    float col_0 = colInd[0];
     for(int j=0; j<output->len / 3; ++j){
-        out_elem_start[j] = ( (double)rowInd[j] - row_0) / input->rows;
+        out_elem_start[j] = ( (float)rowInd[j] - row_0) / input->rows;
     }
 
     out_elem_start = output->elem + 4*startingIndex;
     for(int j=0; j<output->len / 3; ++j){
-        out_elem_start[j] =( (double) colInd[j] - col_0) / input->cols;
+        out_elem_start[j] =( (float) colInd[j] - col_0) / input->cols;
     }
 
     output->SetDroppedElementsToZero(outputActivity);
@@ -5764,7 +5764,7 @@ MaxAbsPoolingIndex3D::~MaxAbsPoolingIndex3D(){
 
 
 
-MaxAbsPoolingSoftIndex3D::MaxAbsPoolingSoftIndex3D(double logFactor_): logFactor(logFactor_){
+MaxAbsPoolingSoftIndex3D::MaxAbsPoolingSoftIndex3D(float logFactor_): logFactor(logFactor_){
 }
 
 void MaxAbsPoolingSoftIndex3D::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner){
@@ -5813,7 +5813,7 @@ MaxAbsPoolingSoftIndex3D::~MaxAbsPoolingSoftIndex3D(){
 
 
 
-MaxAbsPoolingSoftDiffIndex3D::MaxAbsPoolingSoftDiffIndex3D(double logFactor_): logFactor(logFactor_){
+MaxAbsPoolingSoftDiffIndex3D::MaxAbsPoolingSoftDiffIndex3D(float logFactor_): logFactor(logFactor_){
 }
 
 void MaxAbsPoolingSoftDiffIndex3D::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner){
@@ -5867,7 +5867,7 @@ MaxAbsPoolingSoftDiffIndex3D::~MaxAbsPoolingSoftDiffIndex3D(){
 
 
 
-PartialMaxAbsPoolingSoftDiffIndex3D::PartialMaxAbsPoolingSoftDiffIndex3D(int lastLayers_, double logFactor_) :
+PartialMaxAbsPoolingSoftDiffIndex3D::PartialMaxAbsPoolingSoftDiffIndex3D(int lastLayers_, float logFactor_) :
     logFactor(logFactor_), lastLayers(lastLayers_){
 }
 
@@ -6160,13 +6160,13 @@ FCMaxMinMerge::~FCMaxMinMerge(){
 //void CenterAtTheMean2D::ForwardPass(int from, int to){
 //    matrix* input=static_cast<matrix*>(layersData->layerList[from]);
 //    matrix* output=static_cast<matrix*>(layersData->layerList[to]);
-//    double imSum = input->Sum();//-input->rows*input->cols*(minVal-1.0);
+//    float imSum = input->Sum();//-input->rows*input->cols*(minVal-1.0);
 //
-//    double avRow=0, avCol=0;
+//    float avRow=0, avCol=0;
 //    for(int r=0; r<input->rows; r++)
 //        for(int c=0; c<input->cols; c++){
-//            avRow+=double(r)*(input->elem[r][c]);//-minVal+1.0);
-//            avCol+=double(c)*(input->elem[r][c]);//-minVal+1.0);
+//            avRow+=float(r)*(input->elem[r][c]);//-minVal+1.0);
+//            avCol+=float(c)*(input->elem[r][c]);//-minVal+1.0);
 //        }
 //    avRow/=imSum;
 //    avCol/=imSum;
@@ -6204,15 +6204,15 @@ FCMaxMinMerge::~FCMaxMinMerge(){
 //void CenterAtTheMean3D::ForwardPass(int from, int to){
 //    tensor* input =static_cast<tensor*>(layersData->layerList[from]);
 //    tensor* output=static_cast<tensor*>(layersData->layerList[to]);
-//    double minVal = input->FindMin();
-//    double imSum = input->Sum()-input->depth*input->rows*input->cols*(minVal-1.0);
+//    float minVal = input->FindMin();
+//    float imSum = input->Sum()-input->depth*input->rows*input->cols*(minVal-1.0);
 //
-//    double avRow=0, avCol=0;
+//    float avRow=0, avCol=0;
 //    for(int d=0; d<input->depth; d++)
 //        for(int r=0; r<input->rows; r++)
 //            for(int c=0; c<input->cols; c++){
-//                avRow+=double(r)*(input->elem[d][r][c]-minVal+1.0);
-//                avCol+=double(c)*(input->elem[d][r][c]-minVal+1.0);
+//                avRow+=float(r)*(input->elem[d][r][c]-minVal+1.0);
+//                avCol+=float(c)*(input->elem[d][r][c]-minVal+1.0);
 //            }
 //
 //    avRow/=imSum;
@@ -6264,7 +6264,7 @@ FCMaxMinMerge::~FCMaxMinMerge(){
 //    activityMatrix* inputActivity  = static_cast<activityMatrix*>(layersActivity->layerList[from]);
 //    activityVect* outputActivity = static_cast<activityVect*>(layersActivity->layerList[to]);
 //
-//    double * inputElemR;
+//    float * inputElemR;
 //    int rInpCols;
 //
 //    for(int r=0; r<input->rows; r++){
@@ -6288,7 +6288,7 @@ FCMaxMinMerge::~FCMaxMinMerge(){
 //    activityVect* outputActivity = static_cast<activityVect*>(layersActivity->layerList[to]);
 //
 //    int rInpCols;
-//    double * inputDeltaElemR;
+//    float * inputDeltaElemR;
 //    for(int r=0; r<input->rows; r++){
 //        rInpCols = r*input->cols+startingIndex;
 //        inputDeltaElemR = inputDelta->elem[r];
@@ -6330,7 +6330,7 @@ FCMaxMinMerge::~FCMaxMinMerge(){
 //    activityVect*   outputActivity = static_cast<activityVect*>(layersActivity->layerList[to]);
 //
 //    matrix* inputElemD;
-//    double * inputElemDR;
+//    float * inputElemDR;
 //    int dRowsCols;
 //    int dRowsColsPlusRCols;
 //    for(int d=0; d<input->depth; d++){
@@ -6363,7 +6363,7 @@ FCMaxMinMerge::~FCMaxMinMerge(){
 //    activityVect*   outputActivity = static_cast<activityVect*>(layersActivity->layerList[to]);
 //
 //    matrix* inputDeltaD;
-//    double *inputDeltaDR;
+//    float *inputDeltaDR;
 //    int dRowsCols;
 //    int dRowsColsPlusRCols;
 //    for(int d=0; d<input->depth; d++){
@@ -6415,7 +6415,7 @@ FCMaxMinMerge::~FCMaxMinMerge(){
 //    activityMatrix* inputActivity  = static_cast<activityMatrix*>(layersActivity->layerList[from]);
 //    activityVect* outputActivity = static_cast<activityVect*>(layersActivity->layerList[to]);
 //
-//    double * inputElemR;
+//    float * inputElemR;
 //    int rInpCols;
 //
 //    for(int r=0; r<input->rows; r++){
@@ -6439,7 +6439,7 @@ FCMaxMinMerge::~FCMaxMinMerge(){
 //    activityVect* outputActivity = static_cast<activityVect*>(layersActivity->layerList[to]);
 //
 //    int rInpCols;
-//    double * inputDeltaElemR;
+//    float * inputDeltaElemR;
 //    for(int r=0; r<input->rows; r++){
 //        rInpCols = r*input->cols;
 //        inputDeltaElemR = inputDelta->elem[r];
@@ -6480,7 +6480,7 @@ FCMaxMinMerge::~FCMaxMinMerge(){
 //    activityVect*   outputActivity = static_cast<activityVect*>(layersActivity->layerList[to]);
 //
 //    matrix* inputElemD;
-//    double * inputElemDR;
+//    float * inputElemDR;
 //    int dRowsCols;
 //    int dRowsColsPlusRCols;
 //    for(int d=0; d<input->depth; d++){
@@ -6513,7 +6513,7 @@ FCMaxMinMerge::~FCMaxMinMerge(){
 //    activityVect*   outputActivity = static_cast<activityVect*>(layersActivity->layerList[to]);
 //
 //    matrix* inputDeltaD;
-//    double *inputDeltaDR;
+//    float *inputDeltaDR;
 //    int dRowsCols;
 //    int dRowsColsPlusRCols;
 //    for(int d=0; d<input->depth; d++){
