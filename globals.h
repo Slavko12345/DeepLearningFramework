@@ -35,12 +35,12 @@ const double RATE_DECAY = 0.97;
 
 const int MAX_THREADS = 50;
 
-const double DEFAULT_ALPHA_DROP = 0.2;
-const double DEFAULT_P_DROP = 0.25;
+const double DEFAULT_ALPHA_DROP = 1;
+const double DEFAULT_P_DROP = 0.0625;
 const double DEFAULT_P_NOT_DROP = 0.0;
 
 
-const bool UNIFORM_DROP_INCREASE = 1;
+const bool UNIFORM_DROP_INCREASE = 0;
 
 const double DEFAULT_ALPHA_START = 1.0;
 const double DEFAULT_ALPHA_END = 1.0;
