@@ -70,11 +70,11 @@ int main()
     NN->SwitchToTestMode();
 
     NN->CalculateErrorAndAccuracy(CifarTest, error, accuracy);
-    cout<<"error: "<<error<<" accuracy: "<<accuracy*100.0<<"%"<<endl;
+    cout<<"error: "<<error<<" accuracy: "<<accuracy*100.0f<<"%"<<endl;
 
     ofstream f("data/result.txt");
     f<<"CIFAR-10 test set classification: "<<endl;
-    f<<"error: "<<error<<" accuracy: "<<accuracy*100.0<<"%"<<endl;
+    f<<"error: "<<error<<" accuracy: "<<accuracy*100.0f<<"%"<<endl;
     f.close();
 
     NN->computation->WriteCoefficientsToFile();

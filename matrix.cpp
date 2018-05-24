@@ -8,6 +8,7 @@
 #include "bmp/EasyBMP.h"
 #include "activityData.h"
 #include "tensor.h"
+#include "float.h"
 using namespace std;
 
 matrix::matrix(){
@@ -91,8 +92,8 @@ void matrix::SaveNormalizedAsImage(char filename[]){
     float minVal = this->Min();
     float fact;
     cout<<minVal<<" "<<maxVal<<endl;
-    if (maxVal-minVal<1E-10) fact=0;
-    else fact=255.0/(maxVal-minVal);
+    if (maxVal-minVal<FLT_EPSILON) fact=0.0f;
+    else fact=255.0f/(maxVal-minVal);
     cout<<fact<<endl;
     for(int r=0; r<rows; r++)
         for(int c=0; c<cols; c++){

@@ -3,12 +3,13 @@
 #include "randomGenerator.h"
 #include <math.h>
 #include "mathFunc.h"
+#include <float.h>
 
 activityData::activityData(){
 }
 
 activityData::activityData(int len_, float dropRate_): dropRate(dropRate_), len(len_){
-    dropping = (dropRate>1E-10);
+    dropping = (dropRate>FLT_EPSILON);
 
     activeUnits = new bool[len];
     for(int i=0; i<len; ++i)
@@ -24,39 +25,39 @@ void activityData::DropAllExcept(int num){
 }
 
 float activityData::dropRateInFact(float dropRate_){
-    if (fabs(1.0 - dropRate_)<1E-10)
-        return 1.0;
+    if (fabs(1.0f - dropRate_)<FLT_EPSILON)
+        return 1.0f;
 
-    if (fabs(dropRate_)<1E-10)
-        return 0.0;
+    if (fabs(dropRate_)<FLT_EPSILON)
+        return 0.0f;
 
-    if (dropRate_>0.5+1E-8)
-        return 1.0 - dropRateInFact(1.0 - dropRate_);
+    if (dropRate_>0.5f+FLT_EPSILON)
+        return 1.0f - dropRateInFact(1.0f - dropRate_);
 
     const int toCompr = round(8 * dropRate_);
     const int toCompr16 = round(16 * dropRate_);
 
     if (toCompr16 == 1){
-        return 0.0625;
+        return 0.0625f;
     }
 
-    return toCompr / 8.0;
+    return toCompr / 8.0f;
 }
 
 void activityData::DropUnits(){
     if (!dropping) return;
 
-    if (fabs(1.0 - dropRate)<1E-10){
+    if (fabs(1.0 - dropRate)<FLT_EPSILON){
         this->SetAllNonActive();
         return;
     }
 
-    if (fabs(dropRate<1E-10)){
+    if (fabs(dropRate<FLT_EPSILON)){
         this->SetAllActive();
         return;
     }
 
-    if (dropRate>0.5+1E-8){
+    if (dropRate>0.5+FLT_EPSILON){
         dropRate = 1 - dropRate;
         this->DropUnits();
         this->FlipActivities();

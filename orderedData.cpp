@@ -9,6 +9,7 @@
 #include "vect.h"
 #include "matrix.h"
 #include <algorithm>
+#include <float.h>
 using namespace std;
 
 orderedData::orderedData(){
@@ -30,13 +31,13 @@ void orderedData::AllocateMemory(int len_){
 }
 
 void orderedData::SetToZero(){
-    for(int i=0; i<len; ++i)
-        elem[i]=0;
+    for(int i = 0; i < len; ++i)
+        elem[i] = 0.0f;
 }
 
 void orderedData::SetToZeroStartingFrom(int startingIndex){
-    for(int i=startingIndex; i<len; ++i)
-        elem[i]=0;
+    for(int i = startingIndex; i < len; ++i)
+        elem[i] = 0.0f;
 }
 
 void orderedData::SetToValue(float val){
@@ -83,7 +84,7 @@ void orderedData::WriteToFile(ofstream &f){
 void orderedData::Copy(orderedData* A){
     float * A_elem = A->elem;
     for(int i=0; i<len; ++i)
-        elem[i]=A_elem[i];
+        elem[i] = A_elem[i];
 }
 
 void orderedData::CopyToSubpart(orderedData* A){
@@ -221,7 +222,7 @@ void orderedData::DroppedAddPointwiseFuncDerivMultiply(orderedData* inp, ordered
 
 void orderedData::Multiply(float lamb){
     for(int i=0; i<len; ++i)
-        elem[i]*=lamb;
+        elem[i] *= lamb;
 }
 
 void orderedData::PointwiseMultiply(orderedData* A){
@@ -259,7 +260,7 @@ float orderedData::Min(){
 }
 
 int orderedData::ArgMax(){
-    float res=elem[0], ind=0;
+    float res=elem[0], ind=0.0f;
     for(int j=1; j<len; j++)
         if (res<elem[j]){
             res=elem[j];
@@ -269,7 +270,7 @@ int orderedData::ArgMax(){
 }
 
 float orderedData::MaxAbs(){
-    float maxAbs = -1;
+    float maxAbs = -1.0f;
     for(int j=0; j<len; ++j)
         maxAbs = max(maxAbs, fabs(elem[j]) );
     return maxAbs;
@@ -279,7 +280,7 @@ void orderedData::RmspropUpdate(orderedData* grad, orderedData* MS, float k1, fl
     float *MS_elem = MS->elem, *grad_elem = grad->elem;
     for(int j=0; j<len; j++){
         MS_elem[j] = k1*MS_elem[j] + k2*sqr(grad_elem[j]);
-        elem[j] -= Step*grad_elem[j] / max(sqrt(MS_elem[j]), float(0.0000001));
+        elem[j] -= Step*grad_elem[j] / max(sqrt(MS_elem[j]), FLT_EPSILON);
     }
 }
 
@@ -294,12 +295,12 @@ void orderedData::AdamUpdate(orderedData* grad, orderedData* Moment, orderedData
         MS_elem[j]=k1*MS_elem[j]+k2*sqr(grad_elem[j]);
 
     for(int j=0; j<len; ++j)
-        elem[j]-=Step*Moment_elem[j]/(sqrt(MS_elem[j])+0.0000001);
+        elem[j]-=Step*Moment_elem[j]/(sqrt(MS_elem[j])+FLT_EPSILON);
 
 //    for(int j=0; j<len; ++j){
 //        Moment_elem[j] = k1*Moment_elem[j]+k2*grad_elem[j];
 //        MS_elem[j]=k1*MS_elem[j]+k2*sqr(grad_elem[j]);
-//        elem[j]-=Step*Moment_elem[j]/(sqrt(MS_elem[j])+0.0000001);
+//        elem[j]-=Step*Moment_elem[j]/(sqrt(MS_elem[j])+FLT_EPSILON);
 //    }
 }
 
@@ -329,25 +330,25 @@ void orderedData::SetDroppedElementsToZero(activityData* mask, int startingInd, 
 
 void orderedData::SetToReluFunction(){
     for(int j=0; j<len; ++j)
-        elem[j] *= (elem[j]>0);
+        elem[j] *= (elem[j]>0.0f);
 }
 
 void orderedData::BackwardRelu(orderedData* input){
     float *inp_elem = input->elem;
     for(int j=0; j<len; ++j)
-        elem[j] *= (inp_elem[j] > 0);
+        elem[j] *= (inp_elem[j] > 0.0f);
 }
 
 void orderedData::SetToMinReluFunction(orderedData* inp){
     float *inp_elem = inp->elem;
     for(int j=0; j<len; ++j)
-        elem[j] = inp_elem[j] * (inp_elem[j]<0);
+        elem[j] = inp_elem[j] * (inp_elem[j]<0.0f);
 }
 
 void orderedData::BranchMaxMin(orderedData* inp){
     float *inp_elem = inp->elem;
     for(int j=0; j<len; ++j){
-        elem[j] = inp_elem[j] * (inp_elem[j]<0);
+        elem[j] = inp_elem[j] * (inp_elem[j]<0.0f);
         inp_elem[j] -= elem[j];
     }
 }
@@ -356,7 +357,7 @@ void orderedData::BranchMaxMin(orderedData* inp){
 void orderedData::ListNonzeroElements(vector<int> & index){
     index.resize(0);
     for(int j=0; j<len; ++j)
-        if (fabs(elem[j])>1E-10)
+        if (fabs(elem[j])>FLT_EPSILON)
             index.push_back(j);
 }
 
@@ -364,7 +365,7 @@ void orderedData::ListNonzeroElements(vector<int> & index, orderedData* compress
     index.resize(0);
     float* compressed_elem = compressed->elem;
     for(int j=0; j<len; ++j)
-        if (fabs(elem[j])>1E-10){
+        if (fabs(elem[j])>FLT_EPSILON){
             compressed_elem[index.size()] = elem[j];
             index.push_back(j);
         }
@@ -381,7 +382,7 @@ void orderedData::ListNonzeroActiveElements(vector<int> & index, activityData* a
     bool* activity_ = activity->activeUnits;
     index.resize(0);
     for(int j=0; j<len; j++)
-        if (activity_[j] && fabs(elem[j])>1E-10)
+        if (activity_[j] && fabs(elem[j])>FLT_EPSILON)
             index.push_back(j);
 }
 
@@ -395,7 +396,7 @@ void orderedData::ListNonzeroActiveElements(vector<int> & index, activityData* a
     float* compressed_elem = compressed->elem;
     index.resize(0);
     for(int j=0; j<len; j++)
-        if (activity_[j] && fabs(elem[j])>1E-10){
+        if (activity_[j] && fabs(elem[j])>FLT_EPSILON){
             compressed_elem[index.size()] = elem[j];
             index.push_back(j);
         }
@@ -691,7 +692,7 @@ void orderedData::BackwardCompressedInputFullyConnected(matrix* kernel, orderedD
 
 
 float InnerProduct(orderedData* inp1, orderedData* inp2){
-    float res = 0;
+    float res = 0.0;
     float *inp1_elem = inp1->elem;
     float* inp2_elem = inp2->elem;
     for(int j=0; j<inp1->len; ++j)
@@ -721,8 +722,8 @@ void orderedData::MaxMinBackward(orderedData* minOutputDelta, orderedData* outpu
     float* out_elem_start = out_elem + startingIndex;
 
     for(int j=0; j<len; ++j){
-        elem[j] *= (out_elem[j]>0);
-        minOutDelta_elem[j] *= (out_elem_start[j]<0);
+        elem[j] *= (out_elem[j]>0.0f);
+        minOutDelta_elem[j] *= (out_elem_start[j]<0.0f);
         elem[j] += minOutDelta_elem[j];
     }
 }
@@ -749,8 +750,8 @@ void orderedData::FindTrustRegionMinima(matrix* B, vect* r, float eps){
 
 void orderedData::FindTrustRegionMinima(vect* eigenValues, matrix* eigenVectors, vect* rV, float eps){
     vect* solutionBasis = new vect(eigenValues->len);
-    if (eigenValues->elem[0]>0){
-        float globalSolSqNorm = 0;
+    if (eigenValues->elem[0]>0.0f){
+        float globalSolSqNorm = 0.0f;
         for(int j=0; j<rV->len; ++j)
             solutionBasis->elem[j] = rV->elem[j] / eigenValues->elem[j];
         if (solutionBasis->SqNorm() < sqr(eps) ){
@@ -759,20 +760,20 @@ void orderedData::FindTrustRegionMinima(vect* eigenValues, matrix* eigenVectors,
         }
     }
 
-    float lamb = 0;
-    if (eigenValues->elem[0]<0){
+    float lamb = 0.0f;
+    if (eigenValues->elem[0]<0.0f){
         float addon = 1;
         while(1){
             lamb = - eigenValues->elem[0] + addon;
             if (TrustRegionFunc(lamb, eigenValues, rV, eps)>0)
                 break;
-            addon /= 2.0;
+            addon /= 2.0f;
         }
     }
     float f_val;
     while(1){
         f_val = TrustRegionFunc(lamb, eigenValues, rV, eps);
-        if (fabs(f_val)<1E-10) break;
+        if (fabs(f_val)<FLT_EPSILON) break;
         lamb -= f_val / TrustRegionFuncDeriv(lamb, eigenValues, rV, eps);
         //cout<<lamb<<endl;
     }
@@ -800,8 +801,8 @@ void orderedData::CalculateMeanStdDev(float & mean, float & stDev){
 
 void orderedData::NormalizeMeanStDev(orderedData* input, float & mean, float & stDev){
     this->CalculateMeanStdDev(mean, stDev);
-    if (fabs(stDev < 1E-10)) stDev+=0.001;
-    float invStDev = 1.0 / stDev;
+    if (fabs(stDev < FLT_EPSILON)) stDev += FLT_EPSILON;
+    float invStDev = 1.0f / stDev;
     for(int j=0; j<len; ++j)
         elem[j] = (input->elem[j] - mean) * invStDev;
 }
@@ -815,7 +816,7 @@ void orderedData::computeMedian(float * median, int * index){
     std::nth_element(dataCopy.begin(), middle, dataCopy.end());
     median[0] = *middle;
     for(int j=0; j<len; ++j)
-        if (fabs(elem[j] - median[0]) < 1E-8){
+        if (fabs(elem[j] - median[0]) < FLT_EPSILON){
             index[0] = j;
             break;
         }
@@ -827,18 +828,18 @@ void orderedData::computeMedianNonzero(float * median, int * index){
     std::vector<float> dataCopy;
     dataCopy.reserve(len);
     for(int j=0; j<len; ++j)
-        if (fabs(elem[j])>1E-8)
+        if (fabs(elem[j])>FLT_EPSILON)
             dataCopy.push_back(elem[j]);
     if (dataCopy.size() == 0){
-        median[0] = 0;
-        index[0] = 0;
+        median[0] = 0.0f;
+        index[0] = 0.0f;
         return;
     }
     std::vector<float>::iterator middle = dataCopy.begin() + (dataCopy.size() - 1) / 2;
     std::nth_element(dataCopy.begin(), middle, dataCopy.end());
     median[0] = *middle;
     for(int j=0; j<len; ++j)
-        if (fabs(elem[j] - median[0]) < 1E-8){
+        if (fabs(elem[j] - median[0]) < FLT_EPSILON){
             index[0] = j;
             break;
         }
@@ -856,7 +857,7 @@ void orderedData::computeQuartiles(float * quartiles, int * index, int numQuarti
         nth_element(dataCopy.begin(), quartileIterator_j, dataCopy.end());
         quartiles[j] = * quartileIterator_j;
         for(int k=0; k<len; ++k)
-            if (fabs(elem[k] - quartiles[j]) < 1E-8){
+            if (fabs(elem[k] - quartiles[j]) < FLT_EPSILON){
                 index[j] = k;
                 break;
             }
@@ -867,7 +868,7 @@ void orderedData::computeQuartilesNonzero(float * quartiles, int * index, int nu
     vector<float> dataCopy;
     dataCopy.reserve(len);
     for(int j=0; j<len; ++j)
-        if (fabs(elem[j]) > 1E-8)
+        if (fabs(elem[j]) > FLT_EPSILON)
             dataCopy.push_back(elem[j]);
 
     if (dataCopy.size() == 0){
@@ -884,7 +885,7 @@ void orderedData::computeQuartilesNonzero(float * quartiles, int * index, int nu
         nth_element(dataCopy.begin(), quartileIterator_j, dataCopy.end());
         quartiles[j] = * quartileIterator_j;
         for(int k=0; k<len; ++k)
-            if (fabs(elem[k] - quartiles[j]) < 1E-8){
+            if (fabs(elem[k] - quartiles[j]) < FLT_EPSILON){
                 index[j] = k;
                 break;
             }
@@ -894,19 +895,19 @@ void orderedData::computeQuartilesNonzero(float * quartiles, int * index, int nu
 void orderedData::AverageWith(orderedData * input){
     for(int j=0; j<len; ++j){
         elem[j] += input->elem[j];
-        elem[j] *= 0.5;
+        elem[j] *= 0.5f;
     }
 }
 
 void orderedData::BackwardAverageWith(orderedData* inputDelta){
     for(int j=0; j<len; ++j){
-        elem[j] *= 0.5;
+        elem[j] *= 0.5f;
         inputDelta->elem[j] = elem[j];
     }
 }
 
 void orderedData::SetToBalancedMultipliers(activityData* balancedActiveUnits, activityData* balacedUpDown, float alpha){
     for(int j=0; j<len; ++j){
-        elem[j] = 1.0 + alpha * (1.0 - balancedActiveUnits->activeUnits[j]) * (2.0 * balacedUpDown->activeUnits[j] - 1.0);
+        elem[j] = 1.0f + alpha * (1.0f - balancedActiveUnits->activeUnits[j]) * (2.0f * balacedUpDown->activeUnits[j] - 1.0f);
     }
 }

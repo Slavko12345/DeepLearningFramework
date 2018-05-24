@@ -14,7 +14,7 @@ void activityLayers::SetModel(layers* layersData){
     dropping = false;
 
     layerList = new activityData* [Nlayers];
-    dropoutRates.resize(Nlayers, 0.0);
+    dropoutRates.resize(Nlayers, 0.0f);
 
 //    dropoutRates[0] = 0.0625;
 //    dropoutRates[1] = 0.125;

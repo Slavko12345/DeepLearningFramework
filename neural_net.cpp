@@ -14,6 +14,7 @@
 #include "activityData.h"
 #include "globals.h"
 #include "tensor.h"
+#include <float.h>
 using namespace std;
 
 void NeuralNet::Initiate()
@@ -190,7 +191,7 @@ void NeuralNet::CalculateErrorAndAccuracy(Data* inputData, float &error, float &
             predictedLabel=lastLayerLink->ArgMax();
             lab = inputData->labels[j];
             if (predictedLabel==lab) correct++;
-            error-=log(fabs(lastLayerLink->elem[lab])+1E-10);
+            error-=log(fabs(lastLayerLink->elem[lab])+FLT_EPSILON);
         }
     error/=float(total);
     accuracy = float(correct)/total;
@@ -220,7 +221,7 @@ void NeuralNet::CalculateSubErrorAndAccuracy(Data* inputData, float &error, int 
             predictedLabel=lastLayerLink->ArgMax();
             lab = inputData->labels[j];
             if (predictedLabel==lab) correct++;
-            error-=log(fabs(lastLayerLink->elem[lab])+1E-10);
+            error-=log(fabs(lastLayerLink->elem[lab])+FLT_EPSILON);
         }
 
     DeleteOnlyShell(data_j);

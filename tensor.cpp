@@ -64,9 +64,9 @@ void tensor::SaveAsImage(char filename[]){
     Output.SetBitDepth(24);
     for(int r=0; r<rows; r++)
         for(int c=0; c<cols; c++){
-            Output(c,r)->Red   = round (255.0 * (At(0, r, c)) );
-            Output(c,r)->Green = round (255.0 * (At(1, r, c)) );
-            Output(c,r)->Blue  = round (255.0 * (At(2, r, c)) );
+            Output(c,r)->Red   = round (255.0f * (At(0, r, c)) );
+            Output(c,r)->Green = round (255.0f * (At(1, r, c)) );
+            Output(c,r)->Blue  = round (255.0f * (At(2, r, c)) );
         }
     Output.WriteToFile(filename);
 }
@@ -114,12 +114,12 @@ void tensor::RandomlyTranform(tensor* inputImage){
         if (j % 2 == 0)
             coords->At(j, 0) = c_x;
         else
-            coords->At(j, 0) = 1.0 - c_x;
+            coords->At(j, 0) = 1.0f - c_x;
 
         if (j<2)
             coords->At(j, 1) = c_y;
         else
-            coords->At(j, 1) = 1.0 - c_y;
+            coords->At(j, 1) = 1.0f - c_y;
 
     }
 

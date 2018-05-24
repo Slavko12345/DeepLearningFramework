@@ -12,6 +12,7 @@
 #include <algorithm>
 #include "globals.h"
 #include "matrix.h"
+#include <float.h>
 using namespace std;
 
 float Sigma::f(const float & x){
@@ -2097,8 +2098,8 @@ void SequentialMaxMinStandard(tensor* input, vect* kernel, vect* bias, int start
         kernel_j->SubVect(kernel, j * (startDepth + j - 1), startDepth + 2 * j);
         bias_j = bias->elem[j];
         input->elem[startDepth + 2 * j] = InnerProduct(input_j, kernel_j) + bias_j;
-        input->elem[startDepth + 2 * j + 1] = min(input->elem[startDepth + 2 * j], float(0.0));
-        input->elem[startDepth + 2 * j]     = max(input->elem[startDepth + 2 * j], float(0.0));
+        input->elem[startDepth + 2 * j + 1] = min(input->elem[startDepth + 2 * j], 0.0f);
+        input->elem[startDepth + 2 * j]     = max(input->elem[startDepth + 2 * j], 0.0f);
         if (!testMode && inputActivity->dropping){
             input->elem[startDepth + 2 * j]     *= inputActivity->activeUnits[startDepth + 2 * j];
             input->elem[startDepth + 2 * j + 1] *= inputActivity->activeUnits[startDepth + 2 * j + 1];
@@ -4379,7 +4380,7 @@ void MaxPool2D(matrix* input, matrix* output, int* rowInd, int *colInd, int kern
     float *out_oR , *in_iR;
     int *rowInd_oR, *colInd_oR;
 
-    output->SetToValue(-1E10);
+    output->SetToValue(-1E10f);
     for(int oR=0; oR<outRows; ++oR){
         minIR = oR * kernelRsize;
         maxIR = minIR + kernelRsize - 1;
@@ -4825,7 +4826,7 @@ void MinPool2D(matrix* input, matrix* output, int* rowInd, int *colInd, int kern
 
     int minIR, maxIR;
     int minIC, maxIC;
-    output->SetToValue(1E10);
+    output->SetToValue(1E10f);
     float *out_oR , *in_iR;
     int outRows = output->rows, outCols = output->cols;
     int *rowInd_oR, *colInd_oR;
@@ -5296,7 +5297,7 @@ void CenterPool(matrix* input, float * centers, float * sum){
             sum_c += c * input_r[c];
         }
     }
-    sum_0 += 1E-5;
+    sum_0 += FLT_EPSILON;
     centers[0] = sum_r / (sum_0 * input->rows);
     centers[1] = sum_c / (sum_0 * input->cols);
     sum[0] = sum_0;
@@ -5348,7 +5349,7 @@ void BackwardMedianPoolTensor(tensor * inputDelta, tensor * outputDelta, int * i
 
 void BackwardMedianNonzeroPoolTensor(tensor* output, tensor * inputDelta, tensor * outputDelta, int * index){
     for(int j=0; j<inputDelta->depth; ++j)
-        if (fabs(output->elem[j]) > 1E-8)
+        if (fabs(output->elem[j]) > FLT_EPSILON)
             inputDelta->elem[inputDelta->Ind(j) + index[j] ] += outputDelta->elem[j];
 }
 
@@ -5420,7 +5421,7 @@ void BackwardQuartilesNonzeroPoolTensor(tensor * output, tensor * inputDelta, te
         outputDelta_j = outputDelta->elem + j * numQuartiles;
         output_j = output->elem + j * numQuartiles;
         for(int quart=0; quart<numQuartiles; ++quart){
-            if (fabs(output_j[quart]) > 1E-8)
+            if (fabs(output_j[quart]) > FLT_EPSILON)
                 inputDelta_j->elem[index_j[quart] ] += outputDelta_j[quart];
         }
     }

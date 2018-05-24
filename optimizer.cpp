@@ -75,13 +75,13 @@ void RMSPROP::Optimize(NeuralNet* NN, Data* trainingData){
     NN->SwitchToTrainingMode();
     mbData->SelectMiniBatch(trainingData, 0, mbSize);
     NN->CalculateGradient(mbData);
-    NN->weightsData->RmspropUpdate(NN->gradient, MS, 0.0, 1.0, learningRate);
+    NN->weightsData->RmspropUpdate(NN->gradient, MS, 0.0f, 1.0f, learningRate);
 
     for(int epoch=0; epoch<maxEpochs; ++epoch){
         for(int iter=0; iter<itersPerEpoch; ++iter){
             mbData->SelectMiniBatch(trainingData, iter*mbSize, mbSize);
             NN->CalculateGradient(mbData);
-            NN->weightsData->RmspropUpdate(NN->gradient, MS, 0.9, 0.1, learningRate);
+            NN->weightsData->RmspropUpdate(NN->gradient, MS, 0.9f, 0.1f, learningRate);
         }
         if (epoch % 5 == 0){
             NN->SwitchToTestMode();
@@ -120,13 +120,13 @@ void ADAM::Optimize(NeuralNet* NN, Data* trainingData){
     float timeStart = omp_get_wtime();
     mbData->SelectMiniBatch(trainingData, 0, mbSize);
     NN->CalculateGradient(mbData);
-    NN->weightsData->AdamUpdate(NN->gradient, Moment, MS, 0.0, 1.0, learningRate);
+    NN->weightsData->AdamUpdate(NN->gradient, Moment, MS, 0.0f, 1.0f, learningRate);
 
     for(int epoch=0; epoch<maxEpochs; ++epoch){
         for(int iter=0; iter<itersPerEpoch; ++iter){
             mbData->SelectMiniBatch(trainingData, iter*mbSize, mbSize);
             NN->CalculateGradient(mbData);
-            NN->weightsData->AdamUpdate(NN->gradient, Moment, MS, 0.9, 0.1, learningRate);
+            NN->weightsData->AdamUpdate(NN->gradient, Moment, MS, 0.9f, 0.1f, learningRate);
         }
         if (epoch % 5 == 0){
             NN->SwitchToTestMode();
@@ -480,7 +480,7 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
 
     for(int j=1; j<numThreads; ++j)
         NN->gradient->Add(NNList[j]->gradient);
-    NN->weightsData->AdamUpdate(NN->gradient, Moment, MS, 0.0, 1.0, learningRate);
+    NN->weightsData->AdamUpdate(NN->gradient, Moment, MS, 0.0f, 1.0f, learningRate);
     float oldTime=omp_get_wtime(), newTime;
 
     #pragma omp parallel num_threads(numThreads)
@@ -514,7 +514,7 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
                 NNList[ID]->CalculateGradient(mbDataList[ID]);
                 if (ADAPT_PROCESSORS_LOAD){
                     time_Grad[ID] = omp_get_wtime() - gradTimeStart;
-                    velocity[ID] = 0.8 * velocity[ID] + 0.2 * (float) mbDataList[ID]->totalSize() / time_Grad[ID];
+                    velocity[ID] = 0.8f * velocity[ID] + 0.2f * (float) mbDataList[ID]->totalSize() / time_Grad[ID];
                 }
 
                 #pragma omp barrier
@@ -523,7 +523,7 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
                     for(int j=1; j<numThreads; ++j)
                         NN->gradient->Add(NNList[j]->gradient);
 
-                    NN->weightsData->AdamUpdate(NN->gradient, Moment, MS, 0.9, 0.1, learningRate);
+                    NN->weightsData->AdamUpdate(NN->gradient, Moment, MS, 0.9f, 0.1f, learningRate);
 
                     if (NORMALIZE_WEIGHTS){
                         maxAbsWeight = NN->weightsData->MaxAbs();
