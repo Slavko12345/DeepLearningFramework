@@ -2528,7 +2528,7 @@ void StairsFullConvolutionBalancedDrop::Initiate(layers* layersData, layers* del
     if (from != to ||
         kernel->depth!=vertLen||
         input->depth != startDepth + 2 * numStairs * numStairConvolutions ||
-        alpha > 1.0f || pDrop < 0.0f || pDrop > 1.0f )
+        pDrop < 0.0f || pDrop > 1.0f || pNotDrop < 0.0f || pNotDrop > 1.0f )
         cout<<"Error0 in StairsFullConvolutionBalancedDrop from "<<from<<" to "<<to<<endl;
 
     if ((symmetryLevel == 0 && (kernel->rows != 3 || kernel->cols != 3) ) ||
@@ -4044,7 +4044,7 @@ void AveragePoolingBalancedDrop::Initiate(layers* layersData, layers* deltas, we
     if (partialOutput->rows * kernelRsize != partialInput->rows ||
         partialOutput->cols * kernelCsize != partialInput->cols||
         output->depth < lastLayers ||
-        alpha > 1.0f || pDrop < 0.0f || pDrop > 1.0f)
+        pDrop < 0.0f || pDrop > 1.0f || pNotDrop < 0.0f || pNotDrop > 1.0f)
         cout<<"Error in AveragePoolingBalancedDrop from "<<from<<" to "<<to<<endl;
 }
 
@@ -4320,7 +4320,7 @@ void ColumnDropBalancedDrop::Initiate(layers* layersData, layers* deltas, weight
     if (output->rows != 1 ||
         output->cols != 1 ||
         input->depth < lastLayers ||
-        alpha > 1.0f || pDrop < 0.0f || pDrop > 1.0f)
+        pDrop < 0.0f || pDrop > 1.0f || pNotDrop < 0.0f || pNotDrop > 1.0f)
         cout<<"Error in ColumnDropBalancedDrop from "<<from<<" to "<<to<<endl;
 }
 
@@ -4673,7 +4673,7 @@ void FullAveragePoolingBalancedDrop::Initiate(layers* layersData, layers* deltas
     if (partialOutput->rows * kernelRsize != input->rows ||
         partialOutput->cols * kernelCsize != input->cols||
         input->depth > output->depth ||
-        alpha > 1.0f || pDrop < 0.0f || pDrop > 1.0f)
+        pDrop < 0.0f || pDrop > 1.0f || pNotDrop < 0.0f || pNotDrop > 1.0f)
         cout<<"Error in FullAveragePoolingBalancedDrop from "<<from<<" to "<<to<<endl;
 }
 
@@ -4773,7 +4773,7 @@ void InputBalancedDrop::Initiate(layers* layersData, layers* deltas, weights* we
 
     if (input->depth < inputDepth ||
         from != 0 || to != 0 ||
-        alpha > 1.0f || pDrop < 0.0f || pDrop > 1.0f)
+        pDrop < 0.0f || pDrop > 1.0f || pNotDrop < 0.0f || pNotDrop > 1.0f)
         cout<<"Error in InputBalancedDrop from "<<from<<" to "<<to<<endl;
 }
 

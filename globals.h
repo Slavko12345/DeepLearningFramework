@@ -35,7 +35,7 @@ const float RATE_DECAY = 0.97f;
 
 const int MAX_THREADS = 50;
 
-const float DEFAULT_ALPHA_DROP = 1.0f;
+const float DEFAULT_ALPHA_DROP = 2.0f;
 const float DEFAULT_P_DROP = 0.0625f;
 const float DEFAULT_P_NOT_DROP = 0.0f;
 
