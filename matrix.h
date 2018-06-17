@@ -17,16 +17,16 @@ struct matrix: public orderedData
     matrix();
     matrix(int rows_, int cols_);
     void SetSize(int rows_, int cols_);
-    void PointToMatrix(int rows_, int cols_, double* elem_);
-    void PointToMatrix(double *elem_);
+    void PointToMatrix(int rows_, int cols_, float* elem_);
+    void PointToMatrix(float *elem_);
 
     void Print();
     void WriteToFile(char filename[]);
 
-    double& At(int r, int c);
+    float& At(int r, int c);
     int Ind(int r, int c);
     int IndRow(int r);
-    double *Row(int r);
+    float *Row(int r);
 
 
     void SaveAsImage(char filename[]);
@@ -50,10 +50,10 @@ struct matrix: public orderedData
 
     void EigenDecompose(vect* eigenValues, matrix* eigenVectors);
 
-    double Interpolate(double x, double y);
+    float Interpolate(float x, float y);
 
-    void CopySubMatrixMultiplied(double lamb, matrix* M, int border);
-    void AddSubMatrix(double lamb, matrix* M, int border);
+    void CopySubMatrixMultiplied(float lamb, matrix* M, int border);
+    void AddSubMatrix(float lamb, matrix* M, int border);
 };
 
 #endif

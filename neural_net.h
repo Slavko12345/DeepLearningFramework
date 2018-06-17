@@ -33,16 +33,16 @@ class NeuralNet
 
         void Initiate();
         void Initiate(NeuralNet * NN);
-        void SetRandomWeights(double bound);
+        void SetRandomWeights(float bound);
         void CalculateGradient(Data* inputData);
-        void CalculateGradientFunctionValue(Data* inputData, double& functionVal);
-        void CalculateErrorAndAccuracy(Data* inputData, double &error, double &accuracy);
-        void CalculateSubErrorAndAccuracy(Data* inputData, double &error, int &correct);
-        double CalculateAccuracy(Data* inputData);
+        void CalculateGradientFunctionValue(Data* inputData, float& functionVal);
+        void CalculateErrorAndAccuracy(Data* inputData, float &error, float &accuracy);
+        void CalculateSubErrorAndAccuracy(Data* inputData, float &error, int &correct);
+        float CalculateAccuracy(Data* inputData);
         void PrintProbabilities();
         void SwitchToTrainingMode();
         void SwitchToTestMode();
-        void UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_);
+        void UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_);
         ~NeuralNet();
 };
 

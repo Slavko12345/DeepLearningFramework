@@ -41,7 +41,7 @@ int main()
 {
 
     randomGenerator::SetRandomSeed();
-    double time_start = omp_get_wtime(), error, accuracy;
+    float time_start = omp_get_wtime(), error, accuracy;
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
     //putenv((char*)"OMP_PROC_BIND=TRUE");
     putenv((char*)"OMP_DYNAMIC=FALSE");
@@ -54,7 +54,7 @@ int main()
     Data*  CifarTest = new Data;
     CifarTest->ReadTestCifar10();
 
-    NeuralNet *NN=new NeuralNet;
+    NeuralNet *NN = new NeuralNet;
     NN->Initiate();
     //NN->weightsData->ReadFromFile((char*)NET_WEIGHTS_FILE);
     cout<<"Net is initiated"<<endl;
@@ -70,11 +70,11 @@ int main()
     NN->SwitchToTestMode();
 
     NN->CalculateErrorAndAccuracy(CifarTest, error, accuracy);
-    cout<<"error: "<<error<<" accuracy: "<<accuracy*100.0<<"%"<<endl;
+    cout<<"error: "<<error<<" accuracy: "<<accuracy*100.0f<<"%"<<endl;
 
     ofstream f("data/result.txt");
     f<<"CIFAR-10 test set classification: "<<endl;
-    f<<"error: "<<error<<" accuracy: "<<accuracy*100.0<<"%"<<endl;
+    f<<"error: "<<error<<" accuracy: "<<accuracy*100.0f<<"%"<<endl;
     f.close();
 
     NN->computation->WriteCoefficientsToFile();

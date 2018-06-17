@@ -16,8 +16,8 @@ public:
 
     void Print();
 
-    double * TLayer(int number_);
-    double& At(int n, int d, int r, int c);
+    float * TLayer(int number_);
+    float& At(int n, int d, int r, int c);
     int   Ind(int n, int d, int r, int c);
 
     int Dimensionality();

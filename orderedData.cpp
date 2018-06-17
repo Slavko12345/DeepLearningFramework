@@ -9,6 +9,7 @@
 #include "vect.h"
 #include "matrix.h"
 #include <algorithm>
+#include <float.h>
 using namespace std;
 
 orderedData::orderedData(){
@@ -26,27 +27,27 @@ orderedData::~orderedData(){
 
 void orderedData::AllocateMemory(int len_){
     len = len_;
-    elem = new double[len];
+    elem = new float[len];
 }
 
 void orderedData::SetToZero(){
-    for(int i=0; i<len; ++i)
-        elem[i]=0;
+    for(int i = 0; i < len; ++i)
+        elem[i] = 0.0f;
 }
 
 void orderedData::SetToZeroStartingFrom(int startingIndex){
-    for(int i=startingIndex; i<len; ++i)
-        elem[i]=0;
+    for(int i = startingIndex; i < len; ++i)
+        elem[i] = 0.0f;
 }
 
-void orderedData::SetToValue(double val){
+void orderedData::SetToValue(float val){
     for(int i=0; i<len; ++i)
         elem[i]=val;
 }
 
-void orderedData::SetToRandomValues(double maxAbs){
+void orderedData::SetToRandomValues(float maxAbs){
     for(int j=0; j<len; ++j)
-        elem[j]=randomGenerator::generateDouble(maxAbs);
+        elem[j]=randomGenerator::generateFloat(maxAbs);
 }
 
 void orderedData::Print(){
@@ -81,26 +82,26 @@ void orderedData::WriteToFile(ofstream &f){
 }
 
 void orderedData::Copy(orderedData* A){
-    double * A_elem = A->elem;
+    float * A_elem = A->elem;
     for(int i=0; i<len; ++i)
-        elem[i]=A_elem[i];
+        elem[i] = A_elem[i];
 }
 
 void orderedData::CopyToSubpart(orderedData* A){
-    double * A_elem = A->elem;
+    float * A_elem = A->elem;
     for(int i = 0; i < A->len; ++i)
         elem[i] = A_elem[i];
 }
 
-void orderedData::CopyMultiplied(double lamb, orderedData* A){
-    double * A_elem = A->elem;
+void orderedData::CopyMultiplied(float lamb, orderedData* A){
+    float * A_elem = A->elem;
     for(int i=0; i<len; ++i)
         elem[i] = lamb * A_elem[i];
 }
 
 void orderedData::MatrProd(matrix* M, vect* v){
-    double * M_r, * v_elem = v->elem;
-    double temp;
+    float * M_r, * v_elem = v->elem;
+    float temp;
     for(int r=0; r<M->rows; ++r){
         M_r = M->Row(r);
         temp=0;
@@ -112,8 +113,8 @@ void orderedData::MatrProd(matrix* M, vect* v){
 
 void orderedData::TrMatrProd(matrix* M, vect* v){
     this->SetToZero();
-    double* M_r;
-    double v_r;
+    float* M_r;
+    float v_r;
     for(int r=0; r<M->rows; ++r){
         M_r = M->Row(r);
         v_r = v->elem[r];
@@ -126,41 +127,52 @@ void orderedData::TrMatrProd(matrix* M, vect* v){
 
 
 void orderedData::Add(orderedData* addon){
-    double *addon_elem = addon->elem;
+    float *  addon_elem = addon->elem;
+
     for(int i=0; i<len; ++i)
-        elem[i]+=addon_elem[i];
+        elem[i] += addon_elem[i];
 }
 
-void orderedData::Add(double lamb, orderedData* addon){
-    double *addon_elem = addon->elem;
-    for(int i=0; i<len; ++i)
-        elem[i]+=lamb * addon_elem[i];
-}
+void orderedData::AddDistinct(float lamb, orderedData* addon){
+    float * __restrict__ this_elem = elem;
+    float *  __restrict__ addon_elem = addon->elem;
 
-void orderedData::Add(double addon){
     for(int i=0; i<len; ++i)
-        elem[i]+=addon;
+        this_elem[i] += lamb * addon_elem[i];
 }
 
 
-void orderedData::SetToLinearCombination(double a1, double a2, orderedData* A1, orderedData* A2){
-    double* A1_elem = A1->elem, *A2_elem = A2->elem;
+void orderedData::Add(float lamb, orderedData* addon){
+    float * addon_elem = addon->elem;
+
+    for(int i=0; i<len; ++i)
+        elem[i] += lamb * addon_elem[i];
+}
+
+void orderedData::Add(float addon){
+    for(int i=0; i<len; ++i)
+        elem[i] += addon;
+}
+
+
+void orderedData::SetToLinearCombination(float a1, float a2, orderedData* A1, orderedData* A2){
+    float* A1_elem = A1->elem, *A2_elem = A2->elem;
     for(int j=0; j<A1->len; ++j)
         elem[j] = a1 * A1_elem[j] + a2 * A2_elem[j];
 }
 
 
 void orderedData::AddThisStartingFrom(int this_startingIndex, orderedData* addon){
-    double *addon_elem = addon->elem;
-    double *elem_start = this->elem + this_startingIndex;
+    float *addon_elem = addon->elem;
+    float *elem_start = this->elem + this_startingIndex;
     for(int i=0; i<addon->len; ++i)
         elem_start[i]+=addon_elem[i];
 }
 
 
 void orderedData::AddThisStartingFromOnlyActive(int this_startingIndex, orderedData* addon, activityData* this_activity){
-    double *addon_elem = addon->elem;
-    double *elem_start = this->elem + this_startingIndex;
+    float *addon_elem = addon->elem;
+    float *elem_start = this->elem + this_startingIndex;
     bool* this_activity_start = this_activity->activeUnits + this_startingIndex;
     for(int i=0; i<addon->len; ++i)
         elem_start[i] += this_activity_start[i] * addon_elem[i];
@@ -168,14 +180,14 @@ void orderedData::AddThisStartingFromOnlyActive(int this_startingIndex, orderedD
 
 
 void orderedData::AddAddonStartingFrom(int addonStartingIndex, orderedData* addon){
-    double *addon_elem_start = addon->elem + addonStartingIndex;
+    float *addon_elem_start = addon->elem + addonStartingIndex;
     for(int i=0; i<len; ++i)
         elem[i]+=addon_elem_start[i];
 }
 
 
 void orderedData::AddAddonStartingFromOnlyActive(int addonStartingIndex, orderedData* addon, activityData* this_activity){
-    double *addon_elem_start = addon->elem + addonStartingIndex;
+    float *addon_elem_start = addon->elem + addonStartingIndex;
     bool* this_activity_ = this_activity->activeUnits;
     for(int i=0; i<len; ++i)
         elem[i] += this_activity_[i] * addon_elem_start[i];
@@ -185,14 +197,14 @@ void orderedData::AddAddonStartingFromOnlyActive(int addonStartingIndex, ordered
 
 
 void orderedData::AddPointwiseFunction(orderedData* inp, mathFunc* func){
-    double *inp_elem = inp->elem;
+    float *inp_elem = inp->elem;
     for(int j=0; j<len; ++j)
         elem[j]+=func->f(inp_elem[j]);
 }
 
 void orderedData::DroppedAddPointwiseFunction(orderedData* inp, mathFunc* func, activityData* inputActivity, activityData* outputActivity){
     bool* activeOut = outputActivity->activeUnits;
-    double* inp_elem = inp->elem;
+    float* inp_elem = inp->elem;
     for(int j=0; j<len; j++)
         elem[j] += activeOut[j] * func->f(inp_elem[j]);
 //        if (inputActivity->activeUnits[j] && outputActivity->activeUnits[j])
@@ -201,15 +213,15 @@ void orderedData::DroppedAddPointwiseFunction(orderedData* inp, mathFunc* func, 
 
 
 void orderedData::AddPointwiseFuncDerivMultiply(orderedData* inp, orderedData* funcArg, mathFunc* func){
-    double* funcArg_elem = funcArg->elem;
-    double * inp_elem = inp->elem;
+    float* funcArg_elem = funcArg->elem;
+    float * inp_elem = inp->elem;
     for(int j=0; j<len; ++j)
         elem[j]+=inp_elem[j]*(func->df(funcArg_elem[j]));
 }
 
 void orderedData::DroppedAddPointwiseFuncDerivMultiply(orderedData* inp, orderedData* funcArg, mathFunc* func, activityData* inputActivity, activityData* outputActivity){
-    double* funcArg_elem = funcArg->elem;
-    double * inp_elem = inp->elem;
+    float* funcArg_elem = funcArg->elem;
+    float * inp_elem = inp->elem;
     bool* activeOut = outputActivity->activeUnits;
 
     for(int j=0; j<len; ++j)
@@ -219,47 +231,53 @@ void orderedData::DroppedAddPointwiseFuncDerivMultiply(orderedData* inp, ordered
 }
 
 
-void orderedData::Multiply(double lamb){
+void orderedData::Multiply(float lamb){
     for(int i=0; i<len; ++i)
-        elem[i]*=lamb;
+        elem[i] *= lamb;
 }
 
 void orderedData::PointwiseMultiply(orderedData* A){
-    double *A_elem = A->elem;
+    float *A_elem = A->elem;
     for(int i=0; i<len; ++i)
         elem[i] *= A_elem[i];
 }
 
-double orderedData::Sum(){
-    double res=0;
+float orderedData::Sum(){
+    float res=0;
     for(int i=0; i<len; ++i)
         res+=elem[i];
     return res;
 }
 
-double orderedData::SqNorm(){
-    double res=0;
+float orderedData::Mean(){
+    if (len == 0)
+        return 0.0;
+    return Sum() / float(len);
+}
+
+float orderedData::SqNorm(){
+    float res=0;
     for(int i=0; i<len; ++i)
         res+=sqr(elem[i]);
     return res;
 }
 
-double orderedData::Max(){
-    double res=elem[0];
+float orderedData::Max(){
+    float res=elem[0];
     for(int j=1; j<len; j++)
         if (res<elem[j]) res=elem[j];
     return res;
 }
 
-double orderedData::Min(){
-    double res=elem[0];
+float orderedData::Min(){
+    float res=elem[0];
     for(int j=1; j<len; j++)
         if (res>elem[j]) res=elem[j];
     return res;
 }
 
 int orderedData::ArgMax(){
-    double res=elem[0], ind=0;
+    float res=elem[0], ind=0.0f;
     for(int j=1; j<len; j++)
         if (res<elem[j]){
             res=elem[j];
@@ -268,23 +286,23 @@ int orderedData::ArgMax(){
     return ind;
 }
 
-double orderedData::MaxAbs(){
-    double maxAbs = -1;
+float orderedData::MaxAbs(){
+    float maxAbs = -1.0f;
     for(int j=0; j<len; ++j)
         maxAbs = max(maxAbs, fabs(elem[j]) );
     return maxAbs;
 }
 
-void orderedData::RmspropUpdate(orderedData* grad, orderedData* MS, double k1, double k2, double Step){
-    double *MS_elem = MS->elem, *grad_elem = grad->elem;
+void orderedData::RmspropUpdate(orderedData* grad, orderedData* MS, float k1, float k2, float Step){
+    float *MS_elem = MS->elem, *grad_elem = grad->elem;
     for(int j=0; j<len; j++){
         MS_elem[j] = k1*MS_elem[j] + k2*sqr(grad_elem[j]);
-        elem[j] -= Step*grad_elem[j] / max(sqrt(MS_elem[j]), 0.0000001);
+        elem[j] -= Step*grad_elem[j] / max(sqrt(MS_elem[j]), FLT_EPSILON);
     }
 }
 
-void orderedData::AdamUpdate(orderedData* grad, orderedData* Moment, orderedData* MS, double k1, double k2, double Step){
-    double *MS_elem = MS->elem, *grad_elem = grad->elem, *Moment_elem = Moment->elem;
+void orderedData::AdamUpdate(orderedData* grad, orderedData* Moment, orderedData* MS, float k1, float k2, float Step){
+    float *MS_elem = MS->elem, *grad_elem = grad->elem, *Moment_elem = Moment->elem;
 
 
     for(int j=0; j<len; ++j)
@@ -294,12 +312,12 @@ void orderedData::AdamUpdate(orderedData* grad, orderedData* Moment, orderedData
         MS_elem[j]=k1*MS_elem[j]+k2*sqr(grad_elem[j]);
 
     for(int j=0; j<len; ++j)
-        elem[j]-=Step*Moment_elem[j]/(sqrt(MS_elem[j])+0.0000001);
+        elem[j]-=Step*Moment_elem[j]/(sqrt(MS_elem[j])+FLT_EPSILON);
 
 //    for(int j=0; j<len; ++j){
 //        Moment_elem[j] = k1*Moment_elem[j]+k2*grad_elem[j];
 //        MS_elem[j]=k1*MS_elem[j]+k2*sqr(grad_elem[j]);
-//        elem[j]-=Step*Moment_elem[j]/(sqrt(MS_elem[j])+0.0000001);
+//        elem[j]-=Step*Moment_elem[j]/(sqrt(MS_elem[j])+FLT_EPSILON);
 //    }
 }
 
@@ -322,32 +340,32 @@ void orderedData::SetDroppedElementsToZero(activityData* mask, int maxLen){
 void orderedData::SetDroppedElementsToZero(activityData* mask, int startingInd, int maxLen){
     if (!mask->dropping) return;
     bool* mask_active_start = mask->activeUnits + startingInd;
-    double* elem_start = elem + startingInd;
+    float* elem_start = elem + startingInd;
     for(int j=0; j<maxLen; ++j)
         elem_start[j] *= mask_active_start[j];
 }
 
 void orderedData::SetToReluFunction(){
     for(int j=0; j<len; ++j)
-        elem[j] *= (elem[j]>0);
+        elem[j] *= (elem[j]>0.0f);
 }
 
 void orderedData::BackwardRelu(orderedData* input){
-    double *inp_elem = input->elem;
+    float *inp_elem = input->elem;
     for(int j=0; j<len; ++j)
-        elem[j] *= (inp_elem[j] > 0);
+        elem[j] *= (inp_elem[j] > 0.0f);
 }
 
 void orderedData::SetToMinReluFunction(orderedData* inp){
-    double *inp_elem = inp->elem;
+    float *inp_elem = inp->elem;
     for(int j=0; j<len; ++j)
-        elem[j] = inp_elem[j] * (inp_elem[j]<0);
+        elem[j] = inp_elem[j] * (inp_elem[j]<0.0f);
 }
 
 void orderedData::BranchMaxMin(orderedData* inp){
-    double *inp_elem = inp->elem;
+    float *inp_elem = inp->elem;
     for(int j=0; j<len; ++j){
-        elem[j] = inp_elem[j] * (inp_elem[j]<0);
+        elem[j] = inp_elem[j] * (inp_elem[j]<0.0f);
         inp_elem[j] -= elem[j];
     }
 }
@@ -356,15 +374,15 @@ void orderedData::BranchMaxMin(orderedData* inp){
 void orderedData::ListNonzeroElements(vector<int> & index){
     index.resize(0);
     for(int j=0; j<len; ++j)
-        if (fabs(elem[j])>1E-10)
+        if (fabs(elem[j])>FLT_EPSILON)
             index.push_back(j);
 }
 
 void orderedData::ListNonzeroElements(vector<int> & index, orderedData* compressed){
     index.resize(0);
-    double* compressed_elem = compressed->elem;
+    float* compressed_elem = compressed->elem;
     for(int j=0; j<len; ++j)
-        if (fabs(elem[j])>1E-10){
+        if (fabs(elem[j])>FLT_EPSILON){
             compressed_elem[index.size()] = elem[j];
             index.push_back(j);
         }
@@ -381,7 +399,7 @@ void orderedData::ListNonzeroActiveElements(vector<int> & index, activityData* a
     bool* activity_ = activity->activeUnits;
     index.resize(0);
     for(int j=0; j<len; j++)
-        if (activity_[j] && fabs(elem[j])>1E-10)
+        if (activity_[j] && fabs(elem[j])>FLT_EPSILON)
             index.push_back(j);
 }
 
@@ -392,10 +410,10 @@ void orderedData::ListNonzeroActiveElements(vector<int> & index, activityData* a
     }
 
     bool* activity_ = activity->activeUnits;
-    double* compressed_elem = compressed->elem;
+    float* compressed_elem = compressed->elem;
     index.resize(0);
     for(int j=0; j<len; j++)
-        if (activity_[j] && fabs(elem[j])>1E-10){
+        if (activity_[j] && fabs(elem[j])>FLT_EPSILON){
             compressed_elem[index.size()] = elem[j];
             index.push_back(j);
         }
@@ -424,7 +442,7 @@ void orderedData::ListActiveElements(vector<int> & index, activityData* activity
     }
 
     bool* activity_ = activity->activeUnits;
-    double* compressed_elem = compressed->elem;
+    float* compressed_elem = compressed->elem;
     index.resize(0);
     for(int j=0; j<len; j++)
         if (activity_[j]){
@@ -443,7 +461,7 @@ void orderedData::ListAll(vector<int> & index){
 
 void orderedData::ListAll(vector<int> & index, orderedData* compressed){
     index.resize(0);
-    double* compressed_elem = compressed->elem;
+    float* compressed_elem = compressed->elem;
 
     for(int j=0; j<len; ++j){
         compressed_elem[index.size()] = elem[j];
@@ -454,10 +472,10 @@ void orderedData::ListAll(vector<int> & index, orderedData* compressed){
 
 
 void orderedData::AddMatrVectProductBias(matrix* kernel, orderedData* input, vect* bias, vector<int> &indexInput, vector<int> &indexOutput){
-    double temp;
-    double* kernel_i;
-    double *input_ = input->elem;
-    double *bias_ = bias->elem;
+    float temp;
+    float* kernel_i;
+    float *input_ = input->elem;
+    float *bias_ = bias->elem;
     int indOutI, indInpJ;
 
     int indexInputSize  = indexInput.size();
@@ -478,10 +496,10 @@ void orderedData::AddMatrVectProductBias(matrix* kernel, orderedData* input, vec
 
 
 void orderedData::AddMatrVectProductBias(matrix* kernel, orderedData* input, vect* bias, vector<int> &indexInput){
-    double temp;
-    double* kernel_i;
-    double *input_ = input->elem;
-    double *bias_ = bias->elem;
+    float temp;
+    float* kernel_i;
+    float *input_ = input->elem;
+    float *bias_ = bias->elem;
     int indInpJ;
 
     int indexInputSize  = indexInput.size();
@@ -499,10 +517,10 @@ void orderedData::AddMatrVectProductBias(matrix* kernel, orderedData* input, vec
 }
 
 void orderedData::AddMatrVectProductBias(matrix* kernel, orderedData* input, vect* bias){
-    double temp;
-    double* kernel_i;
-    double *input_ = input->elem;
-    double *bias_ = bias->elem;
+    float temp;
+    float* kernel_i;
+    float *input_ = input->elem;
+    float *bias_ = bias->elem;
     const int input_len = input->len;
 
     //int indexInputSize  = indexInput.size();
@@ -519,9 +537,9 @@ void orderedData::AddMatrVectProductBias(matrix* kernel, orderedData* input, vec
 }
 
 void orderedData::AddMatrVectProduct(matrix* kernel, orderedData* input){
-    double temp;
-    double* kernel_i;
-    double *input_ = input->elem;
+    float temp;
+    float* kernel_i;
+    float *input_ = input->elem;
     const int input_len = input->len;
 
     for(int i = 0; i < len; ++i){
@@ -536,10 +554,10 @@ void orderedData::AddMatrVectProduct(matrix* kernel, orderedData* input){
 }
 
 void orderedData::AddMatrCompressedVectProductBias(matrix* kernel, orderedData* compressedInput, vect* bias, vector<int> &indexInput){
-    double temp;
-    double* kernel_i;
-    double *bias_ = bias->elem;
-    double *compressedInput_elem = compressedInput->elem;
+    float temp;
+    float* kernel_i;
+    float *bias_ = bias->elem;
+    float *compressedInput_elem = compressedInput->elem;
 
     int indexInputSize  = indexInput.size();
 
@@ -559,13 +577,13 @@ void orderedData::AddMatrCompressedVectProductBias(matrix* kernel, orderedData* 
 
 void orderedData::BackwardFullyConnected(matrix* kernel, orderedData* outputDelta, orderedData* input, matrix* kernelGrad, vect* biasGrad,
                                   vector<int> &indexInput, vector<int> &indexOutput){
-    double *kernel_i;
-    double *kernelGrad_i;
-    double *inpDelta = elem;
-    double *inp = input->elem;
-    double *biasGrad_ = biasGrad->elem;
+    float *kernel_i;
+    float *kernelGrad_i;
+    float *inpDelta = elem;
+    float *inp = input->elem;
+    float *biasGrad_ = biasGrad->elem;
 
-    double outputDelta_i;
+    float outputDelta_i;
     int indexInputSize  = indexInput.size();
     int indexOutputSize = indexOutput.size();
     int indOut_i, indInp_j;
@@ -587,13 +605,13 @@ void orderedData::BackwardFullyConnected(matrix* kernel, orderedData* outputDelt
 
 
 void orderedData::BackwardFullyConnected(matrix* kernel, orderedData* outputDelta, orderedData* input, matrix* kernelGrad, vect* biasGrad, vector<int> &indexInput){
-    double *kernel_i;
-    double *kernelGrad_i;
-    double *inpDelta = elem;
-    double *inp = input->elem;
-    double *biasGrad_ = biasGrad->elem;
+    float *kernel_i;
+    float *kernelGrad_i;
+    float *inpDelta = elem;
+    float *inp = input->elem;
+    float *biasGrad_ = biasGrad->elem;
 
-    double outputDelta_i;
+    float outputDelta_i;
     int indexInputSize  = indexInput.size();
     int indInp_j;
 
@@ -612,13 +630,13 @@ void orderedData::BackwardFullyConnected(matrix* kernel, orderedData* outputDelt
 }
 
 void orderedData::BackwardFullyConnected(matrix* kernel, orderedData* outputDelta, orderedData* input, matrix* kernelGrad, vect* biasGrad){
-    double *kernel_i;
-    double *kernelGrad_i;
-    double *inpDelta = elem;
-    double *inp = input->elem;
-    double *biasGrad_ = biasGrad->elem;
+    float *kernel_i;
+    float *kernelGrad_i;
+    float *inpDelta = elem;
+    float *inp = input->elem;
+    float *biasGrad_ = biasGrad->elem;
 
-    double outputDelta_i;
+    float outputDelta_i;
     int indInp_j;
     int out_len = outputDelta->len;
     int inp_len = input->len;
@@ -638,12 +656,12 @@ void orderedData::BackwardFullyConnected(matrix* kernel, orderedData* outputDelt
 
 
 void orderedData::BackwardFullyConnectedNoBias(matrix* kernel, orderedData* outputDelta, orderedData* input, matrix* kernelGrad){
-    double *kernel_i;
-    double *kernelGrad_i;
-    double *inpDelta = elem;
-    double *inp = input->elem;
+    float *kernel_i;
+    float *kernelGrad_i;
+    float *inpDelta = elem;
+    float *inp = input->elem;
 
-    double outputDelta_i;
+    float outputDelta_i;
     int indInp_j;
     int out_len = outputDelta->len;
     int inp_len = input->len;
@@ -663,13 +681,13 @@ void orderedData::BackwardFullyConnectedNoBias(matrix* kernel, orderedData* outp
 
 void orderedData::BackwardCompressedInputFullyConnected(matrix* kernel, orderedData* outputDelta, orderedData* compressedInput, matrix* kernelGrad, vect* biasGrad,
                                          vector<int> &indexInput){
-    double *kernel_i;
-    double *kernelGrad_i;
-    double *inpDelta = elem;
-    double *comprInp = compressedInput->elem;
-    double *biasGrad_ = biasGrad->elem;
+    float *kernel_i;
+    float *kernelGrad_i;
+    float *inpDelta = elem;
+    float *comprInp = compressedInput->elem;
+    float *biasGrad_ = biasGrad->elem;
 
-    double outputDelta_i;
+    float outputDelta_i;
     int indexInputSize  = indexInput.size();
     int indInp_j;
 
@@ -690,19 +708,29 @@ void orderedData::BackwardCompressedInputFullyConnected(matrix* kernel, orderedD
 
 
 
-double InnerProduct(orderedData* inp1, orderedData* inp2){
-    double res = 0;
-    double *inp1_elem = inp1->elem;
-    double* inp2_elem = inp2->elem;
+float InnerProduct(orderedData* inp1, orderedData* inp2){
+    float res = 0.0;
+    float * inp1_elem = inp1->elem;
+    float * inp2_elem = inp2->elem;
+    for(int j=0; j<inp1->len; ++j)
+        res += inp1_elem[j] * inp2_elem[j];
+    return res;
+}
+
+float InnerDistinctProduct(orderedData* inp1, orderedData* inp2){
+    float res = 0.0;
+    float * __restrict__ inp1_elem = inp1->elem;
+    float * __restrict__ inp2_elem = inp2->elem;
+
     for(int j=0; j<inp1->len; ++j)
         res += inp1_elem[j] * inp2_elem[j];
     return res;
 }
 
 
-double InnerProductSubMatrices(matrix* M1, matrix* M2, int border){
-    double res = 0;
-    double * M1_r, * M2_r;
+float InnerProductSubMatrices(matrix* M1, matrix* M2, int border){
+    float res = 0;
+    float * M1_r, * M2_r;
     for(int r=border; r<M1->rows - border; ++r){
         M1_r = M1->Row(r);
         M2_r = M2->Row(r);
@@ -716,18 +744,18 @@ double InnerProductSubMatrices(matrix* M1, matrix* M2, int border){
 
 void orderedData::MaxMinBackward(orderedData* minOutputDelta, orderedData* output){
     int startingIndex = len;
-    double *out_elem = output->elem;
-    double* minOutDelta_elem = minOutputDelta->elem;
-    double* out_elem_start = out_elem + startingIndex;
+    float *out_elem = output->elem;
+    float* minOutDelta_elem = minOutputDelta->elem;
+    float* out_elem_start = out_elem + startingIndex;
 
     for(int j=0; j<len; ++j){
-        elem[j] *= (out_elem[j]>0);
-        minOutDelta_elem[j] *= (out_elem_start[j]<0);
+        elem[j] *= (out_elem[j]>0.0f);
+        minOutDelta_elem[j] *= (out_elem_start[j]<0.0f);
         elem[j] += minOutDelta_elem[j];
     }
 }
 
-void orderedData::FindTrustRegionMinima(matrix* B, vect* r, double eps){
+void orderedData::FindTrustRegionMinima(matrix* B, vect* r, float eps){
     matrix* eigenVectors = new matrix(B->rows, B->cols);
     vect* eigenValues = new vect(r->len);
     vect* rV = new vect(r->len);
@@ -747,10 +775,10 @@ void orderedData::FindTrustRegionMinima(matrix* B, vect* r, double eps){
     this->FindTrustRegionMinima(eigenValues, eigenVectors, rV, eps);
 }
 
-void orderedData::FindTrustRegionMinima(vect* eigenValues, matrix* eigenVectors, vect* rV, double eps){
+void orderedData::FindTrustRegionMinima(vect* eigenValues, matrix* eigenVectors, vect* rV, float eps){
     vect* solutionBasis = new vect(eigenValues->len);
-    if (eigenValues->elem[0]>0){
-        double globalSolSqNorm = 0;
+    if (eigenValues->elem[0]>0.0f){
+        float globalSolSqNorm = 0.0f;
         for(int j=0; j<rV->len; ++j)
             solutionBasis->elem[j] = rV->elem[j] / eigenValues->elem[j];
         if (solutionBasis->SqNorm() < sqr(eps) ){
@@ -759,20 +787,20 @@ void orderedData::FindTrustRegionMinima(vect* eigenValues, matrix* eigenVectors,
         }
     }
 
-    double lamb = 0;
-    if (eigenValues->elem[0]<0){
-        double addon = 1;
+    float lamb = 0.0f;
+    if (eigenValues->elem[0]<0.0f){
+        float addon = 1;
         while(1){
             lamb = - eigenValues->elem[0] + addon;
             if (TrustRegionFunc(lamb, eigenValues, rV, eps)>0)
                 break;
-            addon /= 2.0;
+            addon /= 2.0f;
         }
     }
-    double f_val;
+    float f_val;
     while(1){
         f_val = TrustRegionFunc(lamb, eigenValues, rV, eps);
-        if (fabs(f_val)<1E-10) break;
+        if (fabs(f_val)<FLT_EPSILON) break;
         lamb -= f_val / TrustRegionFuncDeriv(lamb, eigenValues, rV, eps);
         //cout<<lamb<<endl;
     }
@@ -785,7 +813,7 @@ void orderedData::FindTrustRegionMinima(vect* eigenValues, matrix* eigenVectors,
     this->MatrProd(eigenVectors, solutionBasis);
 }
 
-void orderedData::CalculateMeanStdDev(double & mean, double & stDev){
+void orderedData::CalculateMeanStdDev(float & mean, float & stDev){
     mean = 0;
     stDev = 0;
     for(int j=0; j<len; ++j){
@@ -798,24 +826,24 @@ void orderedData::CalculateMeanStdDev(double & mean, double & stDev){
     stDev = sqrt(stDev);
 }
 
-void orderedData::NormalizeMeanStDev(orderedData* input, double & mean, double & stDev){
+void orderedData::NormalizeMeanStDev(orderedData* input, float & mean, float & stDev){
     this->CalculateMeanStdDev(mean, stDev);
-    if (fabs(stDev < 1E-10)) stDev+=0.001;
-    double invStDev = 1.0 / stDev;
+    if (fabs(stDev < FLT_EPSILON)) stDev += FLT_EPSILON;
+    float invStDev = 1.0f / stDev;
     for(int j=0; j<len; ++j)
         elem[j] = (input->elem[j] - mean) * invStDev;
 }
 
-void orderedData::computeMedian(double * median, int * index){
-    std::vector<double> dataCopy;
+void orderedData::computeMedian(float * median, int * index){
+    std::vector<float> dataCopy;
     dataCopy.reserve(len);
     for(int j=0; j<len; ++j)
         dataCopy.push_back(elem[j]);
-    std::vector<double>::iterator middle = dataCopy.begin() + (len-1)/2;
+    std::vector<float>::iterator middle = dataCopy.begin() + (len-1)/2;
     std::nth_element(dataCopy.begin(), middle, dataCopy.end());
     median[0] = *middle;
     for(int j=0; j<len; ++j)
-        if (fabs(elem[j] - median[0]) < 1E-8){
+        if (fabs(elem[j] - median[0]) < FLT_EPSILON){
             index[0] = j;
             break;
         }
@@ -823,51 +851,51 @@ void orderedData::computeMedian(double * median, int * index){
 
 
 
-void orderedData::computeMedianNonzero(double * median, int * index){
-    std::vector<double> dataCopy;
+void orderedData::computeMedianNonzero(float * median, int * index){
+    std::vector<float> dataCopy;
     dataCopy.reserve(len);
     for(int j=0; j<len; ++j)
-        if (fabs(elem[j])>1E-8)
+        if (fabs(elem[j])>FLT_EPSILON)
             dataCopy.push_back(elem[j]);
     if (dataCopy.size() == 0){
-        median[0] = 0;
-        index[0] = 0;
+        median[0] = 0.0f;
+        index[0] = 0.0f;
         return;
     }
-    std::vector<double>::iterator middle = dataCopy.begin() + (dataCopy.size() - 1) / 2;
+    std::vector<float>::iterator middle = dataCopy.begin() + (dataCopy.size() - 1) / 2;
     std::nth_element(dataCopy.begin(), middle, dataCopy.end());
     median[0] = *middle;
     for(int j=0; j<len; ++j)
-        if (fabs(elem[j] - median[0]) < 1E-8){
+        if (fabs(elem[j] - median[0]) < FLT_EPSILON){
             index[0] = j;
             break;
         }
 }
 
 
-void orderedData::computeQuartiles(double * quartiles, int * index, int numQuartiles){
-    vector<double> dataCopy;
+void orderedData::computeQuartiles(float * quartiles, int * index, int numQuartiles){
+    vector<float> dataCopy;
     dataCopy.reserve(len);
     for(int j=0; j<len; ++j)
         dataCopy.push_back(elem[j]);
-    vector<double>::iterator quartileIterator_j;
+    vector<float>::iterator quartileIterator_j;
     for(int j=0; j<numQuartiles; ++j){
-        quartileIterator_j = dataCopy.begin() + round((dataCopy.size() - 1) * double(j + 1) / (numQuartiles + 1));
+        quartileIterator_j = dataCopy.begin() + round((dataCopy.size() - 1) * float(j + 1) / (numQuartiles + 1));
         nth_element(dataCopy.begin(), quartileIterator_j, dataCopy.end());
         quartiles[j] = * quartileIterator_j;
         for(int k=0; k<len; ++k)
-            if (fabs(elem[k] - quartiles[j]) < 1E-8){
+            if (fabs(elem[k] - quartiles[j]) < FLT_EPSILON){
                 index[j] = k;
                 break;
             }
     }
 }
 
-void orderedData::computeQuartilesNonzero(double * quartiles, int * index, int numQuartiles){
-    vector<double> dataCopy;
+void orderedData::computeQuartilesNonzero(float * quartiles, int * index, int numQuartiles){
+    vector<float> dataCopy;
     dataCopy.reserve(len);
     for(int j=0; j<len; ++j)
-        if (fabs(elem[j]) > 1E-8)
+        if (fabs(elem[j]) > FLT_EPSILON)
             dataCopy.push_back(elem[j]);
 
     if (dataCopy.size() == 0){
@@ -878,13 +906,13 @@ void orderedData::computeQuartilesNonzero(double * quartiles, int * index, int n
         return;
     }
 
-    vector<double>::iterator quartileIterator_j;
+    vector<float>::iterator quartileIterator_j;
     for(int j=0; j<numQuartiles; ++j){
-        quartileIterator_j = dataCopy.begin() + round((dataCopy.size() - 1) * double(j + 1) / (numQuartiles + 1));
+        quartileIterator_j = dataCopy.begin() + round((dataCopy.size() - 1) * float(j + 1) / (numQuartiles + 1));
         nth_element(dataCopy.begin(), quartileIterator_j, dataCopy.end());
         quartiles[j] = * quartileIterator_j;
         for(int k=0; k<len; ++k)
-            if (fabs(elem[k] - quartiles[j]) < 1E-8){
+            if (fabs(elem[k] - quartiles[j]) < FLT_EPSILON){
                 index[j] = k;
                 break;
             }
@@ -894,19 +922,19 @@ void orderedData::computeQuartilesNonzero(double * quartiles, int * index, int n
 void orderedData::AverageWith(orderedData * input){
     for(int j=0; j<len; ++j){
         elem[j] += input->elem[j];
-        elem[j] *= 0.5;
+        elem[j] *= 0.5f;
     }
 }
 
 void orderedData::BackwardAverageWith(orderedData* inputDelta){
     for(int j=0; j<len; ++j){
-        elem[j] *= 0.5;
+        elem[j] *= 0.5f;
         inputDelta->elem[j] = elem[j];
     }
 }
 
-void orderedData::SetToBalancedMultipliers(activityData* balancedActiveUnits, activityData* balacedUpDown, double alpha){
+void orderedData::SetToBalancedMultipliers(activityData* balancedActiveUnits, activityData* balacedUpDown, float alpha){
     for(int j=0; j<len; ++j){
-        elem[j] = 1.0 + alpha * (1.0 - balancedActiveUnits->activeUnits[j]) * (2.0 * balacedUpDown->activeUnits[j] - 1.0);
+        elem[j] = 1.0f + alpha * (1.0f - balancedActiveUnits->activeUnits[j]) * (2.0f * balacedUpDown->activeUnits[j] - 1.0f);
     }
 }

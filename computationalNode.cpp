@@ -49,7 +49,7 @@ bool computationalNode::UsesBalancedDrop(){
     return 0;
 }
 
-void computationalNode::UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_){
+void computationalNode::UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_){
     cout<<"Error: call of UpdateBalancedDropParameters for abstract class"<<endl;
 }
 
@@ -164,7 +164,7 @@ void FullyConnectedSoftMax::ForwardPass(){
 
 void FullyConnectedSoftMax::BackwardPass(bool computeDelta, int trueClass){
     outputDelta->Copy(output);
-    outputDelta->elem[trueClass] -= 1.0;
+    outputDelta->elem[trueClass] -= 1.0f;
     if (computeDelta){
         //inputDelta->BackwardCompressedInputFullyConnected(kernel, outputDelta, compressedInput, kernelGrad, biasGrad, indexInput);
         inputDelta->BackwardFullyConnected(kernel, outputDelta, input, kernelGrad, biasGrad);
@@ -178,14 +178,14 @@ void FullyConnectedSoftMax::BackwardPass(bool computeDelta, int trueClass){
 
 void FullyConnectedSoftMax::SetToTrainingMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel->Multiply(1.0/(1.0-inputActivity->dropRate));
+       kernel->Multiply(1.0f/(1.0f-inputActivity->dropRate));
     }
     testMode = 0;
 }
 
 void FullyConnectedSoftMax::SetToTestMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel->Multiply(1.0-inputActivity->dropRate);
+       kernel->Multiply(1.0f-inputActivity->dropRate);
     }
     testMode=1;
 }
@@ -256,7 +256,7 @@ void FullyConnectedNoBiasSoftMax::ForwardPass(){
 
 void FullyConnectedNoBiasSoftMax::BackwardPass(bool computeDelta, int trueClass){
     outputDelta->Copy(output);
-    outputDelta->elem[trueClass] -= 1.0;
+    outputDelta->elem[trueClass] -= 1.0f;
     if (computeDelta){
         //inputDelta->BackwardCompressedInputFullyConnected(kernel, outputDelta, compressedInput, kernelGrad, biasGrad, indexInput);
         inputDelta->BackwardFullyConnectedNoBias(kernel, outputDelta, input, kernelGrad);
@@ -270,14 +270,14 @@ void FullyConnectedNoBiasSoftMax::BackwardPass(bool computeDelta, int trueClass)
 
 void FullyConnectedNoBiasSoftMax::SetToTrainingMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel->Multiply(1.0/(1.0-inputActivity->dropRate));
+       kernel->Multiply(1.0f/(1.0f-inputActivity->dropRate));
     }
     testMode = 0;
 }
 
 void FullyConnectedNoBiasSoftMax::SetToTestMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel->Multiply(1.0-inputActivity->dropRate);
+       kernel->Multiply(1.0f-inputActivity->dropRate);
     }
     testMode=1;
 }
@@ -382,8 +382,8 @@ void Ensemble::BackwardPass(bool computeDelta, int trueClass){
     separateOutputDelta->Copy(separateOutput);
     for(int r=0; r<input->rows; ++r)
         for(int c=0; c<input->cols; ++c)
-            separateOutputDelta->At(r, c, trueClass) -= 1.0;
-    separateOutputDelta->Multiply(1.0 / (input->rows * input->cols));
+            separateOutputDelta->At(r, c, trueClass) -= 1.0f;
+    separateOutputDelta->Multiply(1.0f / (input->rows * input->cols));
 
     separateInputDelta->SetToZero();
     for(int r=0; r<input->rows; ++r){
@@ -404,14 +404,14 @@ void Ensemble::BackwardPass(bool computeDelta, int trueClass){
 
 void Ensemble::SetToTrainingMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel->Multiply(1.0/(1.0-inputActivity->dropRate));
+       kernel->Multiply(1.0f/(1.0f-inputActivity->dropRate));
     }
     testMode = 0;
 }
 
 void Ensemble::SetToTestMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel->Multiply(1.0-inputActivity->dropRate);
+       kernel->Multiply(1.0f-inputActivity->dropRate);
     }
     testMode=1;
 }
@@ -534,7 +534,7 @@ void SymmetricEnsemble::BackwardPass(bool computeDelta, int trueClass){
     separateOutputDelta->Copy(separateOutput);
     for(int r = 0; r < input->rows; ++r)
         for(int c = 0; c < input->cols / 2; ++c)
-            separateOutputDelta->At(r, c, trueClass) -= 1.0;
+            separateOutputDelta->At(r, c, trueClass) -= 1.0f;
     separateOutputDelta->Multiply(2.0 / (input->rows * input->cols));
 
     separateInputDelta->SetToZero();
@@ -559,14 +559,14 @@ void SymmetricEnsemble::BackwardPass(bool computeDelta, int trueClass){
 
 void SymmetricEnsemble::SetToTrainingMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel->Multiply(1.0/(1.0-inputActivity->dropRate));
+       kernel->Multiply(1.0f/(1.0f-inputActivity->dropRate));
     }
     testMode = 0;
 }
 
 void SymmetricEnsemble::SetToTestMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel->Multiply(1.0-inputActivity->dropRate);
+       kernel->Multiply(1.0f-inputActivity->dropRate);
     }
     testMode=1;
 }
@@ -1353,13 +1353,13 @@ void SequentiallyConvoluteBottleneckReluStandard::BackwardPass(bool computeDelta
 
 void SequentiallyConvoluteBottleneckReluStandard::SetToTrainingMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0/(1.0-inputActivity->dropRate));
+       kernel_vert->Multiply(1.0f/(1.0f-inputActivity->dropRate));
     }
 }
 
 void SequentiallyConvoluteBottleneckReluStandard::SetToTestMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0-inputActivity->dropRate);
+       kernel_vert->Multiply(1.0f-inputActivity->dropRate);
     }
 }
 
@@ -1437,14 +1437,14 @@ void SequentiallyConvoluteBottleneckMaxMinStandard::BackwardPass(bool computeDel
 
 void SequentiallyConvoluteBottleneckMaxMinStandard::SetToTrainingMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0/(1.0-inputActivity->dropRate));
+       kernel_vert->Multiply(1.0f/(1.0f-inputActivity->dropRate));
     }
     testMode = 0;
 }
 
 void SequentiallyConvoluteBottleneckMaxMinStandard::SetToTestMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0-inputActivity->dropRate);
+       kernel_vert->Multiply(1.0f-inputActivity->dropRate);
     }
     testMode = 1;
 }
@@ -1501,14 +1501,14 @@ void SequentiallyMaxMinStandard::BackwardPass(bool computeDelta, int trueClass){
 
 void SequentiallyMaxMinStandard::SetToTrainingMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel->Multiply(1.0/(1.0-inputActivity->dropRate));
+       kernel->Multiply(1.0f/(1.0f-inputActivity->dropRate));
     }
     testMode = 0;
 }
 
 void SequentiallyMaxMinStandard::SetToTestMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel->Multiply(1.0-inputActivity->dropRate);
+       kernel->Multiply(1.0f-inputActivity->dropRate);
     }
     testMode = 1;
 }
@@ -1582,14 +1582,14 @@ void SequentiallyConvoluteBottleneckMaxMinStandardLimited::BackwardPass(bool com
 
 void SequentiallyConvoluteBottleneckMaxMinStandardLimited::SetToTrainingMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0/(1.0-inputActivity->dropRate));
+       kernel_vert->Multiply(1.0f/(1.0f-inputActivity->dropRate));
     }
     testMode = 0;
 }
 
 void SequentiallyConvoluteBottleneckMaxMinStandardLimited::SetToTestMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0-inputActivity->dropRate);
+       kernel_vert->Multiply(1.0f-inputActivity->dropRate);
     }
     testMode = 1;
 }
@@ -1685,14 +1685,14 @@ void SequentiallyConvoluteBottleneckMaxMinStandardRandom::BackwardPass(bool comp
 
 void SequentiallyConvoluteBottleneckMaxMinStandardRandom::SetToTrainingMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0/(1.0-inputActivity->dropRate));
+       kernel_vert->Multiply(1.0f/(1.0f-inputActivity->dropRate));
     }
     testMode = 0;
 }
 
 void SequentiallyConvoluteBottleneckMaxMinStandardRandom::SetToTestMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0-inputActivity->dropRate);
+       kernel_vert->Multiply(1.0f-inputActivity->dropRate);
     }
     testMode = 1;
 }
@@ -1803,16 +1803,16 @@ void SequentiallyConvoluteBottleneckMaxMinStandardRandomSymmetric::BackwardPass(
 
 void SequentiallyConvoluteBottleneckMaxMinStandardRandomSymmetric::SetToTrainingMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0/(1.0-inputActivity->dropRate));
-       kernel_hor ->Multiply(1.0/(1.0-inputActivity->dropRate));
+       kernel_vert->Multiply(1.0f/(1.0f-inputActivity->dropRate));
+       kernel_hor ->Multiply(1.0f/(1.0f-inputActivity->dropRate));
     }
     testMode = 0;
 }
 
 void SequentiallyConvoluteBottleneckMaxMinStandardRandomSymmetric::SetToTestMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0-inputActivity->dropRate);
-       kernel_hor ->Multiply(1.0-inputActivity->dropRate);
+       kernel_vert->Multiply(1.0f-inputActivity->dropRate);
+       kernel_hor ->Multiply(1.0f-inputActivity->dropRate);
     }
     testMode = 1;
 }
@@ -1918,16 +1918,16 @@ void SequentiallyConvoluteBottleneckMaxMinStandardRandomSymmetricNoBias::Backwar
 
 void SequentiallyConvoluteBottleneckMaxMinStandardRandomSymmetricNoBias::SetToTrainingMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0/(1.0-inputActivity->dropRate));
-       kernel_hor ->Multiply(1.0/(1.0-inputActivity->dropRate));
+       kernel_vert->Multiply(1.0f/(1.0f-inputActivity->dropRate));
+       kernel_hor ->Multiply(1.0f/(1.0f-inputActivity->dropRate));
     }
     testMode = 0;
 }
 
 void SequentiallyConvoluteBottleneckMaxMinStandardRandomSymmetricNoBias::SetToTestMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0-inputActivity->dropRate);
-       kernel_hor ->Multiply(1.0-inputActivity->dropRate);
+       kernel_vert->Multiply(1.0f-inputActivity->dropRate);
+       kernel_hor ->Multiply(1.0f-inputActivity->dropRate);
     }
     testMode = 1;
 }
@@ -2062,9 +2062,9 @@ void StairsConvolution::SetToTrainingMode(){
     }
 
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0/(1.0-inputActivity->dropRate));
+       kernel_vert->Multiply(1.0f/(1.0f-inputActivity->dropRate));
        if (verticalConvActivity->dropping)
-            kernel_hor ->Multiply(1.0/(1.0-verticalConvActivity->dropRate));
+            kernel_hor ->Multiply(1.0f/(1.0f-verticalConvActivity->dropRate));
     }
     testMode = 0;
 }
@@ -2075,9 +2075,9 @@ void StairsConvolution::SetToTestMode(){
         return;
     }
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0-inputActivity->dropRate);
+       kernel_vert->Multiply(1.0f-inputActivity->dropRate);
        if (verticalConvActivity->dropping)
-            kernel_hor ->Multiply(1.0-verticalConvActivity->dropRate);
+            kernel_hor ->Multiply(1.0f-verticalConvActivity->dropRate);
     }
     testMode = 1;
 }
@@ -2165,7 +2165,7 @@ void StairsSymmetricConvolution::Initiate(layers* layersData, layers* deltas, we
 
     int nConvolutions = numStairs * numStairConvolutions;
 
-    verticalConv = new tensor(nConvolutions, input->rows, input->cols);
+    verticalConv      = new tensor(nConvolutions, input->rows, input->cols);
     verticalConvDelta = new tensor(nConvolutions, input->rows, input->cols);
 
     indices = new int [vertLen];
@@ -2214,7 +2214,7 @@ void StairsSymmetricConvolution::SetToTrainingMode(){
     }
 
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0/(1.0-inputActivity->dropRate));
+       kernel_vert->Multiply(1.0f/(1.0f-inputActivity->dropRate));
     }
     testMode = 0;
 }
@@ -2225,7 +2225,7 @@ void StairsSymmetricConvolution::SetToTestMode(){
         return;
     }
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0-inputActivity->dropRate);
+       kernel_vert->Multiply(1.0f-inputActivity->dropRate);
     }
     testMode = 1;
 }
@@ -2344,7 +2344,7 @@ void StairsSymmetricConvolutionRelu::SetToTrainingMode(){
     }
 
     if (inputActivity->dropping && primalWeight){
-       kernel->Multiply(1.0/(1.0-inputActivity->dropRate));
+       kernel->Multiply(1.0f/(1.0f-inputActivity->dropRate));
     }
     testMode = 0;
 }
@@ -2355,7 +2355,7 @@ void StairsSymmetricConvolutionRelu::SetToTestMode(){
         return;
     }
     if (inputActivity->dropping && primalWeight){
-       kernel->Multiply(1.0-inputActivity->dropRate);
+       kernel->Multiply(1.0f-inputActivity->dropRate);
     }
     testMode = 1;
 }
@@ -2403,10 +2403,13 @@ void StairsFullConvolution::Initiate(layers* layersData, layers* deltas, weights
     inputDelta = static_cast<tensor*>(deltas->layerList[from]);
     inputActivity  = layersActivity->layerList[from];
 
+
     int vertLen = 0;
     for(int stair=0; stair<numStairs; ++stair){
         vertLen += (startDepth + 2 * numStairConvolutions * stair) * numStairConvolutions;
     }
+
+
 
     if (symmetryLevel<0 || symmetryLevel>4)
         cout<<"Symmetry level is not implemented yet";
@@ -2451,7 +2454,7 @@ void StairsFullConvolution::SetToTrainingMode(){
     }
 
     if (inputActivity->dropping && primalWeight){
-       kernel->Multiply(1.0/(1.0-inputActivity->dropRate));
+       kernel->Multiply(1.0f/(1.0f-inputActivity->dropRate));
     }
     testMode = 0;
 }
@@ -2462,7 +2465,7 @@ void StairsFullConvolution::SetToTestMode(){
         return;
     }
     if (inputActivity->dropping && primalWeight){
-       kernel->Multiply(1.0-inputActivity->dropRate);
+       kernel->Multiply(1.0f-inputActivity->dropRate);
     }
     testMode = 1;
 }
@@ -2489,10 +2492,271 @@ StairsFullConvolution::~StairsFullConvolution(){
 
 
 
+//full bottleneck convolutional layers
+//no symmetry kernels
+//bias is always present
+//max-min nonlinearity
+
+StairsFullBottleneck::StairsFullBottleneck
+(int weightsNum_vertical_, int weightsNum_horizontal_, int startDepth_, int numStairs_, int numStairConvolutions_, int bottleneckDepth_):
+    weightsNum_vertical(weightsNum_vertical_), weightsNum_horizontal(weightsNum_horizontal_), startDepth(startDepth_), numStairs(numStairs_),
+    numStairConvolutions(numStairConvolutions_), bottleneckDepth(bottleneckDepth_){
+}
+
+void StairsFullBottleneck::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner){
+    primalWeight = primalWeightOwner;
+
+    kernel_vert = static_cast<tensor *>(weightsData->weightList[weightsNum_vertical].dataWeight);
+    kernelGrad_vert = static_cast<tensor *>(gradient->weightList[weightsNum_vertical].dataWeight);
+
+    kernel_hor = static_cast<tensor *>(weightsData->weightList[weightsNum_horizontal].dataWeight);
+    kernelGrad_hor = static_cast<tensor *>(gradient->weightList[weightsNum_horizontal].dataWeight);
+
+    bias = static_cast<vect *>(weightsData->weightList[weightsNum_horizontal].bias);
+    biasGrad = static_cast<vect *>(gradient->weightList[weightsNum_horizontal].bias);
+
+    input=static_cast<tensor*>(layersData->layerList[from]);
+    inputDelta = static_cast<tensor*>(deltas->layerList[from]);
+    inputActivity  = layersActivity->layerList[from];
+
+    verticalConv      = new tensor(numStairs * bottleneckDepth, input->rows, input->cols);
+    verticalConvDelta = new tensor(numStairs * bottleneckDepth, input->rows, input->cols);
+
+    int vertLen = 0;
+    for(int stair=0; stair<numStairs; ++stair){
+        vertLen += (startDepth + 2 * numStairConvolutions * stair) * bottleneckDepth;
+    }
+
+    if (from != to ||
+        kernel_vert->depth != vertLen||
+        kernel_vert->rows != 1 ||
+        kernel_vert->cols != 1 ||
+        input->depth != startDepth + 2 * numStairs * numStairConvolutions )
+        cout<<"Error0 in StairsFullBottleneck from "<<from<<" to "<<to<<endl;
+
+    if (kernel_hor->depth != numStairs * bottleneckDepth * numStairConvolutions ||
+        kernel_hor->rows != 3 ||
+        kernelGrad_hor->cols != 3)
+        cout<<"Error1 in StairsFullBottleneck from "<<from<<" to "<<to<<endl;
+
+    if (bias->len != numStairs * numStairConvolutions)
+        cout<<"Bias error in StairsFullBottleneck from "<<from<<" to "<<to<<endl;
+}
+
+void StairsFullBottleneck::ForwardPass(){
+    ForwardStairsFullBottleneck(input, kernel_vert, kernel_hor, bias, verticalConv, startDepth, numStairs,
+                                numStairConvolutions, bottleneckDepth, inputActivity, testMode);
+}
+
+void StairsFullBottleneck::BackwardPass(bool computeDelta, int trueClass){
+    BackwardStairsFullBottleneck(input, inputDelta, kernel_vert, kernelGrad_vert,
+                kernel_hor, kernelGrad_hor, biasGrad, verticalConv, verticalConvDelta,
+                startDepth, numStairs, numStairConvolutions, bottleneckDepth,
+                inputActivity);
+}
+
+void StairsFullBottleneck::SetToTrainingMode(){
+    if (testMode==0){
+        cout<<"Stairs Convolution is already in train mode"<<endl;
+        return;
+    }
+
+    if (inputActivity->dropping && primalWeight){
+       kernel_vert->Multiply(1.0f/(1.0f-inputActivity->dropRate));
+    }
+    testMode = 0;
+}
+
+void StairsFullBottleneck::SetToTestMode(){
+    if (testMode==1){
+        cout<<"Stairs Convolution is already in test mode"<<endl;
+        return;
+    }
+    if (inputActivity->dropping && primalWeight){
+       kernel_vert->Multiply(1.0f-inputActivity->dropRate);
+    }
+    testMode = 1;
+}
+
+bool StairsFullBottleneck::HasWeightsDependency(){
+    return 1;
+}
+
+bool StairsFullBottleneck::NeedsUnification(){
+    return 0;
+}
+
+
+
+void StairsFullBottleneck::Unify(computationalNode * primalCN){
+}
+
+void StairsFullBottleneck::WriteStructuredWeightsToFile(){
+}
+
+StairsFullBottleneck::~StairsFullBottleneck(){
+    delete verticalConv;
+    delete verticalConvDelta;
+}
+
+
+
+
+
+
+
+
+//full bottleneck convolutional layers
+//no symmetry kernels
+//bias is always present
+//max-min nonlinearity
+//multiplication after max-min
+
+StairsFullBottleneckBalancedDrop::StairsFullBottleneckBalancedDrop
+(int weightsNum_vertical_, int weightsNum_horizontal_, int startDepth_, int numStairs_,
+ int numStairConvolutions_, int bottleneckDepth_, float alpha_, float pDrop_, float pNotDrop_):
+    weightsNum_vertical(weightsNum_vertical_), weightsNum_horizontal(weightsNum_horizontal_), startDepth(startDepth_), numStairs(numStairs_),
+    numStairConvolutions(numStairConvolutions_), bottleneckDepth(bottleneckDepth_),
+    alpha(alpha_), pDrop(pDrop_), pNotDrop(pNotDrop_){
+}
+
+void StairsFullBottleneckBalancedDrop::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner){
+    primalWeight = primalWeightOwner;
+
+    kernel_vert = static_cast<tensor *>(weightsData->weightList[weightsNum_vertical].dataWeight);
+    kernelGrad_vert = static_cast<tensor *>(gradient->weightList[weightsNum_vertical].dataWeight);
+
+    kernel_hor = static_cast<tensor *>(weightsData->weightList[weightsNum_horizontal].dataWeight);
+    kernelGrad_hor = static_cast<tensor *>(gradient->weightList[weightsNum_horizontal].dataWeight);
+
+    bias = static_cast<vect *>(weightsData->weightList[weightsNum_horizontal].bias);
+    biasGrad = static_cast<vect *>(gradient->weightList[weightsNum_horizontal].bias);
+
+    input=static_cast<tensor*>(layersData->layerList[from]);
+    inputDelta = static_cast<tensor*>(deltas->layerList[from]);
+    inputActivity  = layersActivity->layerList[from];
+
+    verticalConv      = new tensor(numStairs * bottleneckDepth, input->rows, input->cols);
+    verticalConvDelta = new tensor(numStairs * bottleneckDepth, input->rows, input->cols);
+
+    multipliers = new tensor(2 * numStairs * numStairConvolutions, input->rows, input->cols);
+    balancedActiveUnits = new activityData(multipliers->len, pDrop);
+    balancedUpDown = new activityData(multipliers->len, 0.5);
+
+    int vertLen = 0;
+    for(int stair=0; stair<numStairs; ++stair){
+        vertLen += (startDepth + 2 * numStairConvolutions * stair) * bottleneckDepth;
+    }
+
+    if (from != to ||
+        kernel_vert->depth != vertLen||
+        kernel_vert->rows != 1 ||
+        kernel_vert->cols != 1 ||
+        input->depth != startDepth + 2 * numStairs * numStairConvolutions )
+        cout<<"Error0 in StairsFullBottleneckBalancedDrop from "<<from<<" to "<<to<<endl;
+
+    if (kernel_hor->depth != numStairs * bottleneckDepth * numStairConvolutions ||
+        kernel_hor->rows != 3 ||
+        kernelGrad_hor->cols != 3)
+        cout<<"Error1 in StairsFullBottleneckBalancedDrop from "<<from<<" to "<<to<<endl;
+
+    if (bias->len != numStairs * numStairConvolutions)
+        cout<<"Bias error in StairsFullBottleneckBalancedDrop from "<<from<<" to "<<to<<endl;
+}
+
+void StairsFullBottleneckBalancedDrop::ForwardPass(){
+    if (!testMode){
+        startDropping = randomGenerator::generateBool(1.0f - pNotDrop);
+        if (startDropping){
+            balancedActiveUnits->DropUnits();
+            balancedUpDown->DropUnits();
+            multipliers->SetToBalancedMultipliers(balancedActiveUnits, balancedUpDown, alpha);
+        }
+        else
+            multipliers->SetToValue(1.0f);
+
+    }
+    ForwardStairsFullBottleneckBalancedDrop(input, kernel_vert, kernel_hor, bias, verticalConv, startDepth, numStairs,
+                                numStairConvolutions, bottleneckDepth, inputActivity, multipliers, testMode);
+}
+
+void StairsFullBottleneckBalancedDrop::BackwardPass(bool computeDelta, int trueClass){
+    BackwardStairsFullBottleneckBalancedDrop(input, inputDelta, kernel_vert, kernelGrad_vert,
+                kernel_hor, kernelGrad_hor, biasGrad, verticalConv, verticalConvDelta,
+                startDepth, numStairs, numStairConvolutions, bottleneckDepth,
+                inputActivity, multipliers);
+}
+
+void StairsFullBottleneckBalancedDrop::SetToTrainingMode(){
+    if (testMode==0){
+        cout<<"Stairs Convolution is already in train mode"<<endl;
+        return;
+    }
+
+    if (inputActivity->dropping && primalWeight){
+       kernel_vert->Multiply(1.0f/(1.0f-inputActivity->dropRate));
+    }
+    testMode = 0;
+}
+
+void StairsFullBottleneckBalancedDrop::SetToTestMode(){
+    if (testMode==1){
+        cout<<"Stairs Convolution is already in test mode"<<endl;
+        return;
+    }
+    if (inputActivity->dropping && primalWeight){
+       kernel_vert->Multiply(1.0f-inputActivity->dropRate);
+    }
+    testMode = 1;
+}
+
+bool StairsFullBottleneckBalancedDrop::HasWeightsDependency(){
+    return 1;
+}
+
+bool StairsFullBottleneckBalancedDrop::NeedsUnification(){
+    return 0;
+}
+
+void StairsFullBottleneckBalancedDrop::Unify(computationalNode * primalCN){
+}
+
+bool StairsFullBottleneckBalancedDrop::UsesBalancedDrop(){
+    return 1;
+}
+
+void StairsFullBottleneckBalancedDrop::UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_){
+    alpha = alpha_;
+    pDrop = pDrop_;
+    pNotDrop = pNotDrop_;
+    balancedActiveUnits->dropRate = pDrop;
+    balancedActiveUnits->dropping = (pDrop > 0.0f);
+}
+
+void StairsFullBottleneckBalancedDrop::WriteStructuredWeightsToFile(){
+}
+
+StairsFullBottleneckBalancedDrop::~StairsFullBottleneckBalancedDrop(){
+    delete verticalConv;
+    delete verticalConvDelta;
+
+    delete balancedActiveUnits;
+    delete balancedUpDown;
+    delete multipliers;
+}
+
+
+
+
+
+
+
+
+
 
 StairsFullConvolutionBalancedDrop::StairsFullConvolutionBalancedDrop
 (int weightsNum_, int startDepth_, int numStairs_, int numStairConvolutions_,
- double alpha_, double pDrop_, double pNotDrop_, int symmetryLevel_, bool biasIncluded_):
+ float alpha_, float pDrop_, float pNotDrop_, int symmetryLevel_, bool biasIncluded_):
     weightsNum(weightsNum_), startDepth(startDepth_), numStairs(numStairs_),
     numStairConvolutions(numStairConvolutions_),
     alpha(alpha_), pDrop(pDrop_), pNotDrop(pNotDrop_),
@@ -2513,9 +2777,10 @@ void StairsFullConvolutionBalancedDrop::Initiate(layers* layersData, layers* del
     inputDelta = static_cast<tensor*>(deltas->layerList[from]);
     inputActivity  = layersActivity->layerList[from];
 
-    balancedActiveUnits = new activityData(input->len, pDrop);
-    balancedUpDown = new activityData(input->len, 0.5);
-    multipliers = new tensor(input->depth, input->rows, input->cols);
+    multipliers = new tensor(numStairs * numStairConvolutions, input->rows, input->cols);
+    balancedActiveUnits = new activityData(multipliers->len, pDrop);
+    balancedUpDown = new activityData(multipliers->len, 0.5);
+
 
     int vertLen = 0;
     for(int stair=0; stair<numStairs; ++stair){
@@ -2528,7 +2793,7 @@ void StairsFullConvolutionBalancedDrop::Initiate(layers* layersData, layers* del
     if (from != to ||
         kernel->depth!=vertLen||
         input->depth != startDepth + 2 * numStairs * numStairConvolutions ||
-        alpha > 1.0 || pDrop < 0.0 || pDrop > 1.0 )
+        pDrop < 0.0f || pDrop > 1.0f || pNotDrop < 0.0f || pNotDrop > 1.0f )
         cout<<"Error0 in StairsFullConvolutionBalancedDrop from "<<from<<" to "<<to<<endl;
 
     if ((symmetryLevel == 0 && (kernel->rows != 3 || kernel->cols != 3) ) ||
@@ -2551,14 +2816,14 @@ void StairsFullConvolutionBalancedDrop::Initiate(layers* layersData, layers* del
 
 void StairsFullConvolutionBalancedDrop::ForwardPass(){
     if (!testMode){
-        startDropping = randomGenerator::generateBool(1.0 - pNotDrop);
+        startDropping = randomGenerator::generateBool(1.0f - pNotDrop);
         if (startDropping){
             balancedActiveUnits->DropUnits();
             balancedUpDown->DropUnits();
             multipliers->SetToBalancedMultipliers(balancedActiveUnits, balancedUpDown, alpha);
         }
         else
-            multipliers->SetToValue(1.0);
+            multipliers->SetToValue(1.0f);
 
     }
     ForwardStairsFullConvolutionBalancedDrop(input, kernel, bias, startDepth, numStairs, numStairConvolutions,
@@ -2577,7 +2842,7 @@ void StairsFullConvolutionBalancedDrop::SetToTrainingMode(){
     }
 
     if (inputActivity->dropping && primalWeight){
-       kernel->Multiply(1.0/(1.0-inputActivity->dropRate));
+       kernel->Multiply(1.0f/(1.0f-inputActivity->dropRate));
     }
     testMode = 0;
 }
@@ -2588,7 +2853,7 @@ void StairsFullConvolutionBalancedDrop::SetToTestMode(){
         return;
     }
     if (inputActivity->dropping && primalWeight){
-       kernel->Multiply(1.0-inputActivity->dropRate);
+       kernel->Multiply(1.0f-inputActivity->dropRate);
     }
     testMode = 1;
 }
@@ -2605,12 +2870,12 @@ bool StairsFullConvolutionBalancedDrop::UsesBalancedDrop(){
     return 1;
 }
 
-void StairsFullConvolutionBalancedDrop::UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_){
+void StairsFullConvolutionBalancedDrop::UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_){
     alpha = alpha_;
     pDrop = pDrop_;
     pNotDrop = pNotDrop_;
     balancedActiveUnits->dropRate = pDrop;
-    balancedActiveUnits->dropping = (pDrop > 0.0);
+    balancedActiveUnits->dropping = (pDrop > 0.0f);
 }
 
 void StairsFullConvolutionBalancedDrop::Unify(computationalNode * primalCN){
@@ -2702,7 +2967,7 @@ void StairsFullConvolutionRelu::SetToTrainingMode(){
     }
 
     if (inputActivity->dropping && primalWeight){
-       kernel->Multiply(1.0/(1.0-inputActivity->dropRate));
+       kernel->Multiply(1.0f/(1.0f-inputActivity->dropRate));
     }
     testMode = 0;
 }
@@ -2713,7 +2978,7 @@ void StairsFullConvolutionRelu::SetToTestMode(){
         return;
     }
     if (inputActivity->dropping && primalWeight){
-       kernel->Multiply(1.0-inputActivity->dropRate);
+       kernel->Multiply(1.0f-inputActivity->dropRate);
     }
     testMode = 1;
 }
@@ -2838,7 +3103,7 @@ void StairsSequentialConvolution::SetToTrainingMode(){
     }
 
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0/(1.0-inputActivity->dropRate));
+       kernel_vert->Multiply(1.0f/(1.0f-inputActivity->dropRate));
     }
     testMode = 0;
 }
@@ -2849,7 +3114,7 @@ void StairsSequentialConvolution::SetToTestMode(){
         return;
     }
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0-inputActivity->dropRate);
+       kernel_vert->Multiply(1.0f-inputActivity->dropRate);
     }
     testMode = 1;
 }
@@ -2953,7 +3218,7 @@ void StairsPyramidalConvolution::SetToTrainingMode(){
     }
 
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0/(1.0-inputActivity->dropRate));
+       kernel_vert->Multiply(1.0f/(1.0f-inputActivity->dropRate));
     }
     testMode = 0;
 }
@@ -2964,7 +3229,7 @@ void StairsPyramidalConvolution::SetToTestMode(){
         return;
     }
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0-inputActivity->dropRate);
+       kernel_vert->Multiply(1.0f-inputActivity->dropRate);
     }
     testMode = 1;
 }
@@ -3071,14 +3336,14 @@ void SequentiallyConvoluteBottleneckMaxMinStandardRandomFullySymmetric::Backward
 
 void SequentiallyConvoluteBottleneckMaxMinStandardRandomFullySymmetric::SetToTrainingMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0/(1.0-inputActivity->dropRate));
+       kernel_vert->Multiply(1.0f/(1.0f-inputActivity->dropRate));
     }
     testMode = 0;
 }
 
 void SequentiallyConvoluteBottleneckMaxMinStandardRandomFullySymmetric::SetToTestMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0-inputActivity->dropRate);
+       kernel_vert->Multiply(1.0f-inputActivity->dropRate);
     }
     testMode = 1;
 }
@@ -3199,14 +3464,14 @@ void SequentiallyConvoluteBottleneckMaxMinStandardRandomLimited::BackwardPass(bo
 
 void SequentiallyConvoluteBottleneckMaxMinStandardRandomLimited::SetToTrainingMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0/(1.0-inputActivity->dropRate));
+       kernel_vert->Multiply(1.0f/(1.0f-inputActivity->dropRate));
     }
     testMode = 0;
 }
 
 void SequentiallyConvoluteBottleneckMaxMinStandardRandomLimited::SetToTestMode(){
     if (inputActivity->dropping && primalWeight){
-       kernel_vert->Multiply(1.0-inputActivity->dropRate);
+       kernel_vert->Multiply(1.0f-inputActivity->dropRate);
     }
     testMode = 1;
 }
@@ -3424,10 +3689,10 @@ void ConvoluteDependentMaxMinMerge::BackwardPass(bool computeDelta, int trueClas
     minOutputDelta->SubTensor(outputDelta, convolutionKernel->number, convolutionKernel->number);
     int startingIndex = convolutionOutputDelta->len;
 
-    double* convOutDelta_elem = convolutionOutputDelta->elem;
-    double *out_elem = output->elem;
-    double* minOutDelta_elem = minOutputDelta->elem;
-    double* out_elem_start = out_elem + startingIndex;
+    float* convOutDelta_elem = convolutionOutputDelta->elem;
+    float *out_elem = output->elem;
+    float* minOutDelta_elem = minOutputDelta->elem;
+    float* out_elem_start = out_elem + startingIndex;
 
     for(int j=0; j<convolutionOutputDelta->len; ++j)
         convOutDelta_elem[j] *= (out_elem[j]>0);
@@ -3966,7 +4231,7 @@ void LastAveragePooling::ForwardPass(){
 
     if (testMode)
         if (inputActivity->dropping)
-            partialOutput->Multiply(1.0 - inputActivity->dropRate);
+            partialOutput->Multiply(1.0f - inputActivity->dropRate);
 }
 
 void LastAveragePooling::BackwardPass(bool computeDelta, int trueClass){
@@ -4003,7 +4268,7 @@ LastAveragePooling::~LastAveragePooling(){
 
 
 
-AveragePoolingBalancedDrop::AveragePoolingBalancedDrop(int lastLayers_, double alpha_, double pDrop_, double pNotDrop_):
+AveragePoolingBalancedDrop::AveragePoolingBalancedDrop(int lastLayers_, float alpha_, float pDrop_, float pNotDrop_):
                                 lastLayers(lastLayers_), alpha(alpha_), pDrop(pDrop_), pNotDrop(pNotDrop_){
 }
 
@@ -4044,7 +4309,7 @@ void AveragePoolingBalancedDrop::Initiate(layers* layersData, layers* deltas, we
     if (partialOutput->rows * kernelRsize != partialInput->rows ||
         partialOutput->cols * kernelCsize != partialInput->cols||
         output->depth < lastLayers ||
-        alpha > 1.0 || pDrop < 0.0 || pDrop > 1.0)
+        pDrop < 0.0f || pDrop > 1.0f || pNotDrop < 0.0f || pNotDrop > 1.0f)
         cout<<"Error in AveragePoolingBalancedDrop from "<<from<<" to "<<to<<endl;
 }
 
@@ -4052,7 +4317,7 @@ void AveragePoolingBalancedDrop::ForwardPass(){
     AveragePool3D(partialInput, partialOutput, kernelRsize, kernelCsize);
 
     if (!testMode){
-        startDropping = randomGenerator::generateBool(1.0 - pNotDrop);
+        startDropping = randomGenerator::generateBool(1.0f - pNotDrop);
         if (startDropping){
             balancedActiveUnits->DropUnits();
             balancedUpDown->DropUnits();
@@ -4068,7 +4333,7 @@ void AveragePoolingBalancedDrop::ForwardPass(){
 
     if (testMode)
         if (inputActivity->dropping)
-            partialOutput->Multiply(1.0 - inputActivity->dropRate);
+            partialOutput->Multiply(1.0f - inputActivity->dropRate);
 }
 
 void AveragePoolingBalancedDrop::BackwardPass(bool computeDelta, int trueClass){
@@ -4094,12 +4359,12 @@ bool AveragePoolingBalancedDrop::UsesBalancedDrop(){
     return 1;
 }
 
-void AveragePoolingBalancedDrop::UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_){
+void AveragePoolingBalancedDrop::UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_){
     alpha = alpha_;
     pDrop = pDrop_;
     pNotDrop = pNotDrop_;
     balancedActiveUnits->dropRate = pDrop;
-    balancedActiveUnits->dropping = (pDrop > 0.0);
+    balancedActiveUnits->dropping = (pDrop > 0.0f);
 }
 
 
@@ -4123,7 +4388,7 @@ AveragePoolingBalancedDrop::~AveragePoolingBalancedDrop(){
 
 
 
-StructuredDropAveragePooling::StructuredDropAveragePooling(double dropRate_): dropRate(dropRate_){
+StructuredDropAveragePooling::StructuredDropAveragePooling(float dropRate_): dropRate(dropRate_){
 }
 
 void StructuredDropAveragePooling::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner){
@@ -4176,7 +4441,7 @@ void StructuredDropAveragePooling::ForwardPass(){
 
     if (testMode)
         if (inputActivity->dropping)
-            output->Multiply(1.0 - inputActivity->dropRate);
+            output->Multiply(1.0f - inputActivity->dropRate);
 }
 
 void StructuredDropAveragePooling::BackwardPass(bool computeDelta, int trueClass){
@@ -4256,7 +4521,7 @@ void ColumnDrop::ForwardPass(){
 
     if (testMode)
         if (inputActivity->dropping)
-            output->Multiply(1.0 - inputActivity->dropRate);
+            output->Multiply(1.0f - inputActivity->dropRate);
 }
 
 void ColumnDrop::BackwardPass(bool computeDelta, int trueClass){
@@ -4288,7 +4553,116 @@ ColumnDrop::~ColumnDrop(){
 
 
 
-ColumnDropBalancedDrop::ColumnDropBalancedDrop(int remainNum_, double alpha_, double pDrop_, double pNotDrop_):
+
+
+
+
+
+FullColumnDrop::FullColumnDrop(){
+}
+
+void FullColumnDrop::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner){
+    primalWeight = primalWeightOwner;
+    input=static_cast<tensor*>(layersData->layerList[from]);
+    output=static_cast<tensor*>(layersData->layerList[to]);
+
+    inputDelta=static_cast<tensor*>(deltas->layerList[from]);
+    outputDelta=static_cast<tensor*>(deltas->layerList[to]);
+
+    inputActivity = layersActivity->layerList[from];
+    outputActivity = layersActivity->layerList[to];
+
+    activityColumns = new activityData(input->rows * input->cols, 1);
+
+    partialOutput = new tensor();
+    partialOutput->SubTensor(output, input->depth);
+
+    partialOutputDelta = new tensor();
+    partialOutputDelta->SubLastTensor(outputDelta, input->depth);
+
+    fractionDecrease = input->rows / output->rows;
+
+    if (input->depth > output->depth ||
+        output->rows * fractionDecrease != input->rows ||
+        output->cols * fractionDecrease != input->cols ||
+        ! ( (output->rows == 1 && output->cols == 1) ||
+           fractionDecrease == 2))
+        cout<<"Error in FullColumnDrop from "<<from<<" to "<<to<<endl;
+}
+
+void FullColumnDrop::ForwardPass(){
+    if (!testMode){
+        if (fractionDecrease != 2){
+            activityColumns->DropAllExcept(1);
+            input->SetDroppedColumnsToZero(activityColumns);
+            AveragePool3D_all(input, partialOutput, 1);
+        }
+
+        else{
+            activityColumns->Drop_2_2();
+            input->SetDroppedColumnsToZero(activityColumns);
+            AveragePool3D_2_2(input, partialOutput, 1);
+        }
+
+        output->SetDroppedElementsToZero(outputActivity);
+    }
+
+    if (testMode){
+        if (fractionDecrease != 2){
+            AveragePool3D_all(input, partialOutput);
+        }
+
+        else{
+            AveragePool3D_2_2(input, partialOutput);
+        }
+
+        if (inputActivity->dropping)
+            partialOutput->Multiply(1.0f - inputActivity->dropRate);
+    }
+}
+
+void FullColumnDrop::BackwardPass(bool computeDelta, int trueClass){
+    if (fractionDecrease != 2){
+        BackwardAveragePool3D_all(inputDelta, partialOutputDelta, 1);
+    }
+
+    else{
+        BackwardAveragePool3D_2_2(inputDelta, partialOutputDelta, 1);
+    }
+
+    inputDelta->SetDroppedColumnsToZero(activityColumns);
+
+    inputDelta->SetDroppedElementsToZero(inputActivity);
+}
+
+void FullColumnDrop::SetToTrainingMode(){
+    testMode=0;
+}
+
+void FullColumnDrop::SetToTestMode(){
+    testMode=1;
+}
+
+bool FullColumnDrop::HasWeightsDependency(){
+    return 0;
+}
+
+FullColumnDrop::~FullColumnDrop(){
+    DeleteOnlyShell(partialOutput);
+    DeleteOnlyShell(partialOutputDelta);
+    delete activityColumns;
+}
+
+
+
+
+
+
+
+
+
+
+ColumnDropBalancedDrop::ColumnDropBalancedDrop(int remainNum_, float alpha_, float pDrop_, float pNotDrop_):
     remainNum(remainNum_), alpha(alpha_), pDrop(pDrop_), pNotDrop(pNotDrop_){
 }
 
@@ -4320,7 +4694,7 @@ void ColumnDropBalancedDrop::Initiate(layers* layersData, layers* deltas, weight
     if (output->rows != 1 ||
         output->cols != 1 ||
         input->depth < lastLayers ||
-        alpha > 1.0 || pDrop < 0.0 || pDrop > 1.0)
+        pDrop < 0.0f || pDrop > 1.0f || pNotDrop < 0.0f || pNotDrop > 1.0f)
         cout<<"Error in ColumnDropBalancedDrop from "<<from<<" to "<<to<<endl;
 }
 
@@ -4341,10 +4715,10 @@ void ColumnDropBalancedDrop::ForwardPass(){
 
     if (testMode)
         if (inputActivity->dropping)
-            output->Multiply(1.0 - inputActivity->dropRate);
+            output->Multiply(1.0f - inputActivity->dropRate);
 
     if (!testMode){
-        startDropping = randomGenerator::generateBool(1.0 - pNotDrop);
+        startDropping = randomGenerator::generateBool(1.0f - pNotDrop);
         if (startDropping){
             balancedActiveUnits->DropUnits();
             balancedUpDown->DropUnits();
@@ -4379,12 +4753,12 @@ bool ColumnDropBalancedDrop::UsesBalancedDrop(){
     return 1;
 }
 
-void ColumnDropBalancedDrop::UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_){
+void ColumnDropBalancedDrop::UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_){
     alpha = alpha_;
     pDrop = pDrop_;
     pNotDrop = pNotDrop_;
     balancedActiveUnits->dropRate = pDrop;
-    balancedActiveUnits->dropping = (pDrop > 0.0);
+    balancedActiveUnits->dropping = (pDrop > 0.0f);
 }
 
 
@@ -4403,7 +4777,7 @@ ColumnDropBalancedDrop::~ColumnDropBalancedDrop(){
 
 
 
-StructuredDropAverageSubPooling::StructuredDropAverageSubPooling(int border_, double dropRate_): border(border_), dropRate(dropRate_){
+StructuredDropAverageSubPooling::StructuredDropAverageSubPooling(int border_, float dropRate_): border(border_), dropRate(dropRate_){
 }
 
 void StructuredDropAverageSubPooling::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner){
@@ -4445,20 +4819,20 @@ void StructuredDropAverageSubPooling::ForwardPass(){
     FullSubAveragePool(partialInput, output, border);
 
     if (!testMode)
-        output->Multiply(1.0 / (1 - dropRate));
+        output->Multiply(1.0f / (1.0f - dropRate));
 
     if (!testMode)
         output->SetDroppedElementsToZero(outputActivity);
 
     if (testMode)
         if (inputActivity->dropping)
-            output->Multiply(1.0 - inputActivity->dropRate);
+            output->Multiply(1.0f - inputActivity->dropRate);
 }
 
 void StructuredDropAverageSubPooling::BackwardPass(bool computeDelta, int trueClass){
     BackwardFullSubAveragePool(partialInputDelta, outputDelta, border);
     partialInputDelta->SetDroppedColumnsToZero(activityColumns);
-    partialInputDelta->Multiply(1.0 / (1 - dropRate));
+    partialInputDelta->Multiply(1.0f / (1 - dropRate));
     inputDelta->SetDroppedElementsToZero(inputActivity, inputDelta->Ind(startingDepth), partialInput->len);
 }
 
@@ -4528,7 +4902,7 @@ void PartialFirstAveragePooling3D::ForwardPass(){
 
     if (testMode)
         if (inputActivity->dropping)
-            partialOutput->Multiply(1.0 - inputActivity->dropRate);
+            partialOutput->Multiply(1.0f - inputActivity->dropRate);
 }
 
 void PartialFirstAveragePooling3D::BackwardPass(bool computeDelta, int trueClass){
@@ -4599,7 +4973,7 @@ void FullAveragePooling::ForwardPass(){
 
     if (testMode)
         if (inputActivity->dropping)
-            partialOutput->Multiply(1.0 - inputActivity->dropRate);
+            partialOutput->Multiply(1.0f - inputActivity->dropRate);
 }
 
 void FullAveragePooling::BackwardPass(bool computeDelta, int trueClass){
@@ -4642,7 +5016,7 @@ FullAveragePooling::~FullAveragePooling(){
 
 
 
-FullAveragePoolingBalancedDrop::FullAveragePoolingBalancedDrop(double alpha_, double pDrop_, double pNotDrop_):
+FullAveragePoolingBalancedDrop::FullAveragePoolingBalancedDrop(float alpha_, float pDrop_, float pNotDrop_):
     alpha(alpha_), pDrop(pDrop_), pNotDrop(pNotDrop_){
 }
 
@@ -4673,7 +5047,7 @@ void FullAveragePoolingBalancedDrop::Initiate(layers* layersData, layers* deltas
     if (partialOutput->rows * kernelRsize != input->rows ||
         partialOutput->cols * kernelCsize != input->cols||
         input->depth > output->depth ||
-        alpha > 1.0 || pDrop < 0.0 || pDrop > 1.0)
+        pDrop < 0.0f || pDrop > 1.0f || pNotDrop < 0.0f || pNotDrop > 1.0f)
         cout<<"Error in FullAveragePoolingBalancedDrop from "<<from<<" to "<<to<<endl;
 }
 
@@ -4681,7 +5055,7 @@ void FullAveragePoolingBalancedDrop::ForwardPass(){
     AveragePool3D(input, partialOutput, kernelRsize, kernelCsize);
 
     if (!testMode){
-        startDropping = randomGenerator::generateBool(1.0 - pNotDrop);
+        startDropping = randomGenerator::generateBool(1.0f - pNotDrop);
         if (startDropping){
             balancedActiveUnits->DropUnits();
             balancedUpDown->DropUnits();
@@ -4698,7 +5072,7 @@ void FullAveragePoolingBalancedDrop::ForwardPass(){
 
     if (testMode)
         if (inputActivity->dropping)
-            partialOutput->Multiply(1.0 - inputActivity->dropRate);
+            partialOutput->Multiply(1.0f - inputActivity->dropRate);
 }
 
 void FullAveragePoolingBalancedDrop::BackwardPass(bool computeDelta, int trueClass){
@@ -4734,12 +5108,12 @@ bool FullAveragePoolingBalancedDrop::UsesBalancedDrop(){
     return 1;
 }
 
-void FullAveragePoolingBalancedDrop::UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_){
+void FullAveragePoolingBalancedDrop::UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_){
     alpha = alpha_;
     pDrop = pDrop_;
     pNotDrop = pNotDrop_;
     balancedActiveUnits->dropRate = pDrop;
-    balancedActiveUnits->dropping = (pDrop > 0.0);
+    balancedActiveUnits->dropping = (pDrop > 0.0f);
 }
 
 FullAveragePoolingBalancedDrop::~FullAveragePoolingBalancedDrop(){
@@ -4755,7 +5129,7 @@ FullAveragePoolingBalancedDrop::~FullAveragePoolingBalancedDrop(){
 
 
 
-InputBalancedDrop::InputBalancedDrop(int inputDepth_, double alpha_, double pDrop_, double pNotDrop_):
+InputBalancedDrop::InputBalancedDrop(int inputDepth_, float alpha_, float pDrop_, float pNotDrop_):
     inputDepth(inputDepth_), alpha(alpha_), pDrop(pDrop_), pNotDrop(pNotDrop_){
 }
 
@@ -4773,13 +5147,13 @@ void InputBalancedDrop::Initiate(layers* layersData, layers* deltas, weights* we
 
     if (input->depth < inputDepth ||
         from != 0 || to != 0 ||
-        alpha > 1.0 || pDrop < 0.0 || pDrop > 1.0)
+        pDrop < 0.0f || pDrop > 1.0f || pNotDrop < 0.0f || pNotDrop > 1.0f)
         cout<<"Error in InputBalancedDrop from "<<from<<" to "<<to<<endl;
 }
 
 void InputBalancedDrop::ForwardPass(){
     if (!testMode){
-        startDropping = randomGenerator::generateBool(1.0 - pNotDrop);
+        startDropping = randomGenerator::generateBool(1.0f - pNotDrop);
         if (startDropping){
             balancedActiveUnits->DropUnits();
             balancedUpDown->DropUnits();
@@ -4818,12 +5192,12 @@ bool InputBalancedDrop::UsesBalancedDrop(){
     return 1;
 }
 
-void InputBalancedDrop::UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_){
+void InputBalancedDrop::UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_){
     alpha = alpha_;
     pDrop = pDrop_;
     pNotDrop = pNotDrop_;
     balancedActiveUnits->dropRate = pDrop;
-    balancedActiveUnits->dropping = (pDrop > 0.0);
+    balancedActiveUnits->dropping = (pDrop > 0.0f);
 }
 
 
@@ -4938,7 +5312,7 @@ void PartialMeanVarPooling::ForwardPass(){
 
     if (testMode)
         if (inputActivity->dropping)
-            partialOutput->Multiply(1.0 - inputActivity->dropRate);
+            partialOutput->Multiply(1.0f - inputActivity->dropRate);
 }
 
 void PartialMeanVarPooling::BackwardPass(bool computeDelta, int trueClass){
@@ -4999,7 +5373,7 @@ void CenterPooling::ForwardPass(){
 
     if (testMode)
         if (inputActivity->dropping)
-            output->Multiply(1.0 - inputActivity->dropRate);
+            output->Multiply(1.0f - inputActivity->dropRate);
 }
 
 void CenterPooling::BackwardPass(bool computeDelta, int trueClass){
@@ -5058,7 +5432,7 @@ void MedianPooling::ForwardPass(){
 
     if (testMode)
         if (inputActivity->dropping)
-            output->Multiply(1.0 - inputActivity->dropRate);
+            output->Multiply(1.0f - inputActivity->dropRate);
 }
 
 void MedianPooling::BackwardPass(bool computeDelta, int trueClass){
@@ -5115,7 +5489,7 @@ void QuartilesPooling::ForwardPass(){
 
     if (testMode)
         if (inputActivity->dropping)
-            output->Multiply(1.0 - inputActivity->dropRate);
+            output->Multiply(1.0f - inputActivity->dropRate);
 }
 
 void QuartilesPooling::BackwardPass(bool computeDelta, int trueClass){
@@ -5187,7 +5561,7 @@ void AverageMaxAbsPooling::ForwardPass(){
 
     if (testMode)
         if (inputActivity->dropping)
-            partialOutput->Multiply(1.0 - inputActivity->dropRate);
+            partialOutput->Multiply(1.0f - inputActivity->dropRate);
 }
 
 void AverageMaxAbsPooling::BackwardPass(bool computeDelta, int trueClass){
@@ -5256,7 +5630,7 @@ void PartialMeanQuadStatsPooling::ForwardPass(){
 
     if (testMode)
         if (inputActivity->dropping)
-            partialOutput->Multiply(1.0 - inputActivity->dropRate);
+            partialOutput->Multiply(1.0f - inputActivity->dropRate);
 }
 
 void PartialMeanQuadStatsPooling::BackwardPass(bool computeDelta, int trueClass){
@@ -5326,7 +5700,7 @@ void PartialMeanStDevPooling::ForwardPass(){
 
     if (testMode)
         if (inputActivity->dropping)
-            partialOutput->Multiply(1.0 - inputActivity->dropRate);
+            partialOutput->Multiply(1.0f - inputActivity->dropRate);
 }
 
 void PartialMeanStDevPooling::BackwardPass(bool computeDelta, int trueClass){
@@ -5424,8 +5798,8 @@ void PartialFirstLastAveragePooling3D::ForwardPass(){
 
     if (testMode)
         if (inputActivity->dropping){
-            partialFirstOutput->Multiply(1.0 - inputActivity->dropRate);
-            partialLastOutput->Multiply(1.0 - inputActivity->dropRate);
+            partialFirstOutput->Multiply(1.0f - inputActivity->dropRate);
+            partialLastOutput->Multiply(1.0f - inputActivity->dropRate);
         }
 }
 
@@ -5512,7 +5886,7 @@ void PartialMiddleAveragePooling3D::ForwardPass(){
 
     if (testMode)
         if (inputActivity->dropping)
-            partialOutput->Multiply(1.0 - inputActivity->dropRate);
+            partialOutput->Multiply(1.0f - inputActivity->dropRate);
 }
 
 void PartialMiddleAveragePooling3D::BackwardPass(bool computeDelta, int trueClass){
@@ -5664,16 +6038,16 @@ void MaxMinPoolingIndex3D::ForwardPass(){
     MaxPool3D(input, maxOut, rowInd, colInd, kernelRsize, kernelCsize);
     MinPool3D(input, minOut, rowInd + startingIndex, colInd + startingIndex, kernelRsize, kernelCsize);
 
-    double* out_elem_start = output->elem + 2*startingIndex;
-    double row_0 = rowInd[0];
-    double col_0 = colInd[0];
+    float* out_elem_start = output->elem + 2*startingIndex;
+    float row_0 = rowInd[0];
+    float col_0 = colInd[0];
     for(int j=0; j<output->len / 3; ++j){
-        out_elem_start[j] = ( (double)rowInd[j] - row_0) / input->rows;
+        out_elem_start[j] = ( (float)rowInd[j] - row_0) / input->rows;
     }
 
     out_elem_start = output->elem + 4*startingIndex;
     for(int j=0; j<output->len / 3; ++j){
-        out_elem_start[j] =( (double) colInd[j] - col_0) / input->cols;
+        out_elem_start[j] =( (float) colInd[j] - col_0) / input->cols;
     }
 
     output->SetDroppedElementsToZero(outputActivity);
@@ -5764,7 +6138,7 @@ MaxAbsPoolingIndex3D::~MaxAbsPoolingIndex3D(){
 
 
 
-MaxAbsPoolingSoftIndex3D::MaxAbsPoolingSoftIndex3D(double logFactor_): logFactor(logFactor_){
+MaxAbsPoolingSoftIndex3D::MaxAbsPoolingSoftIndex3D(float logFactor_): logFactor(logFactor_){
 }
 
 void MaxAbsPoolingSoftIndex3D::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner){
@@ -5813,7 +6187,7 @@ MaxAbsPoolingSoftIndex3D::~MaxAbsPoolingSoftIndex3D(){
 
 
 
-MaxAbsPoolingSoftDiffIndex3D::MaxAbsPoolingSoftDiffIndex3D(double logFactor_): logFactor(logFactor_){
+MaxAbsPoolingSoftDiffIndex3D::MaxAbsPoolingSoftDiffIndex3D(float logFactor_): logFactor(logFactor_){
 }
 
 void MaxAbsPoolingSoftDiffIndex3D::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner){
@@ -5867,7 +6241,7 @@ MaxAbsPoolingSoftDiffIndex3D::~MaxAbsPoolingSoftDiffIndex3D(){
 
 
 
-PartialMaxAbsPoolingSoftDiffIndex3D::PartialMaxAbsPoolingSoftDiffIndex3D(int lastLayers_, double logFactor_) :
+PartialMaxAbsPoolingSoftDiffIndex3D::PartialMaxAbsPoolingSoftDiffIndex3D(int lastLayers_, float logFactor_) :
     logFactor(logFactor_), lastLayers(lastLayers_){
 }
 
@@ -6160,13 +6534,13 @@ FCMaxMinMerge::~FCMaxMinMerge(){
 //void CenterAtTheMean2D::ForwardPass(int from, int to){
 //    matrix* input=static_cast<matrix*>(layersData->layerList[from]);
 //    matrix* output=static_cast<matrix*>(layersData->layerList[to]);
-//    double imSum = input->Sum();//-input->rows*input->cols*(minVal-1.0);
+//    float imSum = input->Sum();//-input->rows*input->cols*(minVal-1.0f);
 //
-//    double avRow=0, avCol=0;
+//    float avRow=0, avCol=0;
 //    for(int r=0; r<input->rows; r++)
 //        for(int c=0; c<input->cols; c++){
-//            avRow+=double(r)*(input->elem[r][c]);//-minVal+1.0);
-//            avCol+=double(c)*(input->elem[r][c]);//-minVal+1.0);
+//            avRow+=float(r)*(input->elem[r][c]);//-minVal+1.0f);
+//            avCol+=float(c)*(input->elem[r][c]);//-minVal+1.0f);
 //        }
 //    avRow/=imSum;
 //    avCol/=imSum;
@@ -6204,15 +6578,15 @@ FCMaxMinMerge::~FCMaxMinMerge(){
 //void CenterAtTheMean3D::ForwardPass(int from, int to){
 //    tensor* input =static_cast<tensor*>(layersData->layerList[from]);
 //    tensor* output=static_cast<tensor*>(layersData->layerList[to]);
-//    double minVal = input->FindMin();
-//    double imSum = input->Sum()-input->depth*input->rows*input->cols*(minVal-1.0);
+//    float minVal = input->FindMin();
+//    float imSum = input->Sum()-input->depth*input->rows*input->cols*(minVal-1.0f);
 //
-//    double avRow=0, avCol=0;
+//    float avRow=0, avCol=0;
 //    for(int d=0; d<input->depth; d++)
 //        for(int r=0; r<input->rows; r++)
 //            for(int c=0; c<input->cols; c++){
-//                avRow+=double(r)*(input->elem[d][r][c]-minVal+1.0);
-//                avCol+=double(c)*(input->elem[d][r][c]-minVal+1.0);
+//                avRow+=float(r)*(input->elem[d][r][c]-minVal+1.0f);
+//                avCol+=float(c)*(input->elem[d][r][c]-minVal+1.0f);
 //            }
 //
 //    avRow/=imSum;
@@ -6264,7 +6638,7 @@ FCMaxMinMerge::~FCMaxMinMerge(){
 //    activityMatrix* inputActivity  = static_cast<activityMatrix*>(layersActivity->layerList[from]);
 //    activityVect* outputActivity = static_cast<activityVect*>(layersActivity->layerList[to]);
 //
-//    double * inputElemR;
+//    float * inputElemR;
 //    int rInpCols;
 //
 //    for(int r=0; r<input->rows; r++){
@@ -6288,7 +6662,7 @@ FCMaxMinMerge::~FCMaxMinMerge(){
 //    activityVect* outputActivity = static_cast<activityVect*>(layersActivity->layerList[to]);
 //
 //    int rInpCols;
-//    double * inputDeltaElemR;
+//    float * inputDeltaElemR;
 //    for(int r=0; r<input->rows; r++){
 //        rInpCols = r*input->cols+startingIndex;
 //        inputDeltaElemR = inputDelta->elem[r];
@@ -6330,7 +6704,7 @@ FCMaxMinMerge::~FCMaxMinMerge(){
 //    activityVect*   outputActivity = static_cast<activityVect*>(layersActivity->layerList[to]);
 //
 //    matrix* inputElemD;
-//    double * inputElemDR;
+//    float * inputElemDR;
 //    int dRowsCols;
 //    int dRowsColsPlusRCols;
 //    for(int d=0; d<input->depth; d++){
@@ -6363,7 +6737,7 @@ FCMaxMinMerge::~FCMaxMinMerge(){
 //    activityVect*   outputActivity = static_cast<activityVect*>(layersActivity->layerList[to]);
 //
 //    matrix* inputDeltaD;
-//    double *inputDeltaDR;
+//    float *inputDeltaDR;
 //    int dRowsCols;
 //    int dRowsColsPlusRCols;
 //    for(int d=0; d<input->depth; d++){
@@ -6415,7 +6789,7 @@ FCMaxMinMerge::~FCMaxMinMerge(){
 //    activityMatrix* inputActivity  = static_cast<activityMatrix*>(layersActivity->layerList[from]);
 //    activityVect* outputActivity = static_cast<activityVect*>(layersActivity->layerList[to]);
 //
-//    double * inputElemR;
+//    float * inputElemR;
 //    int rInpCols;
 //
 //    for(int r=0; r<input->rows; r++){
@@ -6439,7 +6813,7 @@ FCMaxMinMerge::~FCMaxMinMerge(){
 //    activityVect* outputActivity = static_cast<activityVect*>(layersActivity->layerList[to]);
 //
 //    int rInpCols;
-//    double * inputDeltaElemR;
+//    float * inputDeltaElemR;
 //    for(int r=0; r<input->rows; r++){
 //        rInpCols = r*input->cols;
 //        inputDeltaElemR = inputDelta->elem[r];
@@ -6480,7 +6854,7 @@ FCMaxMinMerge::~FCMaxMinMerge(){
 //    activityVect*   outputActivity = static_cast<activityVect*>(layersActivity->layerList[to]);
 //
 //    matrix* inputElemD;
-//    double * inputElemDR;
+//    float * inputElemDR;
 //    int dRowsCols;
 //    int dRowsColsPlusRCols;
 //    for(int d=0; d<input->depth; d++){
@@ -6513,7 +6887,7 @@ FCMaxMinMerge::~FCMaxMinMerge(){
 //    activityVect*   outputActivity = static_cast<activityVect*>(layersActivity->layerList[to]);
 //
 //    matrix* inputDeltaD;
-//    double *inputDeltaDR;
+//    float *inputDeltaDR;
 //    int dRowsCols;
 //    int dRowsColsPlusRCols;
 //    for(int d=0; d<input->depth; d++){

@@ -15,27 +15,27 @@ class activityData;
 
 
 struct mathFunc{
-    virtual double   f(const double &x)=0;
-    virtual double  df(const double &x)=0;
-    virtual double ddf(const double &x)=0;
+    virtual float   f(const float &x)=0;
+    virtual float  df(const float &x)=0;
+    virtual float ddf(const float &x)=0;
 };
 
 struct Sigma: public mathFunc{
-    double   f(const double &x);
-    double  df(const double &x);
-    double ddf(const double &x);
+    float   f(const float &x);
+    float  df(const float &x);
+    float ddf(const float &x);
 };
 
 struct Tanh: public mathFunc{
-    double   f(const double &x);
-    double  df(const double &x);
-    double ddf(const double &x);
+    float   f(const float &x);
+    float  df(const float &x);
+    float ddf(const float &x);
 };
 
 struct Relu: public mathFunc{
-    double   f(const double &x);
-    double  df(const double &x);
-    double ddf(const double &x);
+    float   f(const float &x);
+    float  df(const float &x);
+    float ddf(const float &x);
 };
 
 
@@ -220,7 +220,7 @@ void BackwardSequentialBottleneckConvolutionReluStandard(tensor* input, tensor* 
                                                    tensor* kernel_hor, tensor* kernelGrad_hor, vect* biasGrad_hor, tensor* vertConvolution,
                                                    tensor* vertConvolutionGrad, int startDepth, int nConvolutions, activityData* inputActivity);
 
-void BackwardVertical2D(matrix* input, matrix* inputDelta, matrix* outputDelta, double kernel, double & kernelGrad);
+void BackwardVertical2D(matrix* input, matrix* inputDelta, matrix* outputDelta, float kernel, float & kernelGrad);
 
 void ConvolutionStandardVertical1D(tensor* input, tensor* kernel, matrix* output);
 void ConvolutionStandardVerticalRandom1D(tensor* input, int* indices, tensor* kernel, matrix* output);
@@ -255,6 +255,10 @@ void BackwardSymmetricConvolution(tensor* input, int* indices, tensor* inputDelt
 
 void SymmetricConvolution3D(tensor* input, tensor* output, tensor* kernel, vect* bias, int symmetryLevel);
 void BackwardSymmetricConvolution3D(tensor* input, tensor* inputDelta, tensor* outputDelta, tensor* kernel, tensor* kernelGrad, vect* biasGrad, int symmetryLevel);
+
+
+void VerticalConvolution3D(tensor* input, tensor* output, tensor* kernel);
+void BackwardVerticalConvolution3D(tensor* input, tensor* inputDelta, tensor* outputDelta, tensor* kernel, tensor* kernelGrad);
 
 
 
@@ -299,11 +303,11 @@ void BackwardBottleneckConvolutionStandardGrad(tensor* input, tensor* inputDelta
 void BackwardBottleneckConvolutionStandardPartialGrad(tensor* input, tensor* inputDelta, matrix* convOutputDelta, matrix* vertOutput, matrix* vertOutputDelta,
                             tensor* kernel_vert, matrix* kernel_hor, tensor* kernelGrad_vert, matrix* kernelGrad_hor, realNumber* biasGrad_hor, int startDepth);
 
-//void ForwardConvoluteStandardByIndex(double* input, double* output, const int siz, double* revKernel, const vector<int> & indexInputRow);
+//void ForwardConvoluteStandardByIndex(float* input, float* output, const int siz, float* revKernel, const vector<int> & indexInputRow);
 
-void ConvoluteStandard(double* input, double* output, const int siz, double* kernel);
-void ConvoluteStandardSymmetric(double* input, double* output, const int siz, double* kernel);
-void ConvoluteStandardFullySymmetric0(double* input, double* output, const int siz, double* kernel);
+void ConvoluteStandard(float* input, float* output, const int siz, float* kernel);
+void ConvoluteStandardSymmetric(float* input, float* output, const int siz, float* kernel);
+void ConvoluteStandardFullySymmetric0(float* input, float* output, const int siz, float* kernel);
 
 
 void ConvoluteStandard2D2D(matrix* input, matrix* output, matrix* kernel);
@@ -312,13 +316,13 @@ void ConvoluteStandard2D2DSymmetric2(matrix* input, matrix* output, matrix* kern
 void ConvoluteStandard2D2DSymmetric3(matrix* input, matrix* output, matrix* kernel);
 void ConvoluteStandard2D2DFullySymmetric(matrix* input, matrix* output, matrix* kernel);
 
-//void ForwardConvoluteStandardCreateIndex(double* input, double* output, const int siz, double* revKernel, vector<int> & indexInputRow);
+//void ForwardConvoluteStandardCreateIndex(float* input, float* output, const int siz, float* revKernel, vector<int> & indexInputRow);
 
-void BackwardConvoluteStandard(double* input, double* inputDelta, double* outputDelta, double* kernel, double* kernelGrad, const int siz);
-void BackwardConvoluteStandardSymmetric(double* input, double* inputDelta, double* outputDelta, double* kernel, double* kernelGrad, const int siz);
-void BackwardConvoluteStandardFullySymmetric0(double* input, double* inputDelta, double* outputDelta, double* kernel, double* kernelGrad, const int siz);
+void BackwardConvoluteStandard(float* input, float* inputDelta, float* outputDelta, float* kernel, float* kernelGrad, const int siz);
+void BackwardConvoluteStandardSymmetric(float* input, float* inputDelta, float* outputDelta, float* kernel, float* kernelGrad, const int siz);
+void BackwardConvoluteStandardFullySymmetric0(float* input, float* inputDelta, float* outputDelta, float* kernel, float* kernelGrad, const int siz);
 
-void BackwardConvoluteGradStandard(double* input, double* outputDelta, double* kernelGrad, const int siz);
+void BackwardConvoluteGradStandard(float* input, float* outputDelta, float* kernelGrad, const int siz);
 void BackwardConvoluteStandard2D2D(matrix* input, matrix* inputDelta, matrix* outputDelta, matrix* kernel, matrix* kernelGrad, realNumber* biasGrad);
 void BackwardConvoluteStandard2D2DSymmetric(matrix* input, matrix* inputDelta, matrix* outputDelta, matrix* kernel, matrix* kernelGrad, realNumber* biasGrad);
 void BackwardConvoluteStandard2D2DSymmetric2(matrix* input, matrix* inputDelta, matrix* outputDelta, matrix* kernel, matrix* kernelGrad, realNumber* biasGrad);
@@ -331,8 +335,8 @@ void BackwardConvoluteGradStandard3D2D_4_4(tensor* input, matrix* outputDelta, t
 
 void BackwardConvoluteStandard2D2D_4_4(matrix* input, matrix* inputDelta, matrix* outputDelta, matrix* kernel, matrix* kernelGrad, realNumber* biasGrad);
 
-void BackwardConvoluteStandard_4(double* input, double* inputDelta, double* outputDelta, double* kernel, double* kernelGrad);
-void BackwardConvoluteGradStandard_4(double* input, double* outputDelta, double* kernelGrad);
+void BackwardConvoluteStandard_4(float* input, float* inputDelta, float* outputDelta, float* kernel, float* kernelGrad);
+void BackwardConvoluteGradStandard_4(float* input, float* outputDelta, float* kernelGrad);
 //void ConvoluteStandard2D2D(matrix* input, matrix* output, matrix* reversedKernel, realNumber* bias, vector<int> & indexInputRow);
 
 void ConvoluteStandard3D2D(tensor* input, matrix* output, tensor* kernel, realNumber* bias);
@@ -355,9 +359,18 @@ void BackwardAveragePool3D(tensor* inputDelta, tensor* outputDelta, int kernelR,
 
 
 void AveragePool3D_2_2(tensor* input, tensor* output);
+void AveragePool3D_2_2(tensor* input, tensor* output, int numNonZero);
+
 void BackwardAveragePool3D_2_2(tensor* inputDelta, tensor* outputDelta);
+void BackwardAveragePool3D_2_2(tensor* inputDelta, tensor* outputDelta, int numNonZero);
+
+
 void BackwardAveragePool2D_2_2(matrix* inputDelta, matrix* outputDelta);
+void BackwardAveragePool2D_2_2(matrix* inputDelta, matrix* outputDelta, int numNonZero);
+
 void AveragePool2D_2_2(matrix* input, matrix* output);
+void AveragePool2D_2_2(matrix* input, matrix* output, int numNonZero);
+
 
 
 void MaxPool2D(matrix* input, matrix* output, int* rowInd, int *colInd, int kernelRsize, int kernelCsize);
@@ -368,7 +381,7 @@ void BackwardMaxAbsPool2D(matrix* inputDelta, matrix* outputDelta, int* rowInd, 
 
 void MaxAbsPool2D_2_2(matrix* input, matrix* output, matrix* maxAbs, int* rowInd, int *colInd);
 
-//void MaxPoolSoftMaxIndex2D(matrix* input, double& output, double& softMaxRow, double& softMaxCol,
+//void MaxPoolSoftMaxIndex2D(matrix* input, float& output, float& softMaxRow, float& softMaxCol,
 //                           matrix* softMaxInput, int& rowInd, int& colInd, int kernelRsize, int kernelCsize);
 
 void MaxPool3D(tensor* input, tensor* output, int* rowInd, int *colInd, int kernelRsize, int kernelCsize);
@@ -388,47 +401,47 @@ void BackwardMinPool2D(matrix* inputDelta, matrix* outputDelta, int* rowInd, int
 void MinPool3D(tensor* input, tensor* output, int* rowInd, int *colInd, int kernelRsize, int kernelCsize);
 void BackwardMinPool3D(tensor* inputDelta, tensor* outputDelta, int* rowInd, int* colInd);
 
-void CalculateSoftIndex(matrix* input, matrix* softMaxInput, double & softMaxRow, double & softMaxCol, double & maxVal, double logFactor);
-void MaxAbsPoolSoftIndex3D(tensor* input, vect* output, vect* maxAbs, tensor* softMaxInput, int* rowInd, int* colInd, double logFactor);
-void BackwardSoftIndex(matrix* input, matrix* softMaxInput, const double softRow, const double softCol, matrix* inputDelta,
-                       const double deltaSoftRow, const double deltaSoftCol, double logFactor);
+void CalculateSoftIndex(matrix* input, matrix* softMaxInput, float & softMaxRow, float & softMaxCol, float & maxVal, float logFactor);
+void MaxAbsPoolSoftIndex3D(tensor* input, vect* output, vect* maxAbs, tensor* softMaxInput, int* rowInd, int* colInd, float logFactor);
+void BackwardSoftIndex(matrix* input, matrix* softMaxInput, const float softRow, const float softCol, matrix* inputDelta,
+                       const float deltaSoftRow, const float deltaSoftCol, float logFactor);
 void BackwardMaxAbsPoolSoftIndex3D(tensor* input, tensor* softMaxInput, vect* output, tensor* inputDelta, vect* outputDelta,
-                                   int* rowInd, int* colInd, double logFactor);
+                                   int* rowInd, int* colInd, float logFactor);
 
-void MaxAbsPoolSoftDiffIndex3D(tensor* input, vect* output, vect* tempOutput, vect* maxAbs, tensor* softMaxInput, int* rowInd, int* colInd, double logFactor);
+void MaxAbsPoolSoftDiffIndex3D(tensor* input, vect* output, vect* tempOutput, vect* maxAbs, tensor* softMaxInput, int* rowInd, int* colInd, float logFactor);
 void BackwardMaxAbsPoolSoftDiffIndex3D(tensor* input, tensor* softMaxInput, vect* tempOutput, tensor* inputDelta, vect* outputDelta, vect* tempOutputDelta,
-                                   int* rowInd, int* colInd, double logFactor);
+                                   int* rowInd, int* colInd, float logFactor);
 
 
-void MeanVarPool(orderedData* input, double * mean, double * var);
+void MeanVarPool(orderedData* input, float * mean, float * var);
 void MeanVarPoolTensor(tensor* input, tensor* output);
-void BackwardMeanVarPool(orderedData* input, double * mean, double * var, orderedData* inputDelta, double * meanDelta, double * varDelta);
+void BackwardMeanVarPool(orderedData* input, float * mean, float * var, orderedData* inputDelta, float * meanDelta, float * varDelta);
 void BackwardMeanVarPoolTensor(tensor* input, tensor* output, tensor* inputDelta, tensor* outputDelta);
 
-void MeanQuadStatsPool(matrix* input, double * stats);
+void MeanQuadStatsPool(matrix* input, float * stats);
 void MeanQuadStatsPoolTensor(tensor* input, tensor* output);
-void BackwardMeanQuadStatsPool(matrix* input, double * stats, matrix* inputDelta, double * statsDelta);
+void BackwardMeanQuadStatsPool(matrix* input, float * stats, matrix* inputDelta, float * statsDelta);
 void BackwardMeanQuadStatsPoolTensor(tensor* input, tensor* output, tensor* inputDelta, tensor* outputDelta);
 
 
 
-void MeanStDevPool(orderedData* input, double * mean, double * stDev);
+void MeanStDevPool(orderedData* input, float * mean, float * stDev);
 void MeanStDevPoolTensor(tensor* input, tensor* output);
-void BackwardMeanStDevPool(orderedData* input, double * mean, double * stDev, orderedData* inputDelta, double * meanDelta, double * stDevDelta);
+void BackwardMeanStDevPool(orderedData* input, float * mean, float * stDev, orderedData* inputDelta, float * meanDelta, float * stDevDelta);
 void BackwardMeanStDevPoolTensor(tensor* input, tensor* output, tensor* inputDelta, tensor* outputDelta);
 
 
 void AverageMaxAbsPool(tensor* input, tensor* output, int kernelRsize, int kernelCsize, int * rowInd, int * colInd, int onlyAveragePoolingDepth);
-void AverageMaxAbsPoolMatrixAll(matrix* input, double * outAverage, double * outMaxbs, int * rowInd, int * colInd);
+void AverageMaxAbsPoolMatrixAll(matrix* input, float * outAverage, float * outMaxbs, int * rowInd, int * colInd);
 void AverageMaxAbsPoolMatrix_2_2(matrix* input, matrix* outputAverage, matrix* outputMaxAbs, int * rowInd, int * colInd);
 
 void BackwardAverageMaxAbsPool(tensor* inputDelta, tensor* outputDelta,
                                int kernelRsize, int kernelCsize, int * rowInd, int * colInd, int onlyAveragePoolingDepth);
 
 
-void CenterPool(matrix* input, double * centers, double * sum);
+void CenterPool(matrix* input, float * centers, float * sum);
 void CenterPoolTensor(tensor* input, tensor* output, vect* sum);
-void BackwardCenterPool(matrix * input, double * centers, double * sum, matrix * inputDelta, double * centersDelta);
+void BackwardCenterPool(matrix * input, float * centers, float * sum, matrix * inputDelta, float * centersDelta);
 void BackwardCenterPoolTensor(tensor * output, vect * sum, tensor * inputDelta, tensor * outputDelta);
 
 
@@ -452,6 +465,29 @@ void BackwardStairsConvolution(tensor* input, tensor* inputDelta, tensor* kernel
 
 
 
+void ForwardStairsFullBottleneck(tensor* input, tensor* kernel_vert, tensor* kernel_hor, vect* bias, tensor* verticalConv,
+                                int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth,
+                                activityData* inputActivity, bool testMode);
+
+void BackwardStairsFullBottleneck(tensor* input, tensor* inputDelta, tensor* kernel_vert, tensor* kernelGrad_vert,
+                                  tensor* kernel_hor, tensor* kernelGrad_hor, vect* biasGrad,
+                                tensor* verticalConv, tensor* verticalConvDelta, int startDepth, int numStairs,
+                                int numStairConvolutions, int bottleneckDepth, activityData* inputActivity);
+
+
+
+void ForwardStairsFullBottleneckBalancedDrop(tensor* input, tensor* kernel_vert, tensor* kernel_hor, vect* bias, tensor* verticalConv,
+                                int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth,
+                                activityData* inputActivity, tensor* multipliers, bool testMode);
+
+void BackwardStairsFullBottleneckBalancedDrop(tensor* input, tensor* inputDelta, tensor* kernel_vert, tensor* kernelGrad_vert,
+                                  tensor* kernel_hor, tensor* kernelGrad_hor, vect* biasGrad,
+                                tensor* verticalConv, tensor* verticalConvDelta, int startDepth, int numStairs,
+                                int numStairConvolutions, int bottleneckDepth, activityData* inputActivity, tensor* multipliers);
+
+
+
+
 
 void ForwardStairsSymmetricConvolution(tensor* input, tensor* kernel_vert, tensor* kernel_hor, tensor* verticalConv, int startDepth, int numStairs, int numStairConvolutions,
                              activityData* inputActivity, int* indices, bool testMode, int symmetryLevel);
@@ -469,6 +505,9 @@ void ForwardStairsFullConvolution(tensor* input, tensor* kernel, vect* bias, int
 
 void BackwardStairsFullConvolution(tensor* input, tensor* inputDelta, tensor* kernel, tensor* kernelGrad, vect* biasGrad,
                                int startDepth, int numStairs, int numStairConvolutions, activityData* inputActivity, int symmetryLevel);
+
+
+
 
 
 
@@ -521,18 +560,18 @@ void BackwardStairsPyramidalConvolution(tensor* input, tensor* inputDelta, tenso
 void PyramidalConvolution(tensor* input, int* indices, matrix* vertOutput, matrix* convOutput, tensor* kernelVert, matrix* kernelHor, int stair);
 void PyramidalVerticalConvolution(tensor* input, int* indices, tensor* kernel, matrix* output, int stair);
 void PyramidalConvolution2D2D(matrix* input, matrix* output, matrix* kernel, int stair);
-void ConvoluteSymmetricNoPadding(double* input, double* output, const int siz, double* kernel);
+void ConvoluteSymmetricNoPadding(float* input, float* output, const int siz, float* kernel);
 
 
 void BackwardPyramidalConvolution(tensor* input, int* indices, tensor* inputDelta, matrix* convOutputDelta, matrix* vertOutput, matrix* vertOutputDelta,
                                   tensor* kernelVert, matrix* kernelHor, tensor* kernelGradVert, matrix* kernelGradHor, int stair);
 void BackwardPyramidalConvolution2D2D(matrix* input, matrix* inputDelta, matrix* outputDelta, matrix* kernel, matrix* kernelGrad, int stair);
-void BackwardConvoluteSymmetricNoPadding(double* input, double* inputDelta, double* outputDelta, double* kernel, double* kernelGrad, const int siz);
+void BackwardConvoluteSymmetricNoPadding(float* input, float* inputDelta, float* outputDelta, float* kernel, float* kernelGrad, const int siz);
 void BackwardPyramidalVerticalConvolution(tensor* input, int* indices, tensor* inputDelta, matrix* outputDelta, tensor* kernel, tensor* kernelGrad, int stair);
 
 void FullSubAveragePool(tensor* input, tensor* output, int border);
-void FullSubAveragePool2D(matrix* input, double* output, int border);
-void BackwardFullSubAveragePool2D(matrix* inputDelta, double * outputDelta, int border);
+void FullSubAveragePool2D(matrix* input, float* output, int border);
+void BackwardFullSubAveragePool2D(matrix* inputDelta, float * outputDelta, int border);
 void BackwardFullSubAveragePool(tensor* inputDelta, tensor* outputDelta, int border);
 
 void AveragePool3D_all(tensor* input, tensor* output);
@@ -544,56 +583,56 @@ void BackwardAveragePool3D_all(tensor* inputDelta, tensor* outputDelta, int numN
 void DeleteOnlyShell(orderedData* link);
 void DeleteOnlyShellActivity(activityData* link);
 
-double sqr(double x);
-int sign(double x);
+float sqr(float x);
+int sign(float x);
 int power(int base, int degree);
 
-double TrustRegionFunc(double lamb, vect* eigenValues, vect* rV, double eps);
-double TrustRegionFuncDeriv(double lamb, vect* eigenValues, vect* rV, double eps);
+float TrustRegionFunc(float lamb, vect* eigenValues, vect* rV, float eps);
+float TrustRegionFuncDeriv(float lamb, vect* eigenValues, vect* rV, float eps);
 
 void FillRandom(int* index, int startInd, int endInd, int len);
 void Switch(int & a, int & b);
 //
-//void Convolute2D2D(matrix* input, matrix* output, matrix* kernel, double* bias, int paddingR, int paddingC, int strideR, int strideC);
+//void Convolute2D2D(matrix* input, matrix* output, matrix* kernel, float* bias, int paddingR, int paddingC, int strideR, int strideC);
 //void Convolute2D3D(matrix* input, tensor* output, tensor* kernel, vect*   bias, int paddingR, int paddingC, int strideR, int strideC);
-//void Convolute3D2D(tensor* input, matrix* output, tensor* kernel, double* bias, int paddingR, int paddingC, int strideR, int strideC);
+//void Convolute3D2D(tensor* input, matrix* output, tensor* kernel, float* bias, int paddingR, int paddingC, int strideR, int strideC);
 //void Convolute3D3D(tensor* input, tensor* output, tensor4D* kernel, vect* bias, int paddingR, int paddingC, int strideR, int strideC);
 //
 //
 //void BackwardConvolute2D2D(matrix* input,matrix* inputDelta,matrix* outputDelta,matrix* kernel,matrix* kernelGrad,
-//                           double* bias, double* biasGrad,int paddingR,int paddingC,int strideR,int strideC);
+//                           float* bias, float* biasGrad,int paddingR,int paddingC,int strideR,int strideC);
 //
 //void BackwardConvolute2D3D(matrix* input, matrix* inputDelta, tensor* outputDelta, tensor* kernel, tensor* kernelGrad,
 //                           vect* bias, vect* biasGrad, int paddingR, int paddingC, int strideR, int strideC);
 //
 //void BackwardConvolute3D2D(tensor* input, tensor* inputDelta, matrix* outputDelta, tensor* kernel, tensor* kernelGrad,
-//                           double* bias, double* biasGrad, int paddingR, int paddingC, int strideR, int strideC);
+//                           float* bias, float* biasGrad, int paddingR, int paddingC, int strideR, int strideC);
 //
 //void BackwardConvolute3D3D(tensor* input, tensor* inputDelta, tensor* outputDelta, tensor4D* kernel, tensor4D* kernelGrad,
 //                           vect* bias, vect* biasGrad, int paddingR, int paddingC, int strideR, int strideC);
 //
 //
 //void BackwardConvoluteGrad2D2D(matrix* input, matrix* outputDelta,matrix* kernel,matrix* kernelGrad,
-//                           double* bias, double* biasGrad,int paddingR,int paddingC,int strideR,int strideC);
+//                           float* bias, float* biasGrad,int paddingR,int paddingC,int strideR,int strideC);
 //
 //void BackwardConvoluteGrad2D3D(matrix* input, tensor* outputDelta, tensor* kernel, tensor* kernelGrad,
 //                           vect* bias, vect* biasGrad, int paddingR, int paddingC, int strideR, int strideC);
 //
 //void BackwardConvoluteGrad3D2D(tensor* input, matrix* outputDelta, tensor* kernel, tensor* kernelGrad,
-//                           double* bias, double* biasGrad, int paddingR, int paddingC, int strideR, int strideC);
+//                           float* bias, float* biasGrad, int paddingR, int paddingC, int strideR, int strideC);
 //
 //void BackwardConvoluteGrad3D3D(tensor* input, tensor* outputDelta, tensor4D* kernel, tensor4D* kernelGrad,
 //                           vect* bias, vect* biasGrad, int paddingR, int paddingC, int strideR, int strideC);
 //
-//void DroppedConvolute2D2D(matrix* input, matrix* output, matrix* kernel, double* bias, int paddingR, int paddingC, int strideR, int strideC,
+//void DroppedConvolute2D2D(matrix* input, matrix* output, matrix* kernel, float* bias, int paddingR, int paddingC, int strideR, int strideC,
 //                          vector<vector<bool> > &activeInput, vector<vector<bool> > &activeOutput);
 //
 //void DroppedBackwardConvolute2D2D(matrix* input, matrix* inputDelta, matrix* outputDelta, matrix* kernel, matrix* kernelGrad,
-//                           double* bias, double* biasGrad, int paddingR, int paddingC, int strideR, int strideC,
+//                           float* bias, float* biasGrad, int paddingR, int paddingC, int strideR, int strideC,
 //                           vector<vector<bool> > &activeInput, vector<vector<bool> > &activeOutput);
 //
 //void DroppedBackwardConvoluteGrad2D2D(matrix* input, matrix* outputDelta, matrix* kernel, matrix* kernelGrad,
-//                           double* bias, double* biasGrad, int paddingR, int paddingC, int strideR, int strideC,
+//                           float* bias, float* biasGrad, int paddingR, int paddingC, int strideR, int strideC,
 //                           vector<vector<bool> > &activeInput, vector<vector<bool> > &activeOutput);
 //
 //
@@ -609,15 +648,15 @@ void Switch(int & a, int & b);
 //                           vector<vector<bool> > &activeInput, vector<vector<vector<bool> > > &activeOutput);
 //
 //
-//void DroppedConvolute3D2D(tensor* input, matrix* output, tensor* kernel, double* bias, int paddingR, int paddingC, int strideR, int strideC,
+//void DroppedConvolute3D2D(tensor* input, matrix* output, tensor* kernel, float* bias, int paddingR, int paddingC, int strideR, int strideC,
 //                          vector<vector<vector<bool> > > &activeInput, vector<vector<bool> > &activeOutput);
 //
 //void DroppedBackwardConvolute3D2D(tensor* input, tensor* inputDelta, matrix* outputDelta, tensor* kernel, tensor* kernelGrad,
-//                           double* bias, double* biasGrad, int paddingR, int paddingC, int strideR, int strideC,
+//                           float* bias, float* biasGrad, int paddingR, int paddingC, int strideR, int strideC,
 //                           vector<vector<vector<bool> > > &activeInput, vector<vector<bool> > &activeOutput);
 //
 //void DroppedBackwardConvoluteGrad3D2D(tensor* input, matrix* outputDelta, tensor* kernel, tensor* kernelGrad,
-//                           double* bias, double* biasGrad, int paddingR, int paddingC, int strideR, int strideC,
+//                           float* bias, float* biasGrad, int paddingR, int paddingC, int strideR, int strideC,
 //                           vector<vector<vector<bool> > > &activeInput, vector<vector<bool> > &activeOutput);
 //
 //

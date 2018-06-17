@@ -10,7 +10,7 @@ class matrix;
 class vect;
 
 struct orderedData{
-    double *elem;
+    float *elem;
     int len;
 
     orderedData();
@@ -21,8 +21,8 @@ struct orderedData{
 
     void SetToZero();
     void SetToZeroStartingFrom(int startingIndex);
-    void SetToValue(double val);
-    void SetToRandomValues(double maxAbs);
+    void SetToValue(float val);
+    void SetToRandomValues(float maxAbs);
 
     virtual void Print();
 
@@ -36,13 +36,14 @@ struct orderedData{
 
     void CopyToSubpart(orderedData* A);
 
-    void CopyMultiplied(double lambda, orderedData* A);
+    void CopyMultiplied(float lambda, orderedData* A);
 
-    void SetToLinearCombination(double a1, double a2, orderedData* A1, orderedData* A2);
+    void SetToLinearCombination(float a1, float a2, orderedData* A1, orderedData* A2);
 
     void Add(orderedData* addon);
-    void Add(double lamb, orderedData* addon);
-    void Add(double addon);
+    void Add(float lamb, orderedData* addon);
+    void Add(float addon);
+    void AddDistinct(float lamb, orderedData* addon);
 
     void AddThisStartingFrom(int thisStartingIndex, orderedData* addon);
 
@@ -52,8 +53,9 @@ struct orderedData{
 
     void AddAddonStartingFromOnlyActive(int addonStartingIndex, orderedData* addon, activityData* this_Activity);
 
-    double Sum();
-    double SqNorm();
+    float Sum();
+    float SqNorm();
+    float Mean();
 
     void AddPointwiseFunction(orderedData* inp, mathFunc* func);
     void DroppedAddPointwiseFunction(orderedData* inp, mathFunc* func, activityData* inputActivity, activityData* outputActivity);
@@ -68,19 +70,19 @@ struct orderedData{
     void AddPointwiseFuncDerivMultiply(orderedData* inp, orderedData* funcArg, mathFunc* func);
     void DroppedAddPointwiseFuncDerivMultiply(orderedData* inp, orderedData* funcArg, mathFunc* func, activityData* inputActivity, activityData* outputActivity);
 
-    void Multiply(double lamb);
+    void Multiply(float lamb);
     void PointwiseMultiply(orderedData* A);
 
     void MatrProd(matrix* M, vect* r);
     void TrMatrProd(matrix* M, vect* r);
 
-    double Max();
-    double Min();
+    float Max();
+    float Min();
     int ArgMax();
-    double MaxAbs();
+    float MaxAbs();
 
-    void RmspropUpdate(orderedData* grad, orderedData* MS, double k1, double k2, double Step);
-    void AdamUpdate(orderedData* grad, orderedData* Moment, orderedData* MS, double k1, double k2, double Step);
+    void RmspropUpdate(orderedData* grad, orderedData* MS, float k1, float k2, float Step);
+    void AdamUpdate(orderedData* grad, orderedData* Moment, orderedData* MS, float k1, float k2, float Step);
 
     void SetDroppedElementsToZero(activityData* mask);
 
@@ -122,29 +124,31 @@ struct orderedData{
 
     virtual int Dimensionality() = 0;
 
-    void FindTrustRegionMinima(matrix* B, vect* r, double eps);
-    void FindTrustRegionMinima(vect* eigenValues, matrix* eigenVectors, vect* rV, double trust_region_size);
+    void FindTrustRegionMinima(matrix* B, vect* r, float eps);
+    void FindTrustRegionMinima(vect* eigenValues, matrix* eigenVectors, vect* rV, float trust_region_size);
 
-    void CalculateMeanStdDev(double & mean, double & stDev);
+    void CalculateMeanStdDev(float & mean, float & stDev);
 
-    void NormalizeMeanStDev(orderedData* input, double & mean, double & stDev);
+    void NormalizeMeanStDev(orderedData* input, float & mean, float & stDev);
 
-    void computeMedian(double * median, int * index);
+    void computeMedian(float * median, int * index);
 
-    void computeMedianNonzero(double * median, int * index);
+    void computeMedianNonzero(float * median, int * index);
 
-    void computeQuartiles(double * quartiles, int * index, int numQuartiles);
+    void computeQuartiles(float * quartiles, int * index, int numQuartiles);
 
-    void computeQuartilesNonzero(double * quartiles, int * index, int numQuartiles);
+    void computeQuartilesNonzero(float * quartiles, int * index, int numQuartiles);
 
     void AverageWith(orderedData * input);
 
     void BackwardAverageWith(orderedData* inputDelta);
 
-    void SetToBalancedMultipliers(activityData* balancedActiveUnits, activityData* balacedUpDown, double alpha);
+    void SetToBalancedMultipliers(activityData* balancedActiveUnits, activityData* balacedUpDown, float alpha);
 };
 
-double InnerProduct(orderedData* inp1, orderedData* inp2);
+float InnerProduct(orderedData* inp1, orderedData* inp2);
 
-double InnerProductSubMatrices(matrix* M1, matrix* M2, int border);
+float InnerDistinctProduct(orderedData* inp1, orderedData* inp2);
+
+float InnerProductSubMatrices(matrix* M1, matrix* M2, int border);
 #endif // __orderedData__

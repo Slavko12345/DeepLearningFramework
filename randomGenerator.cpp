@@ -21,14 +21,14 @@ uint32_t randomGenerator::rand(){
 	return x;
 }
 
-double randomGenerator::generateDouble(double maxAbs){
-    return (double(randomGenerator::rand()) / double(randomGenerator::MaxValue) - 0.5) * 2.0 * maxAbs;
+float randomGenerator::generateFloat(float maxAbs){
+    return (float(randomGenerator::rand()) / float(randomGenerator::MaxValue) - 0.5) * 2.0 * maxAbs;
 }
 
-double randomGenerator::generatePositiveDouble(double maxVal){
-    return double(randomGenerator::rand()) / double(randomGenerator::MaxValue) * maxVal;
+float randomGenerator::generatePositiveFloat(float maxVal){
+    return float(randomGenerator::rand()) / float(randomGenerator::MaxValue) * maxVal;
 }
 
-bool randomGenerator::generateBool(double p){
+bool randomGenerator::generateBool(float p){
     return (randomGenerator::rand() < (p * randomGenerator::MaxValue) );
 }

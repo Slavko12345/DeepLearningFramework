@@ -14,6 +14,7 @@
 #include "activityData.h"
 #include "globals.h"
 #include "tensor.h"
+#include <float.h>
 using namespace std;
 
 void NeuralNet::Initiate()
@@ -44,8 +45,6 @@ void NeuralNet::Initiate()
 
     computation=new computationalModel;
     computation->SetModel(layersData, deltas, weightsData, gradient, layersActivity, primalWeightOwner);
-
-
 }
 
 void NeuralNet::Initiate(NeuralNet * NN){
@@ -76,7 +75,7 @@ void NeuralNet::Initiate(NeuralNet * NN){
 
 
 
-void NeuralNet::SetRandomWeights(double bound){
+void NeuralNet::SetRandomWeights(float bound){
     srand(time(NULL));
     weightsData->SetToRandomValues(bound);
 }
@@ -137,7 +136,7 @@ void NeuralNet::CalculateGradient(Data* inputData){
     DeleteOnlyShell(data_j);
 }
 
-void NeuralNet::CalculateGradientFunctionValue(Data* inputData, double& functionVal){
+void NeuralNet::CalculateGradientFunctionValue(Data* inputData, float& functionVal){
     tensor* data_j = new tensor();
     gradient->SetToZero();
     functionVal = 0;
@@ -150,7 +149,7 @@ void NeuralNet::CalculateGradientFunctionValue(Data* inputData, double& function
             data_j->SetToTLayer(inputData->classData, j);
             lab = inputData->labels[j];
             ForwardBackwardPass(data_j, lab);
-            functionVal-=log(lastLayerLink->elem[lab]);
+            functionVal-=log(lastLayerLink->elem[lab] + FLT_EPSILON);
             ++total;
         }
 
@@ -163,12 +162,12 @@ void NeuralNet::CalculateGradientFunctionValue(Data* inputData, double& function
             ++total;
         }
     }
-    functionVal/=double(total);
+    functionVal/=float(total);
     DeleteOnlyShell(data_j);
 }
 
 
-void NeuralNet::CalculateErrorAndAccuracy(Data* inputData, double &error, double &accuracy){
+void NeuralNet::CalculateErrorAndAccuracy(Data* inputData, float &error, float &accuracy){
     tensor* data_j = new tensor();
     error=0;
     int correct=0, predictedLabel, lab;
@@ -190,15 +189,15 @@ void NeuralNet::CalculateErrorAndAccuracy(Data* inputData, double &error, double
             predictedLabel=lastLayerLink->ArgMax();
             lab = inputData->labels[j];
             if (predictedLabel==lab) correct++;
-            error-=log(fabs(lastLayerLink->elem[lab])+1E-10);
+            error-=log(fabs(lastLayerLink->elem[lab]) + FLT_EPSILON);
         }
-    error/=double(total);
-    accuracy = double(correct)/total;
+    error/=float(total);
+    accuracy = float(correct)/total;
 
     DeleteOnlyShell(data_j);
 }
 
-void NeuralNet::CalculateSubErrorAndAccuracy(Data* inputData, double &error, int &correct){
+void NeuralNet::CalculateSubErrorAndAccuracy(Data* inputData, float &error, int &correct){
     tensor* data_j = new tensor();
     error=0; correct=0;
     int predictedLabel, lab;
@@ -220,13 +219,13 @@ void NeuralNet::CalculateSubErrorAndAccuracy(Data* inputData, double &error, int
             predictedLabel=lastLayerLink->ArgMax();
             lab = inputData->labels[j];
             if (predictedLabel==lab) correct++;
-            error-=log(fabs(lastLayerLink->elem[lab])+1E-10);
+            error-=log(fabs(lastLayerLink->elem[lab]) + FLT_EPSILON);
         }
 
     DeleteOnlyShell(data_j);
 }
 
-double NeuralNet::CalculateAccuracy(Data* inputData){
+float NeuralNet::CalculateAccuracy(Data* inputData){
     tensor* data_j = new tensor();
     int correct=0, total = inputData->totalSize(), predictedLabel, lab;
     orderedData* lastLayerLink =layersData->layerList[Nlayers-1];
@@ -239,7 +238,7 @@ double NeuralNet::CalculateAccuracy(Data* inputData){
     }
     DeleteOnlyShell(data_j);
 
-    return double(correct)/total;
+    return float(correct)/total;
 }
 
 void NeuralNet::PrintProbabilities(){
@@ -267,7 +266,7 @@ void NeuralNet::SwitchToTestMode(){
     computation->SetToTestMode();
 }
 
-void NeuralNet::UpdateBalancedDropParameters(double alpha_, double pDrop_, double pNotDrop_){
+void NeuralNet::UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_){
     computation->UpdateBalancedDropParameters(alpha_, pDrop_, pNotDrop_);
 }
 

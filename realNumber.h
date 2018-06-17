@@ -5,9 +5,9 @@ class vect;
 
 struct realNumber: public orderedData{
     realNumber();
-    realNumber(double val);
+    realNumber(float val);
     int Dimensionality();
-    double& At();
+    float& At();
     void SetToVectElement(vect* V, int j);
 };
 

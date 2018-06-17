@@ -140,9 +140,9 @@ void Data::ReadTrainingMnist()
             {
                 file_image.read((char*)&temp, sizeof(temp));
                 //cout<<"read";
-                classData->At(i, 0, r, c) = double(temp)/255.0 - 0.5;
+                classData->At(i, 0, r, c) = float(temp)/255.0f - 0.5f;
                 //cout<<" set"<<endl;
-                //tensLink->elem[r*n_cols+c]=double(temp)/255.0 - 0.5;
+                //tensLink->elem[r*n_cols+c]=float(temp)/255.0 - 0.5;
             }
 
         //cout<<labels[i]<<" "<<siz[labels[i] ]<<" "<<i<<endl;
@@ -220,7 +220,7 @@ void Data::ReadTestMnist(){
             for(int c=0; c<n_cols; ++c)
             {
                 file_image.read((char*)&temp,sizeof(temp));
-                classData->At(i,0,r,c) = double(temp)/255.0 - 0.5;
+                classData->At(i,0,r,c) = float(temp)/255.0f - 0.5f;
             }
     }
     file_image.close();
@@ -252,15 +252,15 @@ void Data::AddCifar10Batch(char batchFileName[], int startingIndex){
                 for(int c = 0; c < n_cols; ++c){
                     batchFile.read((char*) &temp, sizeof(temp));
                     if (!READ_TO_VECT){
-                        classData->At(startingIndex + i, ch, r, c) = double(temp)/255.0;
+                        classData->At(startingIndex + i, ch, r, c) = float(temp)/255.0f;
                         if (INPUT_NEG_POS)
-                            classData->At(startingIndex + i, ch, r, c) -= 0.5;
+                            classData->At(startingIndex + i, ch, r, c) -= 0.5f;
                     }
 
                     else{
-                        classData->At(startingIndex + i, c + 32 * r + 1024 * ch, 1, 1) =  double(temp)/255.0;
+                        classData->At(startingIndex + i, c + 32 * r + 1024 * ch, 1, 1) =  float(temp)/255.0f;
                         if (INPUT_NEG_POS)
-                            classData->At(startingIndex + i, c + 32 * r + 1024 * ch, 1, 1) -= 0.5;
+                            classData->At(startingIndex + i, c + 32 * r + 1024 * ch, 1, 1) -= 0.5f;
                     }
                 }
         ++siz[lab];
@@ -369,8 +369,8 @@ void Data::SubDivide(Data** dataList, int numThreads){
         dataList[j]->SelectMiniBatch(this, addOne * (minimalSize + 1) + (j - addOne) * minimalSize, minimalSize);
 }
 
-void Data::SubDivide(Data** dataList, int numThreads, double* velocity){
-    double totalVelocity = 0;
+void Data::SubDivide(Data** dataList, int numThreads, float* velocity){
+    float totalVelocity = 0;
     int totalSize = this->totalSize();
     int totalSubSize=0;
     int mbSubSize[numThreads];

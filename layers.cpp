@@ -15,10 +15,10 @@ void layers::SetModel()
 
     layerList=new orderedData* [Nlayers];
 
-    layerList[0] = new tensor(83, 32, 32);
-    layerList[1] = new tensor(163, 16, 16);
-    layerList[2] = new tensor(243, 8, 8);
-    layerList[3] = new tensor(243, 1, 1);
+    layerList[0] = new tensor(35, 32, 32);
+    layerList[1] = new tensor(67, 16, 16);
+    layerList[2] = new tensor(99, 8, 8);
+    layerList[3] = new tensor(99, 1, 1);
     layerList[4] = new vect(10);
 }
 
@@ -54,7 +54,7 @@ void layers::SetInput(orderedData* input, activityLayers* actLayers, bool testMo
 
     if (INPUT_NORMALIZATION){
         if (!LAYERWISE_NORMALIZATION){
-            double mean, stDev;
+            float mean, stDev;
             input_layer_0->NormalizeMeanStDev(input_layer_0, mean, stDev);
             if (APPEND_INPUT_STATISTICS){
                 int linearLayerLen = layerList[Nlayers-2]->len;
@@ -64,7 +64,7 @@ void layers::SetInput(orderedData* input, activityLayers* actLayers, bool testMo
         }
         else{
             int mean[numLayers], stDev[numLayers];
-            double mean_, stDev_;
+            float mean_, stDev_;
             matrix* input_j = new matrix();
             for(int j=0; j<numLayers; ++j){
                 input_j->SetToTensorLayer(input_layer_0, j);

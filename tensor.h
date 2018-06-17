@@ -18,13 +18,13 @@ public:
     tensor();
     tensor(int depth_, int rows_, int cols_);
     void SetSize(int depth_, int rows_, int cols_);
-    void PointToTensor(double * elem_);
+    void PointToTensor(float * elem_);
 
     void Print();
-    double &At(int d, int r, int c);
+    float &At(int d, int r, int c);
     int   Ind(int d, int r, int c);
     int   Ind(int d);
-    double *Layer(int d);
+    float *Layer(int d);
 
     void SaveAsImage(char filename[]);
 

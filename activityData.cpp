@@ -3,12 +3,13 @@
 #include "randomGenerator.h"
 #include <math.h>
 #include "mathFunc.h"
+#include <float.h>
 
 activityData::activityData(){
 }
 
-activityData::activityData(int len_, double dropRate_): dropRate(dropRate_), len(len_){
-    dropping = (dropRate>1E-10);
+activityData::activityData(int len_, float dropRate_): dropRate(dropRate_), len(len_){
+    dropping = (dropRate>FLT_EPSILON);
 
     activeUnits = new bool[len];
     for(int i=0; i<len; ++i)
@@ -23,40 +24,40 @@ void activityData::DropAllExcept(int num){
         activeUnits[remainIndex[j] ] = 1;
 }
 
-double activityData::dropRateInFact(double dropRate_){
-    if (fabs(1.0 - dropRate_)<1E-10)
-        return 1.0;
+float activityData::dropRateInFact(float dropRate_){
+    if (fabs(1.0f - dropRate_)<FLT_EPSILON)
+        return 1.0f;
 
-    if (fabs(dropRate_)<1E-10)
-        return 0.0;
+    if (fabs(dropRate_)<FLT_EPSILON)
+        return 0.0f;
 
-    if (dropRate_>0.5+1E-8)
-        return 1.0 - dropRateInFact(1.0 - dropRate_);
+    if (dropRate_>0.5f+FLT_EPSILON)
+        return 1.0f - dropRateInFact(1.0f - dropRate_);
 
     const int toCompr = round(8 * dropRate_);
     const int toCompr16 = round(16 * dropRate_);
 
     if (toCompr16 == 1){
-        return 0.0625;
+        return 0.0625f;
     }
 
-    return toCompr / 8.0;
+    return toCompr / 8.0f;
 }
 
 void activityData::DropUnits(){
     if (!dropping) return;
 
-    if (fabs(1.0 - dropRate)<1E-10){
+    if (fabs(1.0 - dropRate)<FLT_EPSILON){
         this->SetAllNonActive();
         return;
     }
 
-    if (fabs(dropRate<1E-10)){
+    if (fabs(dropRate<FLT_EPSILON)){
         this->SetAllActive();
         return;
     }
 
-    if (dropRate>0.5+1E-8){
+    if (dropRate>0.5+FLT_EPSILON){
         dropRate = 1 - dropRate;
         this->DropUnits();
         this->FlipActivities();
@@ -253,11 +254,11 @@ void activityData::FlipActivities(){
         activeUnits[j] = !activeUnits[j];
 }
 
-double activityData::ActiveProportion(){
+float activityData::ActiveProportion(){
     int active = 0;
     for(int j=0; j<len; ++j)
         active += activeUnits[j];
-    return double(active) / len;
+    return float(active) / len;
 }
 
 int activityData::ActiveLen(){
@@ -274,6 +275,21 @@ void activityData::SubActivityData(activityData* act, int startIndex_, int len_)
     activeUnits = act->activeUnits + startIndex_;
 }
 
+void activityData::Drop_2_2(){
+    int n = sqrt(len);
+
+    this->SetAllNonActive();
+    uint32_t gen;
+    int r1, c1;
+    for (int row = 0; row < n/2; ++row)
+        for(int col = 0; col < n/2; ++col){
+            gen = randomGenerator::rand();
+            r1 = (gen & 1);
+            gen >>= 1;
+            c1 = (gen & 1);
+            activeUnits[n * (2 * row + r1) + 2 * col + c1] = 1;
+        }
+}
 
 
 activityData::~activityData(){

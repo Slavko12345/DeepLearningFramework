@@ -8,6 +8,7 @@
 #include "bmp/EasyBMP.h"
 #include "activityData.h"
 #include "tensor.h"
+#include "float.h"
 using namespace std;
 
 matrix::matrix(){
@@ -16,18 +17,18 @@ matrix::matrix(){
 matrix::matrix(int rows_, int cols_): orderedData(rows_*cols_), rows(rows_), cols(cols_){
 }
 
-void matrix::PointToMatrix(int rows_, int cols_, double* elem_){
+void matrix::PointToMatrix(int rows_, int cols_, float* elem_){
     rows=rows_;
     cols=cols_;
     len=rows_*cols_;
     elem=elem_;
 }
 
-void matrix::PointToMatrix(double *elem_){
+void matrix::PointToMatrix(float *elem_){
     elem=elem_;
 }
 
-double& matrix::At(int r, int c){
+float& matrix::At(int r, int c){
     return elem[r*cols+c];
 }
 
@@ -39,7 +40,7 @@ int matrix::IndRow(int r){
     return r*cols;
 }
 
-double* matrix::Row(int r){
+float* matrix::Row(int r){
     return elem+r*cols;
 }
 
@@ -87,12 +88,12 @@ void matrix::SaveNormalizedAsImage(char filename[]){
     BMP Output;
     Output.SetSize(cols, rows);
     Output.SetBitDepth(24);
-    double maxVal = this->Max();
-    double minVal = this->Min();
-    double fact;
+    float maxVal = this->Max();
+    float minVal = this->Min();
+    float fact;
     cout<<minVal<<" "<<maxVal<<endl;
-    if (maxVal-minVal<1E-10) fact=0;
-    else fact=255.0/(maxVal-minVal);
+    if (maxVal-minVal<FLT_EPSILON) fact=0.0f;
+    else fact=255.0f/(maxVal-minVal);
     cout<<fact<<endl;
     for(int r=0; r<rows; r++)
         for(int c=0; c<cols; c++){
@@ -106,10 +107,10 @@ void matrix::SaveNormalizedAsImage(char filename[]){
 void matrix::BackwardFullyConnectedOnlyGrad(orderedData* outputDelta, orderedData* input, vect* biasGrad, vector<int>& indexOutput, vector<int>& indexInput){
     int outputDelta_size = indexOutput.size();
     int input_size = indexInput.size();
-    double outputDelta_elemR;
-    double * elem_r;
+    float outputDelta_elemR;
+    float * elem_r;
     int toComputeOutputDelta_r, toComputeInput_c;
-    double *input_elem = input->elem;
+    float *input_elem = input->elem;
 
     for(int r=0; r<outputDelta_size; ++r){
         toComputeOutputDelta_r = indexOutput[r];
@@ -125,10 +126,10 @@ void matrix::BackwardFullyConnectedOnlyGrad(orderedData* outputDelta, orderedDat
 
 void matrix::BackwardFullyConnectedOnlyGrad(orderedData* outputDelta, orderedData* input, vect* biasGrad, vector<int>& indexInput){
     int input_size = indexInput.size();
-    double outputDelta_elemR;
-    double * elem_r;
+    float outputDelta_elemR;
+    float * elem_r;
     int toComputeInput_c;
-    double *input_elem = input->elem;
+    float *input_elem = input->elem;
 
     for(int r=0; r<outputDelta->len; ++r){
         elem_r = this->Row(r);
@@ -143,10 +144,10 @@ void matrix::BackwardFullyConnectedOnlyGrad(orderedData* outputDelta, orderedDat
 
 
 void matrix::BackwardFullyConnectedOnlyGrad(orderedData* outputDelta, orderedData* input, vect* biasGrad){
-    double outputDelta_r;
-    double * elem_r;
+    float outputDelta_r;
+    float * elem_r;
     int toComputeInput_c;
-    double *input_elem = input->elem;
+    float *input_elem = input->elem;
     int out_len = outputDelta->len;
     int input_len = input->len;
     for(int r=0; r<out_len; ++r){
@@ -161,10 +162,10 @@ void matrix::BackwardFullyConnectedOnlyGrad(orderedData* outputDelta, orderedDat
 
 
 void matrix::BackwardFullyConnectedNoBiasOnlyGrad(orderedData* outputDelta, orderedData* input){
-    double outputDelta_r;
-    double * elem_r;
+    float outputDelta_r;
+    float * elem_r;
     int toComputeInput_c;
-    double *input_elem = input->elem;
+    float *input_elem = input->elem;
     int out_len = outputDelta->len;
     int input_len = input->len;
     for(int r=0; r<out_len; ++r){
@@ -181,9 +182,9 @@ void matrix::BackwardFullyConnectedNoBiasOnlyGrad(orderedData* outputDelta, orde
 
 void matrix::BackwardCompressedInputFullyConnectedOnlyGrad(orderedData* outputDelta, orderedData* compressedInput, vect* biasGrad, vector<int>& indexInput){
     int input_size = indexInput.size();
-    double outputDelta_elemR;
-    double * elem_r;
-    double *comprInput_elem = compressedInput->elem;
+    float outputDelta_elemR;
+    float * elem_r;
+    float *comprInput_elem = compressedInput->elem;
 
     for(int r=0; r<outputDelta->len; ++r){
         elem_r = this->Row(r);
@@ -238,14 +239,14 @@ void matrix::SubMatrix(matrix* M, int startRow, int rows_){
 
 void matrix::EigenDecompose(vect* eigenValues, matrix* eigenVectors){
     if (rows == 2 && cols == 2){
-        double T = elem[0] + elem[3];
-        double D = elem[0] * elem[3] - sqr(elem[1]);
-        double delta = sqrt(sqr(T)/4.0 - D);
+        float T = elem[0] + elem[3];
+        float D = elem[0] * elem[3] - sqr(elem[1]);
+        float delta = sqrt(sqr(T)/4.0 - D);
         eigenValues->elem[0] = T/2.0 - delta;
         eigenValues->elem[1] = T/2.0 + delta;
 
-        double norm1 = sqrt(sqr(eigenValues->elem[0] - elem[3]) + sqr(elem[1]) );
-        double norm2 = sqrt(sqr(eigenValues->elem[1] - elem[3]) + sqr(elem[1]) );
+        float norm1 = sqrt(sqr(eigenValues->elem[0] - elem[3]) + sqr(elem[1]) );
+        float norm2 = sqrt(sqr(eigenValues->elem[1] - elem[3]) + sqr(elem[1]) );
 
         eigenVectors->elem[0] = (eigenValues->elem[0] - elem[3]) / norm1;
         eigenVectors->elem[1] = (eigenValues->elem[1] - elem[3]) / norm2;
@@ -258,28 +259,28 @@ void matrix::EigenDecompose(vect* eigenValues, matrix* eigenVectors){
     }
 }
 
-double matrix::Interpolate(double x, double y){
+float matrix::Interpolate(float x, float y){
     int r0 = int(y * (rows - 1));
     int c0 = int(x * (cols - 1));
 
-    double f_00 = this->At(r0, c0);
-    double f_01 = this->At(r0+1, c0);
-    double f_10 = this->At(r0, c0+1);
-    double f_11 = this->At(r0+1, c0+1);
+    float f_00 = this->At(r0, c0);
+    float f_01 = this->At(r0+1, c0);
+    float f_10 = this->At(r0, c0+1);
+    float f_11 = this->At(r0+1, c0+1);
 
-    double a_1 = f_00;
-    double a_x = f_10 - a_1;
-    double a_y = f_01 - a_1;
-    double a_xy = f_11 - a_x - a_y - a_1;
+    float a_1 = f_00;
+    float a_x = f_10 - a_1;
+    float a_y = f_01 - a_1;
+    float a_xy = f_11 - a_x - a_y - a_1;
 
-    double x_ = x * (cols - 1) - c0;
-    double y_ = y * (rows - 1) - r0;
+    float x_ = x * (cols - 1) - c0;
+    float y_ = y * (rows - 1) - r0;
 
     return a_x * x_ + a_y * y_ + a_xy * x_ * y_ + a_1;
 }
 
-void matrix::CopySubMatrixMultiplied(double lamb, matrix* M, int border){
-    double * this_r, * M_r;
+void matrix::CopySubMatrixMultiplied(float lamb, matrix* M, int border){
+    float * this_r, * M_r;
     for(int r = border; r<M->rows - border; ++r){
         this_r = this->Row(r);
         M_r = M->Row(r);
@@ -288,8 +289,8 @@ void matrix::CopySubMatrixMultiplied(double lamb, matrix* M, int border){
     }
 }
 
-void matrix::AddSubMatrix(double lamb, matrix* M, int border){
-    double * this_r, * M_r;
+void matrix::AddSubMatrix(float lamb, matrix* M, int border){
+    float * this_r, * M_r;
     for(int r = border; r<M->rows - border; ++r){
         this_r = this->Row(r);
         M_r = M->Row(r);
