@@ -43,6 +43,7 @@ struct orderedData{
     void Add(orderedData* addon);
     void Add(float lamb, orderedData* addon);
     void Add(float addon);
+    void AddDistinct(float lamb, orderedData* addon);
 
     void AddThisStartingFrom(int thisStartingIndex, orderedData* addon);
 
@@ -54,6 +55,7 @@ struct orderedData{
 
     float Sum();
     float SqNorm();
+    float Mean();
 
     void AddPointwiseFunction(orderedData* inp, mathFunc* func);
     void DroppedAddPointwiseFunction(orderedData* inp, mathFunc* func, activityData* inputActivity, activityData* outputActivity);
@@ -145,6 +147,8 @@ struct orderedData{
 };
 
 float InnerProduct(orderedData* inp1, orderedData* inp2);
+
+float InnerDistinctProduct(orderedData* inp1, orderedData* inp2);
 
 float InnerProductSubMatrices(matrix* M1, matrix* M2, int border);
 #endif // __orderedData__

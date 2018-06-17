@@ -45,6 +45,9 @@ struct layerWeight{
     void SetSequentialVert(int startDepth, int numStairs, int numStairConvolutions);
     void SetSequentialHor(int numStairs, int numStairConvolutions, int symmetryLevel);
 
+    void SetFullBottleckHor (int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth);
+    void SetFullBottleckVert(int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth);
+
     void SetFC(int fromSize, int toSize);
     void SetFCNoBias(int fromSize, int toSize);
 };
@@ -76,6 +79,8 @@ public:
     void SetToLinearCombination(float a1, float a2, weights* W1, weights* W2);
 
     int GetWeightLen();
+
+    void SetFullBottleneck(int num_hor, int num_vert,  int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth);
 
     ~weights();
 };

@@ -45,8 +45,6 @@ void NeuralNet::Initiate()
 
     computation=new computationalModel;
     computation->SetModel(layersData, deltas, weightsData, gradient, layersActivity, primalWeightOwner);
-
-
 }
 
 void NeuralNet::Initiate(NeuralNet * NN){
@@ -151,7 +149,7 @@ void NeuralNet::CalculateGradientFunctionValue(Data* inputData, float& functionV
             data_j->SetToTLayer(inputData->classData, j);
             lab = inputData->labels[j];
             ForwardBackwardPass(data_j, lab);
-            functionVal-=log(lastLayerLink->elem[lab]);
+            functionVal-=log(lastLayerLink->elem[lab] + FLT_EPSILON);
             ++total;
         }
 
@@ -191,7 +189,7 @@ void NeuralNet::CalculateErrorAndAccuracy(Data* inputData, float &error, float &
             predictedLabel=lastLayerLink->ArgMax();
             lab = inputData->labels[j];
             if (predictedLabel==lab) correct++;
-            error-=log(fabs(lastLayerLink->elem[lab])+FLT_EPSILON);
+            error-=log(fabs(lastLayerLink->elem[lab]) + FLT_EPSILON);
         }
     error/=float(total);
     accuracy = float(correct)/total;
@@ -221,7 +219,7 @@ void NeuralNet::CalculateSubErrorAndAccuracy(Data* inputData, float &error, int 
             predictedLabel=lastLayerLink->ArgMax();
             lab = inputData->labels[j];
             if (predictedLabel==lab) correct++;
-            error-=log(fabs(lastLayerLink->elem[lab])+FLT_EPSILON);
+            error-=log(fabs(lastLayerLink->elem[lab]) + FLT_EPSILON);
         }
 
     DeleteOnlyShell(data_j);

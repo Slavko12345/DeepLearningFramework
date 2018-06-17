@@ -12,6 +12,10 @@ struct activityLayers;
 
 struct computationalModel{
     int Nlayers;
+    layers * nnlayers;
+    layers * nndeltas;
+    weights * nnweights;
+    weights * nngrad;
     //computationalNode*** computationTable;
     vector<tuple<int, int, computationalNode *> > computationList;
     //vector<pair<int, int> > computationList;

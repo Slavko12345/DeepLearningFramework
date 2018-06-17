@@ -54,7 +54,7 @@ int main()
     Data*  CifarTest = new Data;
     CifarTest->ReadTestCifar10();
 
-    NeuralNet *NN=new NeuralNet;
+    NeuralNet *NN = new NeuralNet;
     NN->Initiate();
     //NN->weightsData->ReadFromFile((char*)NET_WEIGHTS_FILE);
     cout<<"Net is initiated"<<endl;

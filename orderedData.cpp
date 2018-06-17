@@ -127,20 +127,31 @@ void orderedData::TrMatrProd(matrix* M, vect* v){
 
 
 void orderedData::Add(orderedData* addon){
-    float *addon_elem = addon->elem;
+    float *  addon_elem = addon->elem;
+
     for(int i=0; i<len; ++i)
-        elem[i]+=addon_elem[i];
+        elem[i] += addon_elem[i];
 }
 
-void orderedData::Add(float lamb, orderedData* addon){
-    float *addon_elem = addon->elem;
+void orderedData::AddDistinct(float lamb, orderedData* addon){
+    float * __restrict__ this_elem = elem;
+    float *  __restrict__ addon_elem = addon->elem;
+
     for(int i=0; i<len; ++i)
-        elem[i]+=lamb * addon_elem[i];
+        this_elem[i] += lamb * addon_elem[i];
+}
+
+
+void orderedData::Add(float lamb, orderedData* addon){
+    float * addon_elem = addon->elem;
+
+    for(int i=0; i<len; ++i)
+        elem[i] += lamb * addon_elem[i];
 }
 
 void orderedData::Add(float addon){
     for(int i=0; i<len; ++i)
-        elem[i]+=addon;
+        elem[i] += addon;
 }
 
 
@@ -236,6 +247,12 @@ float orderedData::Sum(){
     for(int i=0; i<len; ++i)
         res+=elem[i];
     return res;
+}
+
+float orderedData::Mean(){
+    if (len == 0)
+        return 0.0;
+    return Sum() / float(len);
 }
 
 float orderedData::SqNorm(){
@@ -693,8 +710,18 @@ void orderedData::BackwardCompressedInputFullyConnected(matrix* kernel, orderedD
 
 float InnerProduct(orderedData* inp1, orderedData* inp2){
     float res = 0.0;
-    float *inp1_elem = inp1->elem;
-    float* inp2_elem = inp2->elem;
+    float * inp1_elem = inp1->elem;
+    float * inp2_elem = inp2->elem;
+    for(int j=0; j<inp1->len; ++j)
+        res += inp1_elem[j] * inp2_elem[j];
+    return res;
+}
+
+float InnerDistinctProduct(orderedData* inp1, orderedData* inp2){
+    float res = 0.0;
+    float * __restrict__ inp1_elem = inp1->elem;
+    float * __restrict__ inp2_elem = inp2->elem;
+
     for(int j=0; j<inp1->len; ++j)
         res += inp1_elem[j] * inp2_elem[j];
     return res;

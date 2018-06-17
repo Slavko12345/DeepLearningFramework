@@ -339,6 +339,24 @@ struct ColumnDrop: public computationalNode{
     ~ColumnDrop();
 };
 
+struct FullColumnDrop: public computationalNode{
+    tensor* input, *inputDelta;
+    tensor* output, *outputDelta;
+    tensor* partialOutput;
+    tensor* partialOutputDelta;
+    activityData * activityColumns;
+
+    int fractionDecrease;
+    FullColumnDrop();
+    void Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner);
+    void ForwardPass();
+    void BackwardPass(bool computeDelta, int trueClass);
+    void SetToTrainingMode();
+    void SetToTestMode();
+    bool HasWeightsDependency();
+    ~FullColumnDrop();
+};
+
 
 struct ColumnDropBalancedDrop: public computationalNode{
     tensor* input, *inputDelta;
@@ -1191,6 +1209,8 @@ struct StairsConvolution: public computationalNode{
 };
 
 
+
+
 struct StairsSymmetricConvolution: public computationalNode{
     int weightsNum_vertical;
     int weightsNum_horizontal;
@@ -1220,6 +1240,80 @@ struct StairsSymmetricConvolution: public computationalNode{
     void Unify(computationalNode * primalCN);
     void WriteStructuredWeightsToFile();
     ~StairsSymmetricConvolution();
+};
+
+
+struct StairsFullBottleneck: public computationalNode{
+    int weightsNum_vertical;
+    int weightsNum_horizontal;
+
+    int startDepth;
+    int numStairs;
+    int numStairConvolutions;
+    int bottleneckDepth;
+
+    tensor* input, *inputDelta;
+    tensor* kernel_vert, *kernelGrad_vert;
+    tensor* kernel_hor, *kernelGrad_hor;
+    vect* bias, *biasGrad;
+
+    tensor * verticalConv, * verticalConvDelta;
+
+
+    StairsFullBottleneck(int weightsNum_vertical_, int weightsNum_horizontal_, int startDepth_, int numStairs_, int numStairConvolutions_, int bottleneckDepth_);
+    void Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner);
+    void ForwardPass();
+    void BackwardPass( bool computeDelta, int trueClass);
+    void SetToTrainingMode();
+    void SetToTestMode();
+    bool HasWeightsDependency();
+    bool NeedsUnification();
+    void Unify(computationalNode * primalCN);
+    void WriteStructuredWeightsToFile();
+    ~StairsFullBottleneck();
+};
+
+struct StairsFullBottleneckBalancedDrop: public computationalNode{
+    int weightsNum_vertical;
+    int weightsNum_horizontal;
+
+    int startDepth;
+    int numStairs;
+    int numStairConvolutions;
+    int bottleneckDepth;
+
+    float alpha;
+    float pDrop;
+    float pNotDrop;
+    bool startDropping;
+
+    tensor* input, *inputDelta;
+    tensor* kernel_vert, *kernelGrad_vert;
+    tensor* kernel_hor, *kernelGrad_hor;
+    vect* bias, *biasGrad;
+
+    tensor * verticalConv, * verticalConvDelta;
+
+    activityData * balancedActiveUnits;
+    activityData * balancedUpDown;
+    tensor* multipliers;
+
+    StairsFullBottleneckBalancedDrop(int weightsNum_vertical_, int weightsNum_horizontal_,
+                                     int startDepth_, int numStairs_, int numStairConvolutions_,
+                                     int bottleneckDepth_, float alpha_ = DEFAULT_ALPHA_DROP,
+                                     float pDrop_ = DEFAULT_P_DROP, float pNotDrop_ = DEFAULT_P_NOT_DROP);
+    void Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner);
+    void ForwardPass();
+    void BackwardPass( bool computeDelta, int trueClass);
+    void SetToTrainingMode();
+    void SetToTestMode();
+    bool HasWeightsDependency();
+    bool NeedsUnification();
+    void Unify(computationalNode * primalCN);
+    bool UsesBalancedDrop();
+    void UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_);
+    void WriteStructuredWeightsToFile();
+    ~StairsFullBottleneckBalancedDrop();
 };
 
 

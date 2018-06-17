@@ -11,17 +11,37 @@ using namespace std;
 
 void weights::SetModel()
 {
-    Nweights=4;
+    Nweights=7;
     weightList = new layerWeight[Nweights];
 
-    weightList[0].SetStairsFullConvolution(3, 4, 5);
+    SetFullBottleneck(0, 1, 3,  4, 4, 8);
+    SetFullBottleneck(2, 3, 35, 4, 4, 8);
+    SetFullBottleneck(4, 5, 67, 4, 4, 8);
 
-    weightList[1].SetStairsFullConvolution(43, 4, 5);
-
-    weightList[2].SetStairsFullConvolution(83, 4, 5);
-
-    weightList[3].SetFC(123, 10);
+    weightList[6].SetFC(99, 10);
 }
+
+void weights::SetFullBottleneck(int num_vert, int num_hor,  int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth){
+    weightList[num_vert].SetFullBottleckVert(startDepth, numStairs, numStairConvolutions, bottleneckDepth);
+    weightList[num_hor].SetFullBottleckHor(startDepth, numStairs, numStairConvolutions, bottleneckDepth);
+}
+
+void layerWeight::SetFullBottleckVert(int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth){
+    int vertLen = 0;
+    for(int stair=0; stair<numStairs; ++stair){
+        vertLen += (startDepth + 2 * numStairConvolutions * stair) * bottleneckDepth;
+    }
+
+    dataWeight = new tensor(vertLen, 1, 1);
+    bias = new vect(0);
+}
+
+void layerWeight::SetFullBottleckHor(int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth){
+    dataWeight = new tensor(numStairs * bottleneckDepth * numStairConvolutions, 3, 3);
+    bias = new vect(numStairs * numStairConvolutions);
+}
+
+
 
 void layerWeight::SetStairsVert(int startDepth, int numStairs, int numStairConvolutions){
     int vertLen = 0;

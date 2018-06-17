@@ -2165,7 +2165,7 @@ void StairsSymmetricConvolution::Initiate(layers* layersData, layers* deltas, we
 
     int nConvolutions = numStairs * numStairConvolutions;
 
-    verticalConv = new tensor(nConvolutions, input->rows, input->cols);
+    verticalConv      = new tensor(nConvolutions, input->rows, input->cols);
     verticalConvDelta = new tensor(nConvolutions, input->rows, input->cols);
 
     indices = new int [vertLen];
@@ -2403,10 +2403,13 @@ void StairsFullConvolution::Initiate(layers* layersData, layers* deltas, weights
     inputDelta = static_cast<tensor*>(deltas->layerList[from]);
     inputActivity  = layersActivity->layerList[from];
 
+
     int vertLen = 0;
     for(int stair=0; stair<numStairs; ++stair){
         vertLen += (startDepth + 2 * numStairConvolutions * stair) * numStairConvolutions;
     }
+
+
 
     if (symmetryLevel<0 || symmetryLevel>4)
         cout<<"Symmetry level is not implemented yet";
@@ -2489,6 +2492,267 @@ StairsFullConvolution::~StairsFullConvolution(){
 
 
 
+//full bottleneck convolutional layers
+//no symmetry kernels
+//bias is always present
+//max-min nonlinearity
+
+StairsFullBottleneck::StairsFullBottleneck
+(int weightsNum_vertical_, int weightsNum_horizontal_, int startDepth_, int numStairs_, int numStairConvolutions_, int bottleneckDepth_):
+    weightsNum_vertical(weightsNum_vertical_), weightsNum_horizontal(weightsNum_horizontal_), startDepth(startDepth_), numStairs(numStairs_),
+    numStairConvolutions(numStairConvolutions_), bottleneckDepth(bottleneckDepth_){
+}
+
+void StairsFullBottleneck::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner){
+    primalWeight = primalWeightOwner;
+
+    kernel_vert = static_cast<tensor *>(weightsData->weightList[weightsNum_vertical].dataWeight);
+    kernelGrad_vert = static_cast<tensor *>(gradient->weightList[weightsNum_vertical].dataWeight);
+
+    kernel_hor = static_cast<tensor *>(weightsData->weightList[weightsNum_horizontal].dataWeight);
+    kernelGrad_hor = static_cast<tensor *>(gradient->weightList[weightsNum_horizontal].dataWeight);
+
+    bias = static_cast<vect *>(weightsData->weightList[weightsNum_horizontal].bias);
+    biasGrad = static_cast<vect *>(gradient->weightList[weightsNum_horizontal].bias);
+
+    input=static_cast<tensor*>(layersData->layerList[from]);
+    inputDelta = static_cast<tensor*>(deltas->layerList[from]);
+    inputActivity  = layersActivity->layerList[from];
+
+    verticalConv      = new tensor(numStairs * bottleneckDepth, input->rows, input->cols);
+    verticalConvDelta = new tensor(numStairs * bottleneckDepth, input->rows, input->cols);
+
+    int vertLen = 0;
+    for(int stair=0; stair<numStairs; ++stair){
+        vertLen += (startDepth + 2 * numStairConvolutions * stair) * bottleneckDepth;
+    }
+
+    if (from != to ||
+        kernel_vert->depth != vertLen||
+        kernel_vert->rows != 1 ||
+        kernel_vert->cols != 1 ||
+        input->depth != startDepth + 2 * numStairs * numStairConvolutions )
+        cout<<"Error0 in StairsFullBottleneck from "<<from<<" to "<<to<<endl;
+
+    if (kernel_hor->depth != numStairs * bottleneckDepth * numStairConvolutions ||
+        kernel_hor->rows != 3 ||
+        kernelGrad_hor->cols != 3)
+        cout<<"Error1 in StairsFullBottleneck from "<<from<<" to "<<to<<endl;
+
+    if (bias->len != numStairs * numStairConvolutions)
+        cout<<"Bias error in StairsFullBottleneck from "<<from<<" to "<<to<<endl;
+}
+
+void StairsFullBottleneck::ForwardPass(){
+    ForwardStairsFullBottleneck(input, kernel_vert, kernel_hor, bias, verticalConv, startDepth, numStairs,
+                                numStairConvolutions, bottleneckDepth, inputActivity, testMode);
+}
+
+void StairsFullBottleneck::BackwardPass(bool computeDelta, int trueClass){
+    BackwardStairsFullBottleneck(input, inputDelta, kernel_vert, kernelGrad_vert,
+                kernel_hor, kernelGrad_hor, biasGrad, verticalConv, verticalConvDelta,
+                startDepth, numStairs, numStairConvolutions, bottleneckDepth,
+                inputActivity);
+}
+
+void StairsFullBottleneck::SetToTrainingMode(){
+    if (testMode==0){
+        cout<<"Stairs Convolution is already in train mode"<<endl;
+        return;
+    }
+
+    if (inputActivity->dropping && primalWeight){
+       kernel_vert->Multiply(1.0f/(1.0f-inputActivity->dropRate));
+    }
+    testMode = 0;
+}
+
+void StairsFullBottleneck::SetToTestMode(){
+    if (testMode==1){
+        cout<<"Stairs Convolution is already in test mode"<<endl;
+        return;
+    }
+    if (inputActivity->dropping && primalWeight){
+       kernel_vert->Multiply(1.0f-inputActivity->dropRate);
+    }
+    testMode = 1;
+}
+
+bool StairsFullBottleneck::HasWeightsDependency(){
+    return 1;
+}
+
+bool StairsFullBottleneck::NeedsUnification(){
+    return 0;
+}
+
+
+
+void StairsFullBottleneck::Unify(computationalNode * primalCN){
+}
+
+void StairsFullBottleneck::WriteStructuredWeightsToFile(){
+}
+
+StairsFullBottleneck::~StairsFullBottleneck(){
+    delete verticalConv;
+    delete verticalConvDelta;
+}
+
+
+
+
+
+
+
+
+//full bottleneck convolutional layers
+//no symmetry kernels
+//bias is always present
+//max-min nonlinearity
+//multiplication after max-min
+
+StairsFullBottleneckBalancedDrop::StairsFullBottleneckBalancedDrop
+(int weightsNum_vertical_, int weightsNum_horizontal_, int startDepth_, int numStairs_,
+ int numStairConvolutions_, int bottleneckDepth_, float alpha_, float pDrop_, float pNotDrop_):
+    weightsNum_vertical(weightsNum_vertical_), weightsNum_horizontal(weightsNum_horizontal_), startDepth(startDepth_), numStairs(numStairs_),
+    numStairConvolutions(numStairConvolutions_), bottleneckDepth(bottleneckDepth_),
+    alpha(alpha_), pDrop(pDrop_), pNotDrop(pNotDrop_){
+}
+
+void StairsFullBottleneckBalancedDrop::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner){
+    primalWeight = primalWeightOwner;
+
+    kernel_vert = static_cast<tensor *>(weightsData->weightList[weightsNum_vertical].dataWeight);
+    kernelGrad_vert = static_cast<tensor *>(gradient->weightList[weightsNum_vertical].dataWeight);
+
+    kernel_hor = static_cast<tensor *>(weightsData->weightList[weightsNum_horizontal].dataWeight);
+    kernelGrad_hor = static_cast<tensor *>(gradient->weightList[weightsNum_horizontal].dataWeight);
+
+    bias = static_cast<vect *>(weightsData->weightList[weightsNum_horizontal].bias);
+    biasGrad = static_cast<vect *>(gradient->weightList[weightsNum_horizontal].bias);
+
+    input=static_cast<tensor*>(layersData->layerList[from]);
+    inputDelta = static_cast<tensor*>(deltas->layerList[from]);
+    inputActivity  = layersActivity->layerList[from];
+
+    verticalConv      = new tensor(numStairs * bottleneckDepth, input->rows, input->cols);
+    verticalConvDelta = new tensor(numStairs * bottleneckDepth, input->rows, input->cols);
+
+    multipliers = new tensor(2 * numStairs * numStairConvolutions, input->rows, input->cols);
+    balancedActiveUnits = new activityData(multipliers->len, pDrop);
+    balancedUpDown = new activityData(multipliers->len, 0.5);
+
+    int vertLen = 0;
+    for(int stair=0; stair<numStairs; ++stair){
+        vertLen += (startDepth + 2 * numStairConvolutions * stair) * bottleneckDepth;
+    }
+
+    if (from != to ||
+        kernel_vert->depth != vertLen||
+        kernel_vert->rows != 1 ||
+        kernel_vert->cols != 1 ||
+        input->depth != startDepth + 2 * numStairs * numStairConvolutions )
+        cout<<"Error0 in StairsFullBottleneckBalancedDrop from "<<from<<" to "<<to<<endl;
+
+    if (kernel_hor->depth != numStairs * bottleneckDepth * numStairConvolutions ||
+        kernel_hor->rows != 3 ||
+        kernelGrad_hor->cols != 3)
+        cout<<"Error1 in StairsFullBottleneckBalancedDrop from "<<from<<" to "<<to<<endl;
+
+    if (bias->len != numStairs * numStairConvolutions)
+        cout<<"Bias error in StairsFullBottleneckBalancedDrop from "<<from<<" to "<<to<<endl;
+}
+
+void StairsFullBottleneckBalancedDrop::ForwardPass(){
+    if (!testMode){
+        startDropping = randomGenerator::generateBool(1.0f - pNotDrop);
+        if (startDropping){
+            balancedActiveUnits->DropUnits();
+            balancedUpDown->DropUnits();
+            multipliers->SetToBalancedMultipliers(balancedActiveUnits, balancedUpDown, alpha);
+        }
+        else
+            multipliers->SetToValue(1.0f);
+
+    }
+    ForwardStairsFullBottleneckBalancedDrop(input, kernel_vert, kernel_hor, bias, verticalConv, startDepth, numStairs,
+                                numStairConvolutions, bottleneckDepth, inputActivity, multipliers, testMode);
+}
+
+void StairsFullBottleneckBalancedDrop::BackwardPass(bool computeDelta, int trueClass){
+    BackwardStairsFullBottleneckBalancedDrop(input, inputDelta, kernel_vert, kernelGrad_vert,
+                kernel_hor, kernelGrad_hor, biasGrad, verticalConv, verticalConvDelta,
+                startDepth, numStairs, numStairConvolutions, bottleneckDepth,
+                inputActivity, multipliers);
+}
+
+void StairsFullBottleneckBalancedDrop::SetToTrainingMode(){
+    if (testMode==0){
+        cout<<"Stairs Convolution is already in train mode"<<endl;
+        return;
+    }
+
+    if (inputActivity->dropping && primalWeight){
+       kernel_vert->Multiply(1.0f/(1.0f-inputActivity->dropRate));
+    }
+    testMode = 0;
+}
+
+void StairsFullBottleneckBalancedDrop::SetToTestMode(){
+    if (testMode==1){
+        cout<<"Stairs Convolution is already in test mode"<<endl;
+        return;
+    }
+    if (inputActivity->dropping && primalWeight){
+       kernel_vert->Multiply(1.0f-inputActivity->dropRate);
+    }
+    testMode = 1;
+}
+
+bool StairsFullBottleneckBalancedDrop::HasWeightsDependency(){
+    return 1;
+}
+
+bool StairsFullBottleneckBalancedDrop::NeedsUnification(){
+    return 0;
+}
+
+void StairsFullBottleneckBalancedDrop::Unify(computationalNode * primalCN){
+}
+
+bool StairsFullBottleneckBalancedDrop::UsesBalancedDrop(){
+    return 1;
+}
+
+void StairsFullBottleneckBalancedDrop::UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_){
+    alpha = alpha_;
+    pDrop = pDrop_;
+    pNotDrop = pNotDrop_;
+    balancedActiveUnits->dropRate = pDrop;
+    balancedActiveUnits->dropping = (pDrop > 0.0f);
+}
+
+void StairsFullBottleneckBalancedDrop::WriteStructuredWeightsToFile(){
+}
+
+StairsFullBottleneckBalancedDrop::~StairsFullBottleneckBalancedDrop(){
+    delete verticalConv;
+    delete verticalConvDelta;
+
+    delete balancedActiveUnits;
+    delete balancedUpDown;
+    delete multipliers;
+}
+
+
+
+
+
+
+
+
+
 
 StairsFullConvolutionBalancedDrop::StairsFullConvolutionBalancedDrop
 (int weightsNum_, int startDepth_, int numStairs_, int numStairConvolutions_,
@@ -2513,9 +2777,10 @@ void StairsFullConvolutionBalancedDrop::Initiate(layers* layersData, layers* del
     inputDelta = static_cast<tensor*>(deltas->layerList[from]);
     inputActivity  = layersActivity->layerList[from];
 
-    balancedActiveUnits = new activityData(input->len, pDrop);
-    balancedUpDown = new activityData(input->len, 0.5);
-    multipliers = new tensor(input->depth, input->rows, input->cols);
+    multipliers = new tensor(numStairs * numStairConvolutions, input->rows, input->cols);
+    balancedActiveUnits = new activityData(multipliers->len, pDrop);
+    balancedUpDown = new activityData(multipliers->len, 0.5);
+
 
     int vertLen = 0;
     for(int stair=0; stair<numStairs; ++stair){
@@ -4283,6 +4548,115 @@ ColumnDrop::~ColumnDrop(){
     DeleteOnlyShell(partialInputDelta);
     delete activityColumns;
 }
+
+
+
+
+
+
+
+
+
+
+FullColumnDrop::FullColumnDrop(){
+}
+
+void FullColumnDrop::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner){
+    primalWeight = primalWeightOwner;
+    input=static_cast<tensor*>(layersData->layerList[from]);
+    output=static_cast<tensor*>(layersData->layerList[to]);
+
+    inputDelta=static_cast<tensor*>(deltas->layerList[from]);
+    outputDelta=static_cast<tensor*>(deltas->layerList[to]);
+
+    inputActivity = layersActivity->layerList[from];
+    outputActivity = layersActivity->layerList[to];
+
+    activityColumns = new activityData(input->rows * input->cols, 1);
+
+    partialOutput = new tensor();
+    partialOutput->SubTensor(output, input->depth);
+
+    partialOutputDelta = new tensor();
+    partialOutputDelta->SubLastTensor(outputDelta, input->depth);
+
+    fractionDecrease = input->rows / output->rows;
+
+    if (input->depth > output->depth ||
+        output->rows * fractionDecrease != input->rows ||
+        output->cols * fractionDecrease != input->cols ||
+        ! ( (output->rows == 1 && output->cols == 1) ||
+           fractionDecrease == 2))
+        cout<<"Error in FullColumnDrop from "<<from<<" to "<<to<<endl;
+}
+
+void FullColumnDrop::ForwardPass(){
+    if (!testMode){
+        if (fractionDecrease != 2){
+            activityColumns->DropAllExcept(1);
+            input->SetDroppedColumnsToZero(activityColumns);
+            AveragePool3D_all(input, partialOutput, 1);
+        }
+
+        else{
+            activityColumns->Drop_2_2();
+            input->SetDroppedColumnsToZero(activityColumns);
+            AveragePool3D_2_2(input, partialOutput, 1);
+        }
+
+        output->SetDroppedElementsToZero(outputActivity);
+    }
+
+    if (testMode){
+        if (fractionDecrease != 2){
+            AveragePool3D_all(input, partialOutput);
+        }
+
+        else{
+            AveragePool3D_2_2(input, partialOutput);
+        }
+
+        if (inputActivity->dropping)
+            partialOutput->Multiply(1.0f - inputActivity->dropRate);
+    }
+}
+
+void FullColumnDrop::BackwardPass(bool computeDelta, int trueClass){
+    if (fractionDecrease != 2){
+        BackwardAveragePool3D_all(inputDelta, partialOutputDelta, 1);
+    }
+
+    else{
+        BackwardAveragePool3D_2_2(inputDelta, partialOutputDelta, 1);
+    }
+
+    inputDelta->SetDroppedColumnsToZero(activityColumns);
+
+    inputDelta->SetDroppedElementsToZero(inputActivity);
+}
+
+void FullColumnDrop::SetToTrainingMode(){
+    testMode=0;
+}
+
+void FullColumnDrop::SetToTestMode(){
+    testMode=1;
+}
+
+bool FullColumnDrop::HasWeightsDependency(){
+    return 0;
+}
+
+FullColumnDrop::~FullColumnDrop(){
+    DeleteOnlyShell(partialOutput);
+    DeleteOnlyShell(partialOutputDelta);
+    delete activityColumns;
+}
+
+
+
+
+
 
 
 

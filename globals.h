@@ -6,7 +6,7 @@ const bool NORMALIZE_WEIGHTS = 0;
 const float NORMALIZATION_RADIUS = 1.0f;
 const float MAX_ABS_RANDOM_WEIGHTS = 0.01f;
 const bool LAPTOP = 1;
-const bool LOCAL_DATA = 1;
+const bool LOCAL_DATA = 0;
 const bool ADAPT_PROCESSORS_LOAD = 0;
 const bool FOCUSED_TRAINING = 0;
 const float FOCUSED_PROBABILITY_THRESHOLD = 0.5f;
@@ -30,13 +30,13 @@ const bool INPUT_NEG_POS = 1;
 
 const int NUM_EPOCHS = 300;
 const int MINIBATCH_SIZE = 1000;
-const float LEARNING_RATE = 0.01f;
+const float LEARNING_RATE = 0.02f;
 const float RATE_DECAY = 0.97f;
 
-const int MAX_THREADS = 50;
+const int MAX_THREADS = 4;
 
-const float DEFAULT_ALPHA_DROP = 2.0f;
-const float DEFAULT_P_DROP = 0.0625f;
+const float DEFAULT_ALPHA_DROP = 1.0f;
+const float DEFAULT_P_DROP = 0.125f;
 const float DEFAULT_P_NOT_DROP = 0.0f;
 
 
