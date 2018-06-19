@@ -6,19 +6,36 @@
 #include <iostream>
 #include "mathFunc.h"
 #include <math.h>
+#include "architecture.h"
 using namespace std;
 
 
 void weights::SetModel()
 {
-    Nweights=7;
+    Nweights = 7;
     weightList = new layerWeight[Nweights];
 
-    SetFullBottleneck(0, 1, 3,  4, 4, 8);
-    SetFullBottleneck(2, 3, 35, 4, 4, 8);
-    SetFullBottleneck(4, 5, 67, 4, 4, 8);
+    SetFullBottleneck(0, 1, 3,   8, 8, 8);
+    SetFullBottleneck(2, 3, 131, 8, 8, 8);
+    SetFullBottleneck(4, 5, 259, 8, 8, 8);
 
-    weightList[6].SetFC(99, 10);
+    weightList[6].SetFC(387, 10);
+}
+
+void weights::SetModel(architecture * arch){
+    Nweights = arch->Nweights;
+    weightList = new layerWeight[Nweights];
+
+    for(int j=0; j<Nweights; ++j){
+        if (arch->weight_dimension[j] == 1)
+            weightList[j].dataWeight = new vect(arch->weight_shape[j][0]);
+        if (arch->weight_dimension[j] == 2)
+            weightList[j].dataWeight = new matrix(arch->weight_shape[j][0], arch->weight_shape[j][1]);
+        if (arch->weight_dimension[j] == 3)
+            weightList[j].dataWeight = new tensor(arch->weight_shape[j][0], arch->weight_shape[j][1], arch->weight_shape[j][2]);
+
+        weightList[j].bias = new vect(arch->bias_len[j]);
+    }
 }
 
 void weights::SetFullBottleneck(int num_vert, int num_hor,  int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth){
@@ -39,7 +56,6 @@ void layerWeight::SetFullBottleckVert(int startDepth, int numStairs, int numStai
 void layerWeight::SetFullBottleckHor(int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth){
     dataWeight = new tensor(numStairs * bottleneckDepth * numStairConvolutions, 3, 3);
     bias = new vect(numStairs * numStairConvolutions);
->>>>>>> MaxMinStability
 }
 
 

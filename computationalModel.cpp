@@ -6,27 +6,44 @@
 #include <tuple>
 #include "orderedData.h"
 #include "weights.h"
+#include "architecture.h"
 using namespace std;
 
 void computationalModel::AddNode(int from, int to, computationalNode* node){
     computationList.push_back(std::make_tuple(from, to, node));
 }
 
+void computationalModel::SetModel(architecture * arch, layers* layersData, layers* deltas, weights* weightsData, weights* gradient,
+                  activityLayers* layersActivity, bool primalWeightOwner){
+    Nlayers = arch->Nlayers;
+
+    for(int j=0; j<arch->Nnodes; ++j){
+        AddNode(arch->from[j], arch->to[j], arch->computation_list[j]->New());
+    }
+
+    this->Compile(layersData, deltas, weightsData, gradient, layersActivity, primalWeightOwner);
+}
+
+void computationalModel::SetModel(architecture * arch, layers* layersData, layers* deltas, weights* weightsData, weights* gradient,
+                  activityLayers* layersActivity, bool primalWeightOwner, computationalModel * primalCM){
+    this->SetModel(arch, layersData, deltas, weightsData, gradient, layersActivity, primalWeightOwner);
+    computationalNode * node;
+    for(unsigned int j=0; j<computationList.size(); ++j){
+        node = get<2>(computationList[j]);
+        if (node->NeedsUnification())
+            node->Unify(get<2>(primalCM->computationList[j]));
+    }
+}
+
 void computationalModel::SetModel(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, bool primalWeightOwner){
     Nlayers=layersData->Nlayers;
-    nnlayers = layersData;
-    nndeltas = deltas;
-    nnweights = weightsData;
-    nngrad = gradient;
 
-    //AddNode(0, 0, new InputBalancedDrop());
-
-    AddNode(0, 0, new StairsFullBottleneck(0, 1, 3,  4, 4, 8));
-    AddNode(0, 1, new FullAveragePooling());
-    AddNode(1, 1, new StairsFullBottleneck(2, 3, 35, 4, 4, 8));
-    AddNode(1, 2, new FullAveragePooling());
-    AddNode(2, 2, new StairsFullBottleneck(4, 5, 67, 4, 4, 8));
-    AddNode(2, 3, new FullAveragePooling());
+    AddNode(0, 0, new StairsFullBottleneckBalancedDrop(0, 1, 3,   8, 8, 8));
+    AddNode(0, 1, new FullAveragePoolingBalancedDrop());
+    AddNode(1, 1, new StairsFullBottleneckBalancedDrop(2, 3, 131, 8, 8, 8));
+    AddNode(1, 2, new FullAveragePoolingBalancedDrop());
+    AddNode(2, 2, new StairsFullBottleneckBalancedDrop(4, 5, 259, 8, 8, 8));
+    AddNode(2, 3, new FullAveragePoolingBalancedDrop());
     AddNode(3, 4, new FullyConnectedSoftMax(6));
 
     this->Compile(layersData, deltas, weightsData, gradient, layersActivity, primalWeightOwner);

@@ -3,6 +3,7 @@
 
 class orderedData;
 class matrix;
+class architecture;
 
 struct layerWeight{
     orderedData * dataWeight;
@@ -56,7 +57,10 @@ class weights{
 public:
     int Nweights;
     layerWeight * weightList;
+
     void SetModel();
+    void SetModel(architecture * arch);
+
     void SetToZero();
     void SetToRandomValues(float maxAbs);
     void Print();

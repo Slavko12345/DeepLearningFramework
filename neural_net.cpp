@@ -15,10 +15,21 @@
 #include "globals.h"
 #include "tensor.h"
 #include <float.h>
+#include "architecture.h"
 using namespace std;
+
+NeuralNet::NeuralNet(){
+    arch = new architecture();
+    architectureBased = false;
+}
 
 void NeuralNet::Initiate()
 {
+    if (architectureBased){
+        InitiateFromArchitecture();
+        return;
+    }
+
     testMode = 1;
     primalWeightOwner = 1;
 
@@ -47,7 +58,45 @@ void NeuralNet::Initiate()
     computation->SetModel(layersData, deltas, weightsData, gradient, layersActivity, primalWeightOwner);
 }
 
+void NeuralNet::InitiateFromArchitecture(){
+    testMode = 1;
+    primalWeightOwner = 1;
+
+    layersData=new layers;
+    layersData->SetModel(arch);
+    Nlayers=layersData->Nlayers;
+
+    deltas=new layers;
+    deltas->SetModel(arch);
+
+    layersActivity = new activityLayers;
+    layersActivity->SetModel(layersData);
+    layersActivity->SetAllActive();
+    cout<<"Dropping: "<<layersActivity->dropping<<endl;
+
+    weightsData=new weights;
+    weightsData->SetModel(arch);
+
+    SetRandomWeights(MAX_ABS_RANDOM_WEIGHTS);
+    Nweights=weightsData->Nweights;
+
+    gradient=new weights;
+    gradient->SetModel(arch);
+
+    computation=new computationalModel;
+    computation->SetModel(arch, layersData, deltas, weightsData, gradient, layersActivity, primalWeightOwner);
+
+    cout<<"Architecture: "<<endl;
+    arch->Print();
+    cout<<endl;
+}
+
 void NeuralNet::Initiate(NeuralNet * NN){
+    if (NN->architectureBased){
+        InitiateFromArchitecture(NN);
+        return;
+    }
+
     testMode = 1;
     primalWeightOwner = 0;
 
@@ -70,6 +119,45 @@ void NeuralNet::Initiate(NeuralNet * NN){
 
     computation=new computationalModel;
     computation->SetModel(layersData, deltas, weightsData, gradient, layersActivity, primalWeightOwner, NN->computation);
+}
+
+void NeuralNet::InitiateFromArchitecture(NeuralNet * NN){
+    testMode = 1;
+    primalWeightOwner = 0;
+
+    delete arch;
+    arch = NN->arch;
+    architectureBased = true;
+
+    layersData=new layers;
+    layersData->SetModel(arch);
+    Nlayers=layersData->Nlayers;
+
+    deltas=new layers;
+    deltas->SetModel(arch);
+
+    layersActivity = new activityLayers;
+    layersActivity->SetModel(layersData);
+    layersActivity->SetAllActive();
+
+    weightsData = NN->weightsData;
+    Nweights = NN->weightsData->Nweights;
+
+    gradient=new weights;
+    gradient->SetModel(arch);
+
+    computation=new computationalModel;
+    computation->SetModel(arch, layersData, deltas, weightsData, gradient, layersActivity, primalWeightOwner, NN->computation);
+}
+
+void NeuralNet::SetInputShape(int dim1, int dim2, int dim3){
+    arch->SetInputShape(dim1, dim2, dim3);
+    architectureBased = true;
+}
+
+void NeuralNet::Add(computationalNode * node){
+    arch->Add(node);
+    architectureBased = true;
 }
 
 
@@ -274,8 +362,11 @@ NeuralNet::~NeuralNet(){
     delete layersData;
     delete deltas;
     delete layersActivity;
-    if (primalWeightOwner)
+    if (primalWeightOwner){
         delete weightsData;
+        delete arch;
+    }
+
     delete gradient;
     delete computation;
 }

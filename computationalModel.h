@@ -8,15 +8,12 @@ struct computationalNode;
 struct layers;
 struct weights;
 struct activityLayers;
+class architecture;
 
 
 struct computationalModel{
     int Nlayers;
-    layers * nnlayers;
-    layers * nndeltas;
-    weights * nnweights;
-    weights * nngrad;
-    //computationalNode*** computationTable;
+
     vector<tuple<int, int, computationalNode *> > computationList;
     //vector<pair<int, int> > computationList;
     vector<bool> hasBottomWeightDependency;
@@ -24,6 +21,13 @@ struct computationalModel{
     void SetModel(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, bool primalWeightOwner);
     void SetModel(layers* layersData, layers* deltas, weights* weightsData, weights* gradient,
                   activityLayers* layersActivity, bool primalWeightOwner, computationalModel * primalCM);
+
+    void SetModel(architecture * arch, layers* layersData, layers* deltas, weights* weightsData, weights* gradient,
+                  activityLayers* layersActivity, bool primalWeightOwner);
+
+    void SetModel(architecture * arch, layers* layersData, layers* deltas, weights* weightsData, weights* gradient,
+                  activityLayers* layersActivity, bool primalWeightOwner, computationalModel * primalCM);
+
     void ForwardPass();
     void BackwardPass(int trueClass);
     void SetToTrainingMode();

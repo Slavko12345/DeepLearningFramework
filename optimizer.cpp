@@ -386,6 +386,7 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData){
 
 void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData){
     int numThreads;
+    omp_set_num_threads(MAX_THREADS);
     #pragma omp parallel
     {
         #pragma omp single

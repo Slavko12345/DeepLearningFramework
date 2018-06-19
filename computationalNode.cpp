@@ -15,6 +15,7 @@
 #include "activityData.h"
 #include "globals.h"
 #include "randomGenerator.h"
+#include "architecture.h"
 using namespace std;
 
 computationalNode::computationalNode(){
@@ -125,7 +126,8 @@ FullyConnected::~FullyConnected(){
 
 
 
-
+FullyConnectedSoftMax::FullyConnectedSoftMax(){
+}
 
 FullyConnectedSoftMax::FullyConnectedSoftMax(int weightsNum_): weightsNum(weightsNum_){
 }
@@ -208,6 +210,45 @@ void FullyConnectedSoftMax::WriteStructuredWeightsToFile(){
         f<<endl;
     }
     f.close();
+}
+
+void FullyConnectedSoftMax::UpdateArchitecture(architecture * arch){
+    int input_num = arch->Nlayers-1;
+
+    arch->from.push_back(input_num);
+    arch->to.push_back(input_num + 1);
+
+    int input_size = arch->layer_shape[input_num][0];
+    input_size *= (arch->layer_dimension[input_num] > 1) ? arch->layer_shape[input_num][1] : 1;
+    input_size *= (arch->layer_dimension[input_num] > 2) ? arch->layer_shape[input_num][2] : 1;
+
+    arch->layer_dimension.push_back(1);
+    vector<int> new_shape = {output_size, -1, -1};
+    arch->layer_shape.push_back(new_shape);
+    arch->Nlayers++;
+
+    weightsNum = arch->Nweights;
+    arch->weight_dimension.push_back(2);
+    vector<int> new_weight_shape = {output_size, input_size};
+    arch->weight_shape.push_back(new_weight_shape);
+    arch->bias_len.push_back(output_size);
+    arch->Nweights++;
+}
+
+FullyConnectedSoftMax * FullyConnectedSoftMax :: Start(int output_size_){
+    FullyConnectedSoftMax * node = new FullyConnectedSoftMax();
+    node->forArchitectureOnly = true;
+    node->output_size = output_size_;
+    return node;
+}
+
+computationalNode* FullyConnectedSoftMax::New(){
+    FullyConnectedSoftMax * node = new FullyConnectedSoftMax(weightsNum);
+    return node;
+}
+
+void FullyConnectedSoftMax::Print(){
+    cout<<"FullyConnectedSoftMax layer, uses weights #"<<weightsNum<<endl;
 }
 
 
@@ -2497,6 +2538,9 @@ StairsFullConvolution::~StairsFullConvolution(){
 //bias is always present
 //max-min nonlinearity
 
+StairsFullBottleneck::StairsFullBottleneck(){
+}
+
 StairsFullBottleneck::StairsFullBottleneck
 (int weightsNum_vertical_, int weightsNum_horizontal_, int startDepth_, int numStairs_, int numStairConvolutions_, int bottleneckDepth_):
     weightsNum_vertical(weightsNum_vertical_), weightsNum_horizontal(weightsNum_horizontal_), startDepth(startDepth_), numStairs(numStairs_),
@@ -2587,14 +2631,64 @@ bool StairsFullBottleneck::NeedsUnification(){
 }
 
 
-
 void StairsFullBottleneck::Unify(computationalNode * primalCN){
 }
 
 void StairsFullBottleneck::WriteStructuredWeightsToFile(){
 }
 
+void StairsFullBottleneck::UpdateArchitecture(architecture * arch){
+    if (arch->layer_dimension[arch->Nlayers-1] != 3){
+        cout<<"Error: StairsFullBottleneck requires tensor as input"<<endl;
+    }
+
+    startDepth = arch->layer_shape[arch->Nlayers-1][0];
+    arch->layer_shape[arch->Nlayers-1][0] += 2 * numStairs * numStairConvolutions;
+
+    arch->from.push_back(arch->Nlayers-1);
+    arch->to.push_back(arch->Nlayers-1);
+
+    weightsNum_vertical = arch->Nweights;
+    int vertLen = 0;
+    for(int stair=0; stair<numStairs; ++stair)
+        vertLen += (startDepth + 2 * numStairConvolutions * stair) * bottleneckDepth;
+
+    arch->weight_dimension.push_back(3);
+    vector<int> vert_weights_shape = {vertLen, 1, 1};
+    arch->weight_shape.push_back(vert_weights_shape);
+    arch->bias_len.push_back(0);
+
+    weightsNum_horizontal = arch->Nweights + 1;
+    arch->weight_dimension.push_back(3);
+    vector<int> hor_weights_shape = {numStairs * bottleneckDepth * numStairConvolutions, 3, 3};
+    arch->weight_shape.push_back(hor_weights_shape);
+    arch->bias_len.push_back(numStairs * numStairConvolutions);
+
+    arch->Nweights += 2;
+}
+
+StairsFullBottleneck * StairsFullBottleneck :: Start(int numStairs_, int numStairConvolutions_, int bottleneckDepth_){
+    StairsFullBottleneck * node = new StairsFullBottleneck();
+    node->forArchitectureOnly = true;
+    node->numStairs = numStairs_;
+    node->numStairConvolutions = numStairConvolutions_;
+    node->bottleneckDepth = bottleneckDepth_;
+    return node;
+}
+
+computationalNode * StairsFullBottleneck::New(){
+    StairsFullBottleneck * node = new StairsFullBottleneck(weightsNum_vertical, weightsNum_horizontal, startDepth, numStairs, numStairConvolutions, bottleneckDepth);
+    return node;
+}
+
+void StairsFullBottleneck::Print(){
+    cout<<"StairsFullBottleneck with initial depth "<<startDepth<<"; number of layers: "<<
+    numStairs<<" each layer depth: "<<numStairConvolutions<<" and bottleneck depth: "<<bottleneckDepth<<endl;
+    cout<<"Uses vertical weights #"<<weightsNum_vertical<<" and horizontal weights #"<<weightsNum_horizontal<<endl;
+}
+
 StairsFullBottleneck::~StairsFullBottleneck(){
+    if (forArchitectureOnly) return;
     delete verticalConv;
     delete verticalConvDelta;
 }
@@ -2611,6 +2705,8 @@ StairsFullBottleneck::~StairsFullBottleneck(){
 //bias is always present
 //max-min nonlinearity
 //multiplication after max-min
+StairsFullBottleneckBalancedDrop::StairsFullBottleneckBalancedDrop(){
+}
 
 StairsFullBottleneckBalancedDrop::StairsFullBottleneckBalancedDrop
 (int weightsNum_vertical_, int weightsNum_horizontal_, int startDepth_, int numStairs_,
@@ -2736,7 +2832,67 @@ void StairsFullBottleneckBalancedDrop::UpdateBalancedDropParameters(float alpha_
 void StairsFullBottleneckBalancedDrop::WriteStructuredWeightsToFile(){
 }
 
+void StairsFullBottleneckBalancedDrop::UpdateArchitecture(architecture * arch){
+    if (arch->layer_dimension[arch->Nlayers-1] != 3){
+        cout<<"Error: StairsFullBottleneckBalancedDrop requires tensor as input"<<endl;
+    }
+
+    startDepth = arch->layer_shape[arch->Nlayers-1][0];
+    arch->layer_shape[arch->Nlayers-1][0] += 2 * numStairs * numStairConvolutions;
+
+    arch->from.push_back(arch->Nlayers-1);
+    arch->to.push_back(arch->Nlayers-1);
+
+    weightsNum_vertical = arch->Nweights;
+    int vertLen = 0;
+    for(int stair=0; stair<numStairs; ++stair)
+        vertLen += (startDepth + 2 * numStairConvolutions * stair) * bottleneckDepth;
+
+    arch->weight_dimension.push_back(3);
+    vector<int> vert_weights_shape = {vertLen, 1, 1};
+    arch->weight_shape.push_back(vert_weights_shape);
+    arch->bias_len.push_back(0);
+
+    weightsNum_horizontal = arch->Nweights + 1;
+    arch->weight_dimension.push_back(3);
+    vector<int> hor_weights_shape = {numStairs * bottleneckDepth * numStairConvolutions, 3, 3};
+    arch->weight_shape.push_back(hor_weights_shape);
+    arch->bias_len.push_back(numStairs * numStairConvolutions);
+
+    arch->Nweights += 2;
+}
+
+StairsFullBottleneckBalancedDrop * StairsFullBottleneckBalancedDrop :: Start
+                                    (int numStairs_, int numStairConvolutions_,
+                                    int bottleneckDepth_, float alpha_,
+                                    float pDrop_, float pNotDrop_){
+    StairsFullBottleneckBalancedDrop * node = new StairsFullBottleneckBalancedDrop();
+    node->forArchitectureOnly = true;
+    node->numStairs = numStairs_;
+    node->numStairConvolutions = numStairConvolutions_;
+    node->bottleneckDepth = bottleneckDepth_;
+    node->alpha = alpha_;
+    node->pDrop = pDrop_;
+    node->pNotDrop = pNotDrop_;
+    return node;
+}
+
+computationalNode * StairsFullBottleneckBalancedDrop::New(){
+    StairsFullBottleneckBalancedDrop * node = new StairsFullBottleneckBalancedDrop(weightsNum_vertical, weightsNum_horizontal, startDepth, numStairs,
+                                            numStairConvolutions, bottleneckDepth, alpha, pDrop, pNotDrop);
+    return node;
+}
+
+void StairsFullBottleneckBalancedDrop::Print(){
+    cout<<"StairsFullBottleneckBalancedDrop with initial depth "<<startDepth<<"; number of layers: "<<
+    numStairs<<" each layer depth: "<<numStairConvolutions<<" and bottleneck depth: "<<bottleneckDepth<<endl;
+    cout<<"Drop parameters: alpha = "<<alpha<<" pDrop = "<<pDrop<<" pNotDrop = "<<pNotDrop<<endl;
+    cout<<"Uses vertical weights #"<<weightsNum_vertical<<" and horizontal weights #"<<weightsNum_horizontal<<endl;
+}
+
 StairsFullBottleneckBalancedDrop::~StairsFullBottleneckBalancedDrop(){
+    if (forArchitectureOnly) return;
+
     delete verticalConv;
     delete verticalConvDelta;
 
@@ -4647,11 +4803,237 @@ bool FullColumnDrop::HasWeightsDependency(){
     return 0;
 }
 
+void FullColumnDrop::UpdateArchitecture(architecture * arch){
+    int inp_layer_num = arch->Nlayers-1;
+    if (arch->layer_dimension[inp_layer_num] != 3){
+        cout<<"Error: FullColumnDrop requires tensor as input"<<endl;
+    }
+    if (arch->layer_shape[inp_layer_num][1] % kernelRsize != 0 ||
+        arch->layer_shape[inp_layer_num][2] % kernelCsize != 0)
+            cout<<"Error: FullColumnDrop accepts only tensors with multiples of kernel sizes"<<endl;
+    if (!( kernelRsize == 2 && kernelCsize == 2 ||
+          kernelRsize == arch->layer_shape[inp_layer_num][1] &&
+          kernelCsize == arch->layer_shape[inp_layer_num][2]) )
+            cout<<"Error: FullColumn Drop accepts only 2*2 and all*all kernels"<<endl;
+    arch->layer_dimension.push_back(3);
+    vector<int> new_shape = {arch->layer_shape[inp_layer_num][0],
+                             arch->layer_shape[inp_layer_num][1] / kernelRsize,
+                             arch->layer_shape[inp_layer_num][2] / kernelCsize};
+    arch->layer_shape.push_back(new_shape);
+
+    arch->from.push_back(inp_layer_num);
+    arch->to.push_back(inp_layer_num + 1);
+    arch->Nlayers++;
+}
+
+FullColumnDrop * FullColumnDrop:: Start(int kernelRsize_, int kernelCsize_){
+    FullColumnDrop * node = new FullColumnDrop();
+    node->forArchitectureOnly = true;
+    node->kernelRsize = kernelRsize_;
+    node->kernelCsize = kernelCsize_;
+    return node;
+}
+
+computationalNode * FullColumnDrop::New(){
+    FullColumnDrop * node = new FullColumnDrop();
+    return node;
+}
+
+void FullColumnDrop::Print(){
+    cout<<"FullColumnDrop "<<kernelRsize<<" * "<<kernelCsize<<endl;
+}
+
+
 FullColumnDrop::~FullColumnDrop(){
+    if (forArchitectureOnly) return;
     DeleteOnlyShell(partialOutput);
     DeleteOnlyShell(partialOutputDelta);
     delete activityColumns;
 }
+
+
+
+
+
+
+
+
+
+
+FullColumnBalancedDrop::FullColumnBalancedDrop(float alpha_, float pDrop_, float pNotDrop_):
+    alpha(alpha_), pDrop(pDrop_), pNotDrop(pNotDrop_){
+}
+
+void FullColumnBalancedDrop::Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner){
+    primalWeight = primalWeightOwner;
+    input=static_cast<tensor*>(layersData->layerList[from]);
+    output=static_cast<tensor*>(layersData->layerList[to]);
+
+    inputDelta=static_cast<tensor*>(deltas->layerList[from]);
+    outputDelta=static_cast<tensor*>(deltas->layerList[to]);
+
+    inputActivity = layersActivity->layerList[from];
+    outputActivity = layersActivity->layerList[to];
+
+    activityColumns = new activityData(input->rows * input->cols, 1);
+
+    partialOutput = new tensor();
+    partialOutput->SubTensor(output, input->depth);
+
+    partialOutputDelta = new tensor();
+    partialOutputDelta->SubLastTensor(outputDelta, input->depth);
+
+    fractionDecrease = input->rows / output->rows;
+
+    balancedActiveUnits = new activityData(partialOutput->len, pDrop);
+    balancedUpDown = new activityData(partialOutput->len, 0.5);
+    multipliers = new tensor(partialOutput->depth, partialOutput->rows, partialOutput->cols);
+
+    if (input->depth > output->depth ||
+        output->rows * fractionDecrease != input->rows ||
+        output->cols * fractionDecrease != input->cols ||
+        ! ( (output->rows == 1 && output->cols == 1) ||
+           fractionDecrease == 2))
+        cout<<"Error in FullColumnBalancedDrop from "<<from<<" to "<<to<<endl;
+}
+
+void FullColumnBalancedDrop::ForwardPass(){
+    if (!testMode){
+        if (fractionDecrease != 2){
+            activityColumns->DropAllExcept(1);
+            input->SetDroppedColumnsToZero(activityColumns);
+            AveragePool3D_all(input, partialOutput, 1);
+        }
+
+        else{
+            activityColumns->Drop_2_2();
+            input->SetDroppedColumnsToZero(activityColumns);
+            AveragePool3D_2_2(input, partialOutput, 1);
+        }
+
+        output->SetDroppedElementsToZero(outputActivity);
+
+        startDropping = randomGenerator::generateBool(1.0f - pNotDrop);
+        if (startDropping){
+            balancedActiveUnits->DropUnits();
+            balancedUpDown->DropUnits();
+            multipliers->SetToBalancedMultipliers(balancedActiveUnits, balancedUpDown, alpha);
+            partialOutput->PointwiseMultiply(multipliers);
+        }
+    }
+
+    if (testMode){
+        if (fractionDecrease != 2){
+            AveragePool3D_all(input, partialOutput);
+        }
+
+        else{
+            AveragePool3D_2_2(input, partialOutput);
+        }
+
+        if (inputActivity->dropping)
+            partialOutput->Multiply(1.0f - inputActivity->dropRate);
+    }
+}
+
+void FullColumnBalancedDrop::BackwardPass(bool computeDelta, int trueClass){
+    if (startDropping)
+        partialOutputDelta->PointwiseMultiply(multipliers);
+
+    if (fractionDecrease != 2){
+        BackwardAveragePool3D_all(inputDelta, partialOutputDelta, 1);
+    }
+
+    else{
+        BackwardAveragePool3D_2_2(inputDelta, partialOutputDelta, 1);
+    }
+
+    inputDelta->SetDroppedColumnsToZero(activityColumns);
+
+    inputDelta->SetDroppedElementsToZero(inputActivity);
+}
+
+void FullColumnBalancedDrop::SetToTrainingMode(){
+    testMode=0;
+}
+
+void FullColumnBalancedDrop::SetToTestMode(){
+    testMode=1;
+}
+
+bool FullColumnBalancedDrop::HasWeightsDependency(){
+    return 0;
+}
+
+bool FullColumnBalancedDrop::UsesBalancedDrop(){
+    return 1;
+}
+
+void FullColumnBalancedDrop::UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_){
+    alpha = alpha_;
+    pDrop = pDrop_;
+    pNotDrop = pNotDrop_;
+    balancedActiveUnits->dropRate = pDrop;
+    balancedActiveUnits->dropping = (pDrop > 0.0f);
+}
+
+void FullColumnBalancedDrop::UpdateArchitecture(architecture * arch){
+    int inp_layer_num = arch->Nlayers-1;
+    if (arch->layer_dimension[inp_layer_num] != 3){
+        cout<<"Error: FullColumnBalancedDrop requires tensor as input"<<endl;
+    }
+    if (arch->layer_shape[inp_layer_num][1] % kernelRsize != 0 ||
+        arch->layer_shape[inp_layer_num][2] % kernelCsize != 0)
+            cout<<"Error: FullColumnBalancedDrop accepts only tensors with multiples of kernel sizes"<<endl;
+    if (!( kernelRsize == 2 && kernelCsize == 2 ||
+          kernelRsize == arch->layer_shape[inp_layer_num][1] &&
+          kernelCsize == arch->layer_shape[inp_layer_num][2]) )
+            cout<<"Error: FullColumn Drop accepts only 2*2 and all*all kernels"<<endl;
+    arch->layer_dimension.push_back(3);
+    vector<int> new_shape = {arch->layer_shape[inp_layer_num][0],
+                             arch->layer_shape[inp_layer_num][1] / kernelRsize,
+                             arch->layer_shape[inp_layer_num][2] / kernelCsize};
+    arch->layer_shape.push_back(new_shape);
+
+    arch->from.push_back(inp_layer_num);
+    arch->to.push_back(inp_layer_num + 1);
+    arch->Nlayers++;
+}
+
+FullColumnBalancedDrop * FullColumnBalancedDrop:: Start(int kernelRsize_, int kernelCsize_,
+                                                        float alpha_, float pDrop_, float pNotDrop_){
+    FullColumnBalancedDrop * node = new FullColumnBalancedDrop(alpha_, pDrop_, pNotDrop_);
+    node->forArchitectureOnly = true;
+    node->kernelRsize = kernelRsize_;
+    node->kernelCsize = kernelCsize_;
+    return node;
+}
+
+computationalNode * FullColumnBalancedDrop::New(){
+    FullColumnBalancedDrop * node = new FullColumnBalancedDrop(alpha, pDrop, pNotDrop);
+    return node;
+}
+
+void FullColumnBalancedDrop::Print(){
+    cout<<"FullColumnBalancedDrop "<<kernelRsize<<" * "<<kernelCsize<<
+    "; alpha = "<<alpha<<" pDrop = "<<pDrop<<" pNotDrop = "<<pNotDrop<<endl;;
+}
+
+
+FullColumnBalancedDrop::~FullColumnBalancedDrop(){
+    if (forArchitectureOnly) return;
+    DeleteOnlyShell(partialOutput);
+    DeleteOnlyShell(partialOutputDelta);
+    delete activityColumns;
+    delete balancedActiveUnits;
+    delete balancedUpDown;
+    delete multipliers;
+}
+
+
+
+
+
 
 
 
@@ -5004,12 +5386,49 @@ bool FullAveragePooling::HasWeightsDependency(){
     return 0;
 }
 
+void FullAveragePooling::UpdateArchitecture(architecture * arch){
+    int inp_layer_num = arch->Nlayers-1;
+    if (arch->layer_dimension[inp_layer_num] != 3){
+        cout<<"Error: FullAveragePooling requires tensor as input"<<endl;
+    }
+    if (arch->layer_shape[inp_layer_num][1] % kernelRsize != 0 ||
+        arch->layer_shape[inp_layer_num][2] % kernelCsize != 0)
+            cout<<"Error: FullAveragePooling accepts only tensors with multiples of kernel sizes"<<endl;
+    arch->layer_dimension.push_back(3);
+    vector<int> new_shape = {arch->layer_shape[inp_layer_num][0],
+                             arch->layer_shape[inp_layer_num][1] / kernelRsize,
+                             arch->layer_shape[inp_layer_num][2] / kernelCsize};
+    arch->layer_shape.push_back(new_shape);
 
-FullAveragePooling::~FullAveragePooling(){
-    DeleteOnlyShell(partialOutput);
-    DeleteOnlyShell(partialOutputDelta);
+    arch->from.push_back(inp_layer_num);
+    arch->to.push_back(inp_layer_num + 1);
+    arch->Nlayers++;
 }
 
+FullAveragePooling * FullAveragePooling:: Start(int kernelRsize_, int kernelCsize_){
+    FullAveragePooling * node = new FullAveragePooling();
+    node->forArchitectureOnly = true;
+    node->kernelRsize = kernelRsize_;
+    node->kernelCsize = kernelCsize_;
+    return node;
+}
+
+computationalNode * FullAveragePooling::New(){
+    FullAveragePooling * node = new FullAveragePooling();
+    return node;
+}
+
+void FullAveragePooling::Print(){
+    cout<<"FullAveragePooling "<<kernelRsize<<" times "<<kernelCsize<<endl;
+}
+
+FullAveragePooling::~FullAveragePooling(){
+    if (!forArchitectureOnly){
+        DeleteOnlyShell(partialOutput);
+        DeleteOnlyShell(partialOutputDelta);
+    }
+
+}
 
 
 
@@ -5065,8 +5484,6 @@ void FullAveragePoolingBalancedDrop::ForwardPass(){
 
     }
 
-
-
     if (!testMode)
         output->SetDroppedElementsToZero(outputActivity, partialOutput->len);
 
@@ -5116,7 +5533,45 @@ void FullAveragePoolingBalancedDrop::UpdateBalancedDropParameters(float alpha_, 
     balancedActiveUnits->dropping = (pDrop > 0.0f);
 }
 
+void FullAveragePoolingBalancedDrop::UpdateArchitecture(architecture * arch){
+    int inp_layer_num = arch->Nlayers-1;
+    if (arch->layer_dimension[inp_layer_num] != 3){
+        cout<<"Error: FullAveragePoolingBalancedDrop requires tensor as input"<<endl;
+    }
+    if (arch->layer_shape[inp_layer_num][1] % kernelRsize != 0 ||
+        arch->layer_shape[inp_layer_num][2] % kernelCsize !=0)
+            cout<<"Error: FullAveragePoolingBalancedDrop accepts only tensors with multiples of kernel sizes"<<endl;
+    arch->layer_dimension.push_back(3);
+    vector<int> new_shape = {arch->layer_shape[inp_layer_num][0],
+                             arch->layer_shape[inp_layer_num][1] / kernelRsize,
+                             arch->layer_shape[inp_layer_num][2] / kernelCsize};
+    arch->layer_shape.push_back(new_shape);
+    arch->from.push_back(inp_layer_num);
+    arch->to.push_back(inp_layer_num + 1);
+    arch->Nlayers++;
+}
+
+FullAveragePoolingBalancedDrop * FullAveragePoolingBalancedDrop:: Start(int kernelRsize_, int kernelCsize_,
+                                                                        float alpha_, float pDrop_, float pNotDrop_){
+    FullAveragePoolingBalancedDrop * node = new FullAveragePoolingBalancedDrop(alpha_, pDrop_, pNotDrop_);
+    node->forArchitectureOnly = true;
+    node->kernelRsize = kernelRsize_;
+    node->kernelCsize = kernelCsize_;
+    return node;
+}
+
+computationalNode * FullAveragePoolingBalancedDrop::New(){
+    FullAveragePoolingBalancedDrop * node = new FullAveragePoolingBalancedDrop(alpha, pDrop, pNotDrop);
+    return node;
+}
+
+void FullAveragePoolingBalancedDrop::Print(){
+    cout<<"FullAveragePoolingBalancedDrop with "<<kernelRsize<<" * "<<kernelRsize<<
+    "kernel, alpha = "<<alpha<<" pDrop = "<<pDrop<<" pNotDrop = "<<pNotDrop<<endl;
+}
+
 FullAveragePoolingBalancedDrop::~FullAveragePoolingBalancedDrop(){
+    if (forArchitectureOnly) return;
     DeleteOnlyShell(partialOutput);
     DeleteOnlyShell(partialOutputDelta);
     delete balancedActiveUnits;

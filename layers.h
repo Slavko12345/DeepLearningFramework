@@ -3,12 +3,14 @@
 
 class orderedData;
 class activityLayers;
+class architecture;
 
 class layers{
 public:
     int Nlayers;
     orderedData ** layerList;
     void SetModel();
+    void SetModel(architecture * arch);
     void SetInnerLayersToZero();
     void SetLayersToZero();
     void Print();

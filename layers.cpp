@@ -9,17 +9,32 @@
 #include "activityLayers.h"
 #include "randomGenerator.h"
 #include "activityData.h"
+#include "architecture.h"
 void layers::SetModel()
 {
     Nlayers=5;
 
     layerList=new orderedData* [Nlayers];
 
-    layerList[0] = new tensor(35, 32, 32);
-    layerList[1] = new tensor(67, 16, 16);
-    layerList[2] = new tensor(99, 8, 8);
-    layerList[3] = new tensor(99, 1, 1);
+    layerList[0] = new tensor(131, 32, 32);
+    layerList[1] = new tensor(259, 16, 16);
+    layerList[2] = new tensor(387, 8, 8);
+    layerList[3] = new tensor(387, 1, 1);
     layerList[4] = new vect(10);
+}
+
+void layers::SetModel(architecture * arch){
+    Nlayers = arch->Nlayers;
+    layerList=new orderedData* [Nlayers];
+
+    for(int j=0; j<Nlayers; ++j){
+        if (arch->layer_dimension[j] == 1)
+            layerList[j] = new vect(arch->layer_shape[j][0]);
+        if (arch->layer_dimension[j] == 2)
+            layerList[j] = new matrix(arch->layer_shape[j][0], arch->layer_shape[j][1]);
+        if (arch->layer_dimension[j] == 3)
+            layerList[j] = new tensor(arch->layer_shape[j][0], arch->layer_shape[j][1], arch->layer_shape[j][2]);
+    }
 }
 
 void layers::SetInnerLayersToZero(){
