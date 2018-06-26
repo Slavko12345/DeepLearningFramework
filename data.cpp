@@ -267,8 +267,39 @@ void Data::AddCifar10Batch(char batchFileName[], int startingIndex){
     }
 
     batchFile.close();
-
 }
+
+
+void Data::ReadCifar100Batch(char batchFileName[], int batch_size){
+    ifstream batchFile(batchFileName, ios::binary);
+    if (!batchFile) cout<<"File not found"<<endl;
+
+    int number_of_images = batch_size;
+    int n_rows = 32, n_cols = 32;
+    int lab;
+    unsigned char tplabelCoarse, tplabelFine, temp;
+
+    for(int i = 0; i < number_of_images; ++i){
+        batchFile.read((char*) &tplabelCoarse, sizeof(tplabelCoarse));
+        batchFile.read((char*) &tplabelFine, sizeof(tplabelFine));
+
+        lab=int(tplabelFine);
+        labels[i] = lab;
+
+        for(int ch = 0; ch < 3; ++ch)
+            for(int r = 0; r < n_rows; ++r)
+                for(int c = 0; c < n_cols; ++c){
+                    batchFile.read((char*) &temp, sizeof(temp));
+                    classData->At(i, ch, r, c) = float(temp)/255.0f;
+                    if (INPUT_NEG_POS)
+                        classData->At(i, ch, r, c) -= 0.5f;
+                }
+        ++siz[lab];
+    }
+    batchFile.close();
+}
+
+
 
 void Data::ReadTrainingCifar10(){
     if (!READ_TO_VECT)
@@ -307,6 +338,7 @@ void Data::ReadTrainingCifar10(){
     cout<<endl;
 }
 
+
 void Data::ReadTestCifar10(){
     if (!READ_TO_VECT)
         AllocateMemory(10, 10000, 3, 32, 32);
@@ -325,13 +357,46 @@ void Data::ReadTestCifar10(){
             AddCifar10Batch(machineBatchFileName, 0);
     }
 
-
-    //totalSize=10000;
     cout<<"Test Cifar 10 is read"<<endl;
     for(int i=0; i<10; i++){
         cout<<siz[i]<<'\t';
     }
     cout<<endl;
+}
+
+
+void Data::ReadTrainingCifar100(){
+    AllocateMemory(100, 50000, 3, 32, 32);
+    char laptopBatchFileName[] = "/home/slavko/Dropbox/datasets/CIFAR_100/train.bin";
+    char localBatchFileName[] = "CIFAR_100/train.bin";
+
+    if (LOCAL_DATA)
+        ReadCifar100Batch(localBatchFileName, 50000);
+    else
+        ReadCifar100Batch(laptopBatchFileName, 50000);
+
+    cout<<"Training Cifar 100 is read"<<endl;
+    for(int i=0; i<5; i++){
+            for(int j=0; j<20; ++j)
+                cout<<siz[i]<<'\t';
+            cout<<endl;
+    }
+}
+
+void Data::ReadTestCifar100(){
+    AllocateMemory(100, 10000, 3, 32, 32);
+    char laptopBatchFileName[] = "/home/slavko/Dropbox/datasets/CIFAR_100/test.bin";
+    char localBatchFileName[] = "CIFAR_100/test.bin";
+    if (LOCAL_DATA)
+        ReadCifar100Batch(localBatchFileName, 10000);
+    else
+        ReadCifar100Batch(laptopBatchFileName, 10000);
+    cout<<"Test Cifar 100 is read"<<endl;
+    for(int i=0; i<5; i++){
+        for(int j=0; j<20; ++j)
+            cout<<siz[i]<<'\t';
+        cout<<endl;
+    }
 }
 
 

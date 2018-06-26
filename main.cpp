@@ -39,7 +39,7 @@ string GetEnv( const string & var ) {
 
 void SomeInitialStuff(){
     randomGenerator::SetRandomSeed();
-    float time_start = omp_get_wtime();
+    //float time_start = omp_get_wtime();
 //    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 //    //putenv((char*)"OMP_PROC_BIND=TRUE");
 //    putenv((char*)"OMP_DYNAMIC=FALSE");
@@ -58,12 +58,17 @@ int main()
     NeuralNet *NN = new NeuralNet;
 
     NN->SetInputShape(3, 32, 32);
-    NN->Add(StairsFullBottleneck::Start(4, 2, 2));
-    NN->Add(FullColumnBalancedDrop::Start());
-    NN->Add(StairsFullBottleneck::Start(4, 2, 2));
-    NN->Add(FullAveragePooling::Start());
-    NN->Add(StairsFullBottleneck::Start(4, 2, 2));
-    NN->Add(FullColumnBalancedDrop::Start(8, 8));
+
+    NN->Add(StairsFullBottleneckBalancedDrop::Start(10, 10, 10));
+    NN->Add(FullAveragePoolingBalancedDrop::Start());
+
+    NN->Add(StairsFullBottleneckBalancedDrop::Start(10, 10, 10));
+    NN->Add(FullAveragePoolingBalancedDrop::Start());
+
+    NN->Add(StairsFullBottleneckBalancedDrop::Start(10, 10, 10));
+
+    NN->Add(FullAveragePoolingBalancedDrop::Start(8, 8));
+
     NN->Add(FullyConnectedSoftMax::Start(10));
     NN->Initiate();
 

@@ -15,18 +15,22 @@ architecture::architecture(){
     computation_list.clear();
     from.clear();
     to.clear();
+
+    input_shape_set = false;
+    num_classes_set = false;
 }
 
 void architecture::SetInputShape(int dim1, int dim2, int dim3){
-    int dimension = 3;
-    if (dim3 == -1) dimension = 2;
-    if (dim2 == -1) dimension = 1;
+    input_dimension = 3;
+    if (dim3 == -1) input_dimension = 2;
+    if (dim2 == -1) input_dimension = 1;
 
-    layer_dimension.push_back(dimension);
-    vector<int> my_shape = {dim1, dim2, dim3};
-    //my_shape.assign(shape, shape + dim);
-    layer_shape.push_back(my_shape);
+    layer_dimension.push_back(input_dimension);
+    input_shape = {dim1, dim2, dim3};
+    layer_shape.push_back(input_shape);
     ++Nlayers;
+
+    input_shape_set = true;
 }
 
 void architecture::Add(computationalNode * node){

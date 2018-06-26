@@ -16,10 +16,10 @@ void layers::SetModel()
 
     layerList=new orderedData* [Nlayers];
 
-    layerList[0] = new tensor(131, 32, 32);
-    layerList[1] = new tensor(259, 16, 16);
-    layerList[2] = new tensor(387, 8, 8);
-    layerList[3] = new tensor(387, 1, 1);
+    layerList[0] = new tensor(203, 32, 32);
+    layerList[1] = new tensor(403, 16, 16);
+    layerList[2] = new tensor(603, 8, 8);
+    layerList[3] = new tensor(603, 1, 1);
     layerList[4] = new vect(10);
 }
 

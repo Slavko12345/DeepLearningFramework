@@ -385,6 +385,14 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData){
 
 
 void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData){
+    if (NN->architectureBased){
+        if (!NN->CheckCompatibility(trainingData))
+            cout<<"Training data is not compatible!"<<endl;
+        if (!NN->CheckCompatibility(testData))
+            cout<<"Test data is not compatible!"<<endl;
+    }
+
+
     int numThreads;
     omp_set_num_threads(MAX_THREADS);
     #pragma omp parallel
@@ -439,11 +447,17 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
     cout<<"Training Data is subdivided"<<endl;
 
     weights* MS = new weights;
-    MS->SetModel();
+    if (NN->architectureBased)
+        MS->SetModel(NN->arch);
+    else
+        MS->SetModel();
     MS->SetToZero();
 
     weights* Moment = new weights;
-    Moment->SetModel();
+    if (NN->architectureBased)
+        Moment->SetModel(NN->arch);
+    else
+        Moment->SetModel();
     Moment->SetToZero();
 
     float timeStart = omp_get_wtime();

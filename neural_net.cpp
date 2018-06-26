@@ -16,6 +16,7 @@
 #include "tensor.h"
 #include <float.h>
 #include "architecture.h"
+#include "tensor4D.h"
 using namespace std;
 
 NeuralNet::NeuralNet(){
@@ -59,6 +60,13 @@ void NeuralNet::Initiate()
 }
 
 void NeuralNet::InitiateFromArchitecture(){
+
+    if (!arch->input_shape_set)
+        cout<<"Error: input shape is not set for architecture"<<endl;
+
+    if (!arch->num_classes_set)
+        cout<<"Error: number of classes is not set for architecture"<<endl;
+
     testMode = 1;
     primalWeightOwner = 1;
 
@@ -356,6 +364,22 @@ void NeuralNet::SwitchToTestMode(){
 
 void NeuralNet::UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_){
     computation->UpdateBalancedDropParameters(alpha_, pDrop_, pNotDrop_);
+}
+
+bool NeuralNet::CheckCompatibility(Data * data){
+    if (arch->num_classes != data->C){
+        cout<<"Error: Number of target classes is not equal!"<<endl;
+        return false;
+    }
+
+    if (arch->input_dimension != 3 || arch->input_shape[0] != data->classData->depth ||
+        arch->input_shape[1] != data->classData->rows || arch->input_shape[2] != data->classData->cols){
+            cout<<"Error: Input shape is not the same!"<<endl;
+            return false;
+    }
+
+    return true;
+
 }
 
 NeuralNet::~NeuralNet(){

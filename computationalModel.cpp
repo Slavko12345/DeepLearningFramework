@@ -38,11 +38,11 @@ void computationalModel::SetModel(architecture * arch, layers* layersData, layer
 void computationalModel::SetModel(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, bool primalWeightOwner){
     Nlayers=layersData->Nlayers;
 
-    AddNode(0, 0, new StairsFullBottleneckBalancedDrop(0, 1, 3,   8, 8, 8));
+    AddNode(0, 0, new StairsFullBottleneckBalancedDrop(0, 1, 3,   10, 10, 10));
     AddNode(0, 1, new FullAveragePoolingBalancedDrop());
-    AddNode(1, 1, new StairsFullBottleneckBalancedDrop(2, 3, 131, 8, 8, 8));
+    AddNode(1, 1, new StairsFullBottleneckBalancedDrop(2, 3, 203, 10, 10, 10));
     AddNode(1, 2, new FullAveragePoolingBalancedDrop());
-    AddNode(2, 2, new StairsFullBottleneckBalancedDrop(4, 5, 259, 8, 8, 8));
+    AddNode(2, 2, new StairsFullBottleneckBalancedDrop(4, 5, 403, 10, 10, 10));
     AddNode(2, 3, new FullAveragePoolingBalancedDrop());
     AddNode(3, 4, new FullyConnectedSoftMax(6));
 

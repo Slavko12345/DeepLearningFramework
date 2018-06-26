@@ -23,6 +23,13 @@ struct architecture{
     vector<int> from;
     vector<int> to;
 
+    bool input_shape_set;
+    int input_dimension;
+    vector<int> input_shape;
+
+    bool num_classes_set;
+    int num_classes;
+
 
 
     void SetInputShape(int dim1, int dim2 = -1, int dim3 = -1);

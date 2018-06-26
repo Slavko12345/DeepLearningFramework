@@ -28,12 +28,12 @@ const bool LAYERWISE_NORMALIZATION = 0;
 const bool APPEND_INPUT_STATISTICS = 0;
 const bool INPUT_NEG_POS = 1;
 
-const int NUM_EPOCHS = 5;
+const int NUM_EPOCHS = 500;
 const int MINIBATCH_SIZE = 1000;
 const float LEARNING_RATE = 0.02f;
 const float RATE_DECAY = 0.97f;
 
-const int MAX_THREADS = 4;
+const int MAX_THREADS = 50;
 
 
 const float DEFAULT_ALPHA_DROP = 2.0f;

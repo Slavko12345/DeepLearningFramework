@@ -58,6 +58,9 @@ class NeuralNet
         void SwitchToTrainingMode();
         void SwitchToTestMode();
         void UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_);
+
+        bool CheckCompatibility(Data * data);
+
         ~NeuralNet();
 };
 

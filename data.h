@@ -26,6 +26,10 @@ public:
     void ReadTrainingCifar10();
     void ReadTestCifar10();
 
+    void ReadCifar100Batch(char batchFileName[], int batch_size);
+    void ReadTrainingCifar100();
+    void ReadTestCifar100();
+
     void SubDivide(Data** dataList, int numThreads);
     void SubDivide(Data** dataList, int numThreads, float* velocity);
 

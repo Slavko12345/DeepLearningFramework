@@ -15,11 +15,11 @@ void weights::SetModel()
     Nweights = 7;
     weightList = new layerWeight[Nweights];
 
-    SetFullBottleneck(0, 1, 3,   8, 8, 8);
-    SetFullBottleneck(2, 3, 131, 8, 8, 8);
-    SetFullBottleneck(4, 5, 259, 8, 8, 8);
+    SetFullBottleneck(0, 1, 3,   10, 10, 10);
+    SetFullBottleneck(2, 3, 203, 10, 10, 10);
+    SetFullBottleneck(4, 5, 403, 10, 10, 10);
 
-    weightList[6].SetFC(387, 10);
+    weightList[6].SetFC(603, 10);
 }
 
 void weights::SetModel(architecture * arch){

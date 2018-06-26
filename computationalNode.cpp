@@ -233,6 +233,9 @@ void FullyConnectedSoftMax::UpdateArchitecture(architecture * arch){
     arch->weight_shape.push_back(new_weight_shape);
     arch->bias_len.push_back(output_size);
     arch->Nweights++;
+
+    arch->num_classes = output_size;
+    arch->num_classes_set = true;
 }
 
 FullyConnectedSoftMax * FullyConnectedSoftMax :: Start(int output_size_){
@@ -2770,7 +2773,6 @@ void StairsFullBottleneckBalancedDrop::ForwardPass(){
         }
         else
             multipliers->SetToValue(1.0f);
-
     }
     ForwardStairsFullBottleneckBalancedDrop(input, kernel_vert, kernel_hor, bias, verticalConv, startDepth, numStairs,
                                 numStairConvolutions, bottleneckDepth, inputActivity, multipliers, testMode);
