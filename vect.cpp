@@ -28,7 +28,7 @@ const float& vect::operator[] (int index) const
 
 
 void vect::Add(vect* addon, vector<int> &indexOutput){
-    for(int i=0; i<indexOutput.size(); i++)
+    for(unsigned int i=0; i<indexOutput.size(); i++)
             elem[indexOutput[i] ]+=addon->elem[indexOutput[i] ];
 }
 

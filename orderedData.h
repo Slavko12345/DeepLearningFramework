@@ -43,6 +43,8 @@ struct orderedData{
     void Add(orderedData* addon);
     void Add(float lamb, orderedData* addon);
     void Add(float addon);
+
+    void AddDistinct(orderedData* addon);
     void AddDistinct(float lamb, orderedData* addon);
 
     void AddThisStartingFrom(int thisStartingIndex, orderedData* addon);

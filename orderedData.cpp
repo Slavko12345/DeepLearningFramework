@@ -133,6 +133,14 @@ void orderedData::Add(orderedData* addon){
         elem[i] += addon_elem[i];
 }
 
+void orderedData::AddDistinct(orderedData* addon){
+    float *  __restrict__ addon_elem = addon->elem;
+    float * __restrict__ this_elem = elem;
+
+    for(int i=0; i<len; ++i)
+        this_elem[i] += addon_elem[i];
+}
+
 void orderedData::AddDistinct(float lamb, orderedData* addon){
     float * __restrict__ this_elem = elem;
     float *  __restrict__ addon_elem = addon->elem;
@@ -302,23 +310,20 @@ void orderedData::RmspropUpdate(orderedData* grad, orderedData* MS, float k1, fl
 }
 
 void orderedData::AdamUpdate(orderedData* grad, orderedData* Moment, orderedData* MS, float k1, float k2, float Step){
-    float *MS_elem = MS->elem, *grad_elem = grad->elem, *Moment_elem = Moment->elem;
+    float * __restrict__ MS_elem = MS->elem;
+    float * __restrict__ grad_elem = grad->elem;
+    float * __restrict__ Moment_elem = Moment->elem;
+    float * __restrict__ weight_elem = this->elem;
 
 
     for(int j=0; j<len; ++j)
-        Moment_elem[j] = k1*Moment_elem[j]+k2*grad_elem[j];
+        Moment_elem[j] = k1 * Moment_elem[j] + k2 * grad_elem[j];
 
     for(int j=0; j<len; ++j)
-        MS_elem[j]=k1*MS_elem[j]+k2*sqr(grad_elem[j]);
+        MS_elem[j] = k1 * MS_elem[j] + k2 * sqr(grad_elem[j]);
 
     for(int j=0; j<len; ++j)
-        elem[j]-=Step*Moment_elem[j]/(sqrt(MS_elem[j])+FLT_EPSILON);
-
-//    for(int j=0; j<len; ++j){
-//        Moment_elem[j] = k1*Moment_elem[j]+k2*grad_elem[j];
-//        MS_elem[j]=k1*MS_elem[j]+k2*sqr(grad_elem[j]);
-//        elem[j]-=Step*Moment_elem[j]/(sqrt(MS_elem[j])+FLT_EPSILON);
-//    }
+        weight_elem[j] -= Step * Moment_elem[j] / (sqrt(MS_elem[j])+FLT_EPSILON);
 }
 
 void orderedData::SetDroppedElementsToZero(activityData* mask){
@@ -637,7 +642,6 @@ void orderedData::BackwardFullyConnected(matrix* kernel, orderedData* outputDelt
     float *biasGrad_ = biasGrad->elem;
 
     float outputDelta_i;
-    int indInp_j;
     int out_len = outputDelta->len;
     int inp_len = input->len;
 
@@ -662,7 +666,6 @@ void orderedData::BackwardFullyConnectedNoBias(matrix* kernel, orderedData* outp
     float *inp = input->elem;
 
     float outputDelta_i;
-    int indInp_j;
     int out_len = outputDelta->len;
     int inp_len = input->len;
 
@@ -778,7 +781,6 @@ void orderedData::FindTrustRegionMinima(matrix* B, vect* r, float eps){
 void orderedData::FindTrustRegionMinima(vect* eigenValues, matrix* eigenVectors, vect* rV, float eps){
     vect* solutionBasis = new vect(eigenValues->len);
     if (eigenValues->elem[0]>0.0f){
-        float globalSolSqNorm = 0.0f;
         for(int j=0; j<rV->len; ++j)
             solutionBasis->elem[j] = rV->elem[j] / eigenValues->elem[j];
         if (solutionBasis->SqNorm() < sqr(eps) ){

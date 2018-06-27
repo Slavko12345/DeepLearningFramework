@@ -4813,9 +4813,9 @@ void FullColumnDrop::UpdateArchitecture(architecture * arch){
     if (arch->layer_shape[inp_layer_num][1] % kernelRsize != 0 ||
         arch->layer_shape[inp_layer_num][2] % kernelCsize != 0)
             cout<<"Error: FullColumnDrop accepts only tensors with multiples of kernel sizes"<<endl;
-    if (!( kernelRsize == 2 && kernelCsize == 2 ||
-          kernelRsize == arch->layer_shape[inp_layer_num][1] &&
-          kernelCsize == arch->layer_shape[inp_layer_num][2]) )
+    if (!( (kernelRsize == 2 && kernelCsize == 2) ||
+          (kernelRsize == arch->layer_shape[inp_layer_num][1] &&
+          kernelCsize == arch->layer_shape[inp_layer_num][2])) )
             cout<<"Error: FullColumn Drop accepts only 2*2 and all*all kernels"<<endl;
     arch->layer_dimension.push_back(3);
     vector<int> new_shape = {arch->layer_shape[inp_layer_num][0],
@@ -4987,9 +4987,9 @@ void FullColumnBalancedDrop::UpdateArchitecture(architecture * arch){
     if (arch->layer_shape[inp_layer_num][1] % kernelRsize != 0 ||
         arch->layer_shape[inp_layer_num][2] % kernelCsize != 0)
             cout<<"Error: FullColumnBalancedDrop accepts only tensors with multiples of kernel sizes"<<endl;
-    if (!( kernelRsize == 2 && kernelCsize == 2 ||
-          kernelRsize == arch->layer_shape[inp_layer_num][1] &&
-          kernelCsize == arch->layer_shape[inp_layer_num][2]) )
+    if (!( (kernelRsize == 2 && kernelCsize == 2) ||
+          (kernelRsize == arch->layer_shape[inp_layer_num][1] &&
+          kernelCsize == arch->layer_shape[inp_layer_num][2])) )
             cout<<"Error: FullColumn Drop accepts only 2*2 and all*all kernels"<<endl;
     arch->layer_dimension.push_back(3);
     vector<int> new_shape = {arch->layer_shape[inp_layer_num][0],

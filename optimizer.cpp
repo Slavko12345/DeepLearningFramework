@@ -536,7 +536,7 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
                 #pragma omp single
                 {
                     for(int j=1; j<numThreads; ++j)
-                        NN->gradient->Add(NNList[j]->gradient);
+                        NN->gradient->AddDistinct(NNList[j]->gradient);
 
                     NN->weightsData->AdamUpdate(NN->gradient, Moment, MS, 0.9f, 0.1f, learningRate);
 

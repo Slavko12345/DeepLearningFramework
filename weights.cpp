@@ -337,6 +337,14 @@ void weights::Add(weights* addon){
     }
 }
 
+void weights::AddDistinct(weights* addon){
+    layerWeight* addon_weightList = addon->weightList;
+    for(int w=0; w<Nweights; ++w){
+        weightList[w].dataWeight->AddDistinct(addon_weightList[w].dataWeight);
+        weightList[w].bias->AddDistinct(addon_weightList[w].bias);
+    }
+}
+
 void weights::Add(float lamb, weights* addon){
     for(int w=0; w<Nweights; w++){
         weightList[w].dataWeight->Add(lamb, addon->weightList[w].dataWeight);

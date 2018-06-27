@@ -67,6 +67,8 @@ public:
 
     void Add(weights* addon);
     void Add(float lamb, weights* addon);
+    void AddDistinct(weights* addon);
+
 
     float MaxAbs();
     void Multiply(float lamb);
