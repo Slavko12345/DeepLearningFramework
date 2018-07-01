@@ -46,6 +46,10 @@ struct orderedData{
 
     void AddDistinct(orderedData* addon);
     void AddDistinct(float lamb, orderedData* addon);
+    void AddDistinct_1024(float lamb, orderedData* addon);
+    void AddDistinct_256(float lamb, orderedData* addon);
+    void AddDistinct_64(float lamb, orderedData* addon);
+
 
     void AddThisStartingFrom(int thisStartingIndex, orderedData* addon);
 
@@ -151,6 +155,11 @@ struct orderedData{
 float InnerProduct(orderedData* inp1, orderedData* inp2);
 
 float InnerDistinctProduct(orderedData* inp1, orderedData* inp2);
+
+float InnerDistinctProduct_1024(orderedData* inp1, orderedData* inp2);
+float InnerDistinctProduct_256(orderedData* inp1, orderedData* inp2);
+float InnerDistinctProduct_64(orderedData* inp1, orderedData* inp2);
+
 
 float InnerProductSubMatrices(matrix* M1, matrix* M2, int border);
 #endif // __orderedData__

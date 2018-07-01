@@ -212,6 +212,9 @@ void NeuralNet::ForwardBackwardPass(orderedData* input, int trueClass){
 }
 
 void NeuralNet::CalculateGradient(Data* inputData){
+    if (testMode)
+        this->SwitchToTrainingMode();
+
     gradient->SetToZero();
     tensor* data_j = new tensor();
     if (layersActivity->dropping)
@@ -233,6 +236,10 @@ void NeuralNet::CalculateGradient(Data* inputData){
 }
 
 void NeuralNet::CalculateGradientFunctionValue(Data* inputData, float& functionVal){
+    cout<<"Deprecated function CalculateGradientFunctionValue"<<endl;
+    if (!testMode)
+        this->SwitchToTestMode();
+
     tensor* data_j = new tensor();
     gradient->SetToZero();
     functionVal = 0;
@@ -264,6 +271,9 @@ void NeuralNet::CalculateGradientFunctionValue(Data* inputData, float& functionV
 
 
 void NeuralNet::CalculateErrorAndAccuracy(Data* inputData, float &error, float &accuracy){
+    if (!testMode)
+        this->SwitchToTestMode();
+
     tensor* data_j = new tensor();
     error=0;
     int correct=0, predictedLabel, lab;
@@ -294,6 +304,9 @@ void NeuralNet::CalculateErrorAndAccuracy(Data* inputData, float &error, float &
 }
 
 void NeuralNet::CalculateSubErrorAndAccuracy(Data* inputData, float &error, int &correct){
+    if (!testMode)
+        this->SwitchToTestMode();
+
     tensor* data_j = new tensor();
     error=0; correct=0;
     int predictedLabel, lab;
@@ -322,6 +335,8 @@ void NeuralNet::CalculateSubErrorAndAccuracy(Data* inputData, float &error, int 
 }
 
 float NeuralNet::CalculateAccuracy(Data* inputData){
+    if (!testMode)
+        this->SwitchToTestMode();
     tensor* data_j = new tensor();
     int correct=0, total = inputData->totalSize(), predictedLabel, lab;
     orderedData* lastLayerLink =layersData->layerList[Nlayers-1];

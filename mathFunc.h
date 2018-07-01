@@ -257,8 +257,28 @@ void SymmetricConvolution3D(tensor* input, tensor* output, tensor* kernel, vect*
 void BackwardSymmetricConvolution3D(tensor* input, tensor* inputDelta, tensor* outputDelta, tensor* kernel, tensor* kernelGrad, vect* biasGrad, int symmetryLevel);
 
 
+void Convolution3D_32(tensor* input, tensor* output, tensor* kernel, vect* bias);
+void BackwardConvolution3D_32(tensor* input, tensor* inputDelta, tensor* outputDelta, tensor* kernel, tensor* kernelGrad, vect* biasGrad);
+
+void Convolution3D_16(tensor* input, tensor* output, tensor* kernel, vect* bias);
+void BackwardConvolution3D_16(tensor* input, tensor* inputDelta, tensor* outputDelta, tensor* kernel, tensor* kernelGrad, vect* biasGrad);
+
+void Convolution3D_8(tensor* input, tensor* output, tensor* kernel, vect* bias);
+void BackwardConvolution3D_8(tensor* input, tensor* inputDelta, tensor* outputDelta, tensor* kernel, tensor* kernelGrad, vect* biasGrad);
+
+
 void VerticalConvolution3D(tensor* input, tensor* output, tensor* kernel);
 void BackwardVerticalConvolution3D(tensor* input, tensor* inputDelta, tensor* outputDelta, tensor* kernel, tensor* kernelGrad);
+
+
+void VerticalConvolution3D_32(tensor* input, tensor* output, tensor* kernel);
+void BackwardVerticalConvolution3D_32(tensor* input, tensor* inputDelta, tensor* outputDelta, tensor* kernel, tensor* kernelGrad);
+
+void VerticalConvolution3D_16(tensor* input, tensor* output, tensor* kernel);
+void BackwardVerticalConvolution3D_16(tensor* input, tensor* inputDelta, tensor* outputDelta, tensor* kernel, tensor* kernelGrad);
+
+void VerticalConvolution3D_8(tensor* input, tensor* output, tensor* kernel);
+void BackwardVerticalConvolution3D_8(tensor* input, tensor* inputDelta, tensor* outputDelta, tensor* kernel, tensor* kernelGrad);
 
 
 
@@ -306,11 +326,20 @@ void BackwardBottleneckConvolutionStandardPartialGrad(tensor* input, tensor* inp
 //void ForwardConvoluteStandardByIndex(float* input, float* output, const int siz, float* revKernel, const vector<int> & indexInputRow);
 
 void ConvoluteStandard(float* input, float* output, const int siz, float* kernel);
+void ConvoluteStandard_32(float* input, float* output, float* kernel);
+void ConvoluteStandard_16(float* input, float* output, float* kernel);
+void ConvoluteStandard_8(float* input, float* output, float* kernel);
+
 void ConvoluteStandardSymmetric(float* input, float* output, const int siz, float* kernel);
 void ConvoluteStandardFullySymmetric0(float* input, float* output, const int siz, float* kernel);
 
 
 void ConvoluteStandard2D2D(matrix* input, matrix* output, matrix* kernel);
+void ConvoluteStandard2D2D_32(matrix* input, matrix* output, matrix* kernel);
+void ConvoluteStandard2D2D_16(matrix* input, matrix* output, matrix* kernel);
+void ConvoluteStandard2D2D_8(matrix* input, matrix* output, matrix* kernel);
+
+
 void ConvoluteStandard2D2DSymmetric(matrix* input, matrix* output, matrix* kernel);
 void ConvoluteStandard2D2DSymmetric2(matrix* input, matrix* output, matrix* kernel);
 void ConvoluteStandard2D2DSymmetric3(matrix* input, matrix* output, matrix* kernel);
@@ -319,11 +348,20 @@ void ConvoluteStandard2D2DFullySymmetric(matrix* input, matrix* output, matrix* 
 //void ForwardConvoluteStandardCreateIndex(float* input, float* output, const int siz, float* revKernel, vector<int> & indexInputRow);
 
 void BackwardConvoluteStandard(float* input, float* inputDelta, float* outputDelta, float* kernel, float* kernelGrad, const int siz);
+void BackwardConvoluteStandard_32(float* input, float* inputDelta, float* outputDelta, float* kernel, float* kernelGrad);
+void BackwardConvoluteStandard_16(float* input, float* inputDelta, float* outputDelta, float* kernel, float* kernelGrad);
+void BackwardConvoluteStandard_8(float* input, float* inputDelta, float* outputDelta, float* kernel, float* kernelGrad);
+
 void BackwardConvoluteStandardSymmetric(float* input, float* inputDelta, float* outputDelta, float* kernel, float* kernelGrad, const int siz);
 void BackwardConvoluteStandardFullySymmetric0(float* input, float* inputDelta, float* outputDelta, float* kernel, float* kernelGrad, const int siz);
 
 void BackwardConvoluteGradStandard(float* input, float* outputDelta, float* kernelGrad, const int siz);
 void BackwardConvoluteStandard2D2D(matrix* input, matrix* inputDelta, matrix* outputDelta, matrix* kernel, matrix* kernelGrad, realNumber* biasGrad);
+void BackwardConvoluteStandard2D2D_32(matrix* input, matrix* inputDelta, matrix* outputDelta, matrix* kernel, matrix* kernelGrad, realNumber* biasGrad);
+void BackwardConvoluteStandard2D2D_16(matrix* input, matrix* inputDelta, matrix* outputDelta, matrix* kernel, matrix* kernelGrad, realNumber* biasGrad);
+void BackwardConvoluteStandard2D2D_8(matrix* input, matrix* inputDelta, matrix* outputDelta, matrix* kernel, matrix* kernelGrad, realNumber* biasGrad);
+
+
 void BackwardConvoluteStandard2D2DSymmetric(matrix* input, matrix* inputDelta, matrix* outputDelta, matrix* kernel, matrix* kernelGrad, realNumber* biasGrad);
 void BackwardConvoluteStandard2D2DSymmetric2(matrix* input, matrix* inputDelta, matrix* outputDelta, matrix* kernel, matrix* kernelGrad, realNumber* biasGrad);
 void BackwardConvoluteStandard2D2DSymmetric3(matrix* input, matrix* inputDelta, matrix* outputDelta, matrix* kernel, matrix* kernelGrad, realNumber* biasGrad);
@@ -476,6 +514,37 @@ void BackwardStairsFullBottleneck(tensor* input, tensor* inputDelta, tensor* ker
 
 
 
+void ForwardStairsFullBottleneck32(tensor* input, tensor* kernel_vert, tensor* kernel_hor, vect* bias, tensor* verticalConv,
+                                int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth,
+                                activityData* inputActivity, bool testMode);
+
+void BackwardStairsFullBottleneck32(tensor* input, tensor* inputDelta, tensor* kernel_vert, tensor* kernelGrad_vert,
+                                  tensor* kernel_hor, tensor* kernelGrad_hor, vect* biasGrad,
+                                tensor* verticalConv, tensor* verticalConvDelta, int startDepth, int numStairs,
+                                int numStairConvolutions, int bottleneckDepth, activityData* inputActivity);
+
+
+void ForwardStairsFullBottleneck16(tensor* input, tensor* kernel_vert, tensor* kernel_hor, vect* bias, tensor* verticalConv,
+                                int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth,
+                                activityData* inputActivity, bool testMode);
+
+void BackwardStairsFullBottleneck16(tensor* input, tensor* inputDelta, tensor* kernel_vert, tensor* kernelGrad_vert,
+                                  tensor* kernel_hor, tensor* kernelGrad_hor, vect* biasGrad,
+                                tensor* verticalConv, tensor* verticalConvDelta, int startDepth, int numStairs,
+                                int numStairConvolutions, int bottleneckDepth, activityData* inputActivity);
+
+
+void ForwardStairsFullBottleneck8(tensor* input, tensor* kernel_vert, tensor* kernel_hor, vect* bias, tensor* verticalConv,
+                                int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth,
+                                activityData* inputActivity, bool testMode);
+
+void BackwardStairsFullBottleneck8(tensor* input, tensor* inputDelta, tensor* kernel_vert, tensor* kernelGrad_vert,
+                                  tensor* kernel_hor, tensor* kernelGrad_hor, vect* biasGrad,
+                                tensor* verticalConv, tensor* verticalConvDelta, int startDepth, int numStairs,
+                                int numStairConvolutions, int bottleneckDepth, activityData* inputActivity);
+
+
+
 void ForwardStairsFullBottleneckBalancedDrop(tensor* input, tensor* kernel_vert, tensor* kernel_hor, vect* bias, tensor* verticalConv,
                                 int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth,
                                 activityData* inputActivity, tensor* multipliers, bool testMode);
@@ -484,6 +553,43 @@ void BackwardStairsFullBottleneckBalancedDrop(tensor* input, tensor* inputDelta,
                                   tensor* kernel_hor, tensor* kernelGrad_hor, vect* biasGrad,
                                 tensor* verticalConv, tensor* verticalConvDelta, int startDepth, int numStairs,
                                 int numStairConvolutions, int bottleneckDepth, activityData* inputActivity, tensor* multipliers);
+
+
+
+void ForwardStairsFullBottleneckBalancedDrop_32(tensor* input, tensor* kernel_vert, tensor* kernel_hor, vect* bias, tensor* verticalConv,
+                                int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth,
+                                activityData* inputActivity, tensor* multipliers, bool testMode);
+
+void BackwardStairsFullBottleneckBalancedDrop_32(tensor* input, tensor* inputDelta, tensor* kernel_vert, tensor* kernelGrad_vert,
+                                  tensor* kernel_hor, tensor* kernelGrad_hor, vect* biasGrad,
+                                tensor* verticalConv, tensor* verticalConvDelta, int startDepth, int numStairs,
+                                int numStairConvolutions, int bottleneckDepth, activityData* inputActivity, tensor* multipliers);
+
+
+
+void ForwardStairsFullBottleneckBalancedDrop_16(tensor* input, tensor* kernel_vert, tensor* kernel_hor, vect* bias, tensor* verticalConv,
+                                int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth,
+                                activityData* inputActivity, tensor* multipliers, bool testMode);
+
+void BackwardStairsFullBottleneckBalancedDrop_16(tensor* input, tensor* inputDelta, tensor* kernel_vert, tensor* kernelGrad_vert,
+                                  tensor* kernel_hor, tensor* kernelGrad_hor, vect* biasGrad,
+                                tensor* verticalConv, tensor* verticalConvDelta, int startDepth, int numStairs,
+                                int numStairConvolutions, int bottleneckDepth, activityData* inputActivity, tensor* multipliers);
+
+
+
+
+void ForwardStairsFullBottleneckBalancedDrop_8(tensor* input, tensor* kernel_vert, tensor* kernel_hor, vect* bias, tensor* verticalConv,
+                                int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth,
+                                activityData* inputActivity, tensor* multipliers, bool testMode);
+
+void BackwardStairsFullBottleneckBalancedDrop_8(tensor* input, tensor* inputDelta, tensor* kernel_vert, tensor* kernelGrad_vert,
+                                  tensor* kernel_hor, tensor* kernelGrad_hor, vect* biasGrad,
+                                tensor* verticalConv, tensor* verticalConvDelta, int startDepth, int numStairs,
+                                int numStairConvolutions, int bottleneckDepth, activityData* inputActivity, tensor* multipliers);
+
+
+
 
 
 

@@ -40,11 +40,11 @@ struct computationalNode{
 
     virtual void WriteStructuredWeightsToFile();
 
-    virtual void UpdateArchitecture(architecture * arch) = 0;
+    virtual void UpdateArchitecture(architecture * arch);
 
     virtual void Print()=0;
 
-    virtual computationalNode* New() = 0;
+    virtual computationalNode* New();
 
     virtual ~computationalNode();
 };
@@ -351,14 +351,18 @@ struct ColumnDrop: public computationalNode{
 struct FullColumnDrop: public computationalNode{
     tensor* input, *inputDelta;
     tensor* output, *outputDelta;
-    tensor* partialOutput;
-    tensor* partialOutputDelta;
+
+    tensor* partialInput, *partialInputDelta;
+    tensor* partialOutput, *partialOutputDelta;
+
     activityData * activityColumns;
 
     int kernelRsize, kernelCsize;
+    int lastLayers;
+    int remainNum;
 
     int fractionDecrease;
-    FullColumnDrop();
+    FullColumnDrop(int lastLayers_ = -1, int remainNum_ = 1);
     void Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner);
     void ForwardPass();
     void BackwardPass(bool computeDelta, int trueClass);
@@ -366,7 +370,7 @@ struct FullColumnDrop: public computationalNode{
     void SetToTestMode();
     bool HasWeightsDependency();
     void UpdateArchitecture(architecture * arch);
-    static FullColumnDrop* Start(int kernelRSize_ = 2, int kernelCsize_ = 2);
+    static FullColumnDrop* Start(int kernelRSize_ = 2, int kernelCsize_ = 2, int lastLayers_ = -1, int remainNum_ = 1);
     computationalNode * New();
     void Print();
     ~FullColumnDrop();
@@ -376,11 +380,16 @@ struct FullColumnDrop: public computationalNode{
 struct FullColumnBalancedDrop: public computationalNode{
     tensor* input, *inputDelta;
     tensor* output, *outputDelta;
-    tensor* partialOutput;
-    tensor* partialOutputDelta;
+
+    tensor* partialInput, *partialInputDelta;
+    tensor* partialOutput, *partialOutputDelta;
+
     activityData * activityColumns;
 
     int kernelRsize, kernelCsize;
+    int lastLayers;
+    int remainNum;
+
 
     activityData * balancedActiveUnits;
     activityData * balancedUpDown;
@@ -392,7 +401,8 @@ struct FullColumnBalancedDrop: public computationalNode{
     bool startDropping;
 
     int fractionDecrease;
-    FullColumnBalancedDrop( float alpha_ = DEFAULT_ALPHA_DROP,
+    FullColumnBalancedDrop(int lastLayers_ = -1, int remainNum_ = 1,
+                           float alpha_ = DEFAULT_ALPHA_DROP,
                             float pDrop_ = DEFAULT_P_DROP,
                             float pNotDrop_ = DEFAULT_P_NOT_DROP);
     void Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner);
@@ -404,8 +414,9 @@ struct FullColumnBalancedDrop: public computationalNode{
     void UpdateArchitecture(architecture * arch);
     bool UsesBalancedDrop();
     void UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_);
-    static FullColumnBalancedDrop* Start(int kernelRSize_ = 2, int kernelCsize_ = 2,
-                float alpha_ = DEFAULT_ALPHA_DROP, float pDrop_ = DEFAULT_P_DROP, float pNotDrop_ = DEFAULT_P_NOT_DROP);
+    static FullColumnBalancedDrop* Start(int kernelRSize_ = 2, int kernelCsize_ = 2, int lastLayers_ = -1,
+                                         int remainNum_ = 1, float alpha_ = DEFAULT_ALPHA_DROP,
+                                         float pDrop_ = DEFAULT_P_DROP, float pNotDrop_ = DEFAULT_P_NOT_DROP);
     computationalNode * New();
     void Print();
     ~FullColumnBalancedDrop();
@@ -499,11 +510,14 @@ struct PartialFirstAveragePooling3D: public computationalNode{
 struct FullAveragePooling: public computationalNode{
     tensor* input, *inputDelta;
     tensor* output, *outputDelta;
+
+    tensor* partialInput, *partialInputDelta;
     tensor* partialOutput, *partialOutputDelta;
 
     int kernelRsize, kernelCsize;
+    int lastLayers;
 
-    FullAveragePooling();
+    FullAveragePooling(int lastLayers_ = -1);
     void Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner);
     void ForwardPass();
     void BackwardPass( bool computeDelta, int trueClass);
@@ -511,7 +525,7 @@ struct FullAveragePooling: public computationalNode{
     void SetToTestMode();
     bool HasWeightsDependency();
     void UpdateArchitecture(architecture * arch);
-    static FullAveragePooling* Start(int kernelRSize_ = 2, int kernelCsize_ = 2);
+    static FullAveragePooling* Start(int kernelRSize_ = 2, int kernelCsize_ = 2, int lastLayers = -1);
     computationalNode * New();
     void Print();
     ~FullAveragePooling();
@@ -522,9 +536,12 @@ struct FullAveragePooling: public computationalNode{
 struct FullAveragePoolingBalancedDrop: public computationalNode{
     tensor* input, *inputDelta;
     tensor* output, *outputDelta;
+
+    tensor* partialInput, *partialInputDelta;
     tensor* partialOutput, *partialOutputDelta;
 
     int kernelRsize, kernelCsize;
+    int lastLayers;
 
     activityData * balancedActiveUnits;
     activityData * balancedUpDown;
@@ -535,7 +552,7 @@ struct FullAveragePoolingBalancedDrop: public computationalNode{
     float pNotDrop;
     bool startDropping;
 
-    FullAveragePoolingBalancedDrop(float alpha_ = DEFAULT_ALPHA_DROP, float pDrop_ = DEFAULT_P_DROP, float pNotDrop_ = DEFAULT_P_NOT_DROP);
+    FullAveragePoolingBalancedDrop(int lastLayers_ = -1, float alpha_ = DEFAULT_ALPHA_DROP, float pDrop_ = DEFAULT_P_DROP, float pNotDrop_ = DEFAULT_P_NOT_DROP);
     void Initiate(layers* layersData, layers* deltas, weights* weightsData, weights* gradient, activityLayers* layersActivity, int from, int to, bool primalWeightOwner);
     void ForwardPass();
     void BackwardPass( bool computeDelta, int trueClass);
@@ -545,7 +562,7 @@ struct FullAveragePoolingBalancedDrop: public computationalNode{
     bool UsesBalancedDrop();
     void UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_);
     void UpdateArchitecture(architecture * arch);
-    static FullAveragePoolingBalancedDrop* Start(int kernelRSize_ = 2, int kernelCsize_ = 2,
+    static FullAveragePoolingBalancedDrop* Start(int kernelRSize_ = 2, int kernelCsize_ = 2, int lastLayers = -1,
                                     float alpha_ = DEFAULT_ALPHA_DROP, float pDrop_ = DEFAULT_P_DROP, float pNotDrop_ = DEFAULT_P_NOT_DROP);
     computationalNode * New();
     void Print();
@@ -576,6 +593,10 @@ struct InputBalancedDrop: public computationalNode{
     bool HasWeightsDependency();
     bool UsesBalancedDrop();
     void UpdateBalancedDropParameters(float alpha_, float pDrop_, float pNotDrop_);
+    void UpdateArchitecture(architecture * arch);
+    static InputBalancedDrop * Start(float alpha_, float pDrop_, float pNotDrop_);
+    computationalNode * New();
+    void Print();
     ~InputBalancedDrop();
 };
 
@@ -1309,6 +1330,8 @@ struct StairsFullBottleneck: public computationalNode{
     int weightsNum_vertical;
     int weightsNum_horizontal;
 
+    int input_rows, input_cols;
+
     int startDepth;
     int numStairs;
     int numStairConvolutions;
@@ -1339,6 +1362,9 @@ struct StairsFullBottleneck: public computationalNode{
     ~StairsFullBottleneck();
 };
 
+
+
+
 struct StairsFullBottleneckBalancedDrop: public computationalNode{
     int weightsNum_vertical;
     int weightsNum_horizontal;
@@ -1347,6 +1373,8 @@ struct StairsFullBottleneckBalancedDrop: public computationalNode{
     int numStairs;
     int numStairConvolutions;
     int bottleneckDepth;
+
+    int input_rows, input_cols;
 
     float alpha;
     float pDrop;

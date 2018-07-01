@@ -249,6 +249,15 @@ void activityData::PrintActivities(){
     cout<<endl;
 }
 
+void activityData::PrintActivitiesAsMatrix(){
+    int n = sqrt(len);
+    for(int i=0; i<n; ++i){
+        for(int j=0; j<n; ++j)
+            cout<<activeUnits[i * n + j];
+        cout<<endl;
+    }
+}
+
 void activityData::FlipActivities(){
     for(int j=0; j<len; ++j)
         activeUnits[j] = !activeUnits[j];
@@ -275,20 +284,27 @@ void activityData::SubActivityData(activityData* act, int startIndex_, int len_)
     activeUnits = act->activeUnits + startIndex_;
 }
 
-void activityData::Drop_2_2(){
+void activityData::Drop_2_2(int remainNum){
     int n = sqrt(len);
+    activityData * tempActivity = new activityData(4, 1.0);
 
     this->SetAllNonActive();
     uint32_t gen;
     int r1, c1;
     for (int row = 0; row < n/2; ++row)
         for(int col = 0; col < n/2; ++col){
-            gen = randomGenerator::rand();
-            r1 = (gen & 1);
-            gen >>= 1;
-            c1 = (gen & 1);
-            activeUnits[n * (2 * row + r1) + 2 * col + c1] = 1;
+            tempActivity->DropAllExcept(remainNum);
+            activeUnits[n * (2 * row + 0) + 2 * col + 0] = tempActivity->activeUnits[0];
+            activeUnits[n * (2 * row + 0) + 2 * col + 1] = tempActivity->activeUnits[1];
+            activeUnits[n * (2 * row + 1) + 2 * col + 0] = tempActivity->activeUnits[2];
+            activeUnits[n * (2 * row + 1) + 2 * col + 1] = tempActivity->activeUnits[3];
+//            gen = randomGenerator::rand();
+//            r1 = (gen & 1);
+//            gen >>= 1;
+//            c1 = (gen & 1);
+//            activeUnits[n * (2 * row + r1) + 2 * col + c1] = 1;
         }
+    delete tempActivity;
 }
 
 

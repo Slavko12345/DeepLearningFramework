@@ -19,12 +19,13 @@ struct activityData{
     void DropUnitsStandard_0_25();
     void DropUnitsStandard_0_5();
     void DropAllExcept(int num);
-    void Drop_2_2();
+    void Drop_2_2(int remainNum = 1);
 
 
     void SetAllActive();
     void SetAllNonActive();
     void PrintActivities();
+    void PrintActivitiesAsMatrix();
     void FlipActivities();
     float ActiveProportion();
     int ActiveLen();

@@ -410,11 +410,11 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
 
     NeuralNet **NNList = new NeuralNet* [numThreads];
     NNList[0] = NN;
-    NNList[0]->SwitchToTrainingMode();
+    //NNList[0]->SwitchToTrainingMode();
     for(int j=1; j<numThreads; ++j){
         NNList[j] = new NeuralNet();
         NNList[j]->Initiate(NN);
-        NNList[j]->SwitchToTrainingMode();
+        //NNList[j]->SwitchToTrainingMode();
     }
 
     if (UNIFORM_DROP_INCREASE){
@@ -494,7 +494,7 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
     }
 
     for(int j=1; j<numThreads; ++j)
-        NN->gradient->Add(NNList[j]->gradient);
+        NN->gradient->AddDistinct(NNList[j]->gradient);
     NN->weightsData->AdamUpdate(NN->gradient, Moment, MS, 0.0f, 1.0f, learningRate);
     float oldTime=omp_get_wtime(), newTime;
 
@@ -512,7 +512,7 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
 
         for(int epoch=0; epoch<maxEpochs; ++epoch){
             for(int iter=0; iter<itersPerEpoch; ++iter){
-                #pragma omp barrier
+                //#pragma omp barrier
                 #pragma omp single
                 {
                     if (!ADAPT_PROCESSORS_LOAD){
@@ -525,8 +525,11 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
                     }
                 }
 
-                gradTimeStart = omp_get_wtime();
+                if (ADAPT_PROCESSORS_LOAD)
+                    gradTimeStart = omp_get_wtime();
+
                 NNList[ID]->CalculateGradient(mbDataList[ID]);
+
                 if (ADAPT_PROCESSORS_LOAD){
                     time_Grad[ID] = omp_get_wtime() - gradTimeStart;
                     velocity[ID] = 0.8f * velocity[ID] + 0.2f * (float) mbDataList[ID]->totalSize() / time_Grad[ID];
@@ -558,13 +561,8 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
             }
             if ((epoch + 1) % 5 == 0){
 //                #pragma omp barrier
-//                #pragma omp single
-//                {
-//                    NN->SwitchToTestMode();
-//                }
-                #pragma omp barrier
-                NNList[ID]->SwitchToTestMode();
-                #pragma omp barrier
+//                NNList[ID]->SwitchToTestMode();
+//                #pragma omp barrier
 
                 NNList[ID]->CalculateSubErrorAndAccuracy(trainingSubList[ID], trainError_ID, correct_ID);
                 correct[ID] = correct_ID;
@@ -601,13 +599,12 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
                         cout<<"epoch: "<<epoch + 1<<" Tr. Err: "<<totalTrainError<<" Test E: "<<totalTestError<<
                         " l.rate: "<<learningRate<<" Tr. acc: "<<accuracy<<" Test acc: "<< testAccuracy <<" maxAbs: "<<maxAbsWeight<<endl;
 
-                    f<<"epoch: "<<epoch<<"Train Error: "<<totalTrainError<<" Test E: "<<totalTestError<<
-                    " l.rate: "<<learningRate<<" Train acc: "<<accuracy<<" Test acc: "<< testAccuracy <<" maxAbs: "<<maxAbsWeight<<endl;
-                    //for(int t=0; t<numThreads; ++t)
-                    //    f<<velocity[t]<<" ";
-                    //f<<endl;
-                    //NN->weightsData->WriteToFile((char*)NET_WEIGHTS_FILE);
+                    if (WRITE_LOG_FILE)
+                        f<<"epoch: "<<epoch<<"Train Error: "<<totalTrainError<<" Test E: "<<totalTestError<<
+                        " l.rate: "<<learningRate<<" Train acc: "<<accuracy<<" Test acc: "<< testAccuracy <<" maxAbs: "<<maxAbsWeight<<endl;
+
                     learningRate *= RATE_DECAY;
+
                     //NN->SwitchToTrainingMode();
                     newTime = omp_get_wtime();
                     cout<<"Last 5 epochs time: "<<newTime - oldTime<<" finish in: "<<(maxEpochs - epoch) / 5 * (newTime - oldTime)<<" s"<<endl<<endl;
@@ -621,11 +618,12 @@ void ADAM::OptimizeInParallel(NeuralNet *NN, Data* trainingData, Data* testData)
                         cout<<"alpha: "<<alpha<<" pDrop: "<<activityData::dropRateInFact(pDrop)<<" pNotDrop: "<<pNotDrop<<endl;
                     }
                 }
-                #pragma omp barrier
-                NNList[ID]->SwitchToTrainingMode();
-                if (UNIFORM_DROP_INCREASE)
+                //#pragma omp barrier
+                //NNList[ID]->SwitchToTrainingMode();
+                if (UNIFORM_DROP_INCREASE){
                     NNList[ID]->UpdateBalancedDropParameters(alpha, pDrop, pNotDrop);
-                #pragma omp barrier
+                    #pragma omp barrier
+                }
             }
         }
     }

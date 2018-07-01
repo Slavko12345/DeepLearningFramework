@@ -206,6 +206,33 @@ void ConvoluteStandard(float * __restrict__ input, float * __restrict__ output, 
 }
 
 
+void ConvoluteStandard_32(float * __restrict__ input, float * __restrict__ output, float * __restrict__ kernel){
+    output[0] += input[0] * kernel[1] + input[1] * kernel[2];
+    for(int oC = 1; oC < 31; ++oC)
+        output[oC] += input[oC-1] * kernel[0] + input[oC] * kernel[1] + input[oC+1] * kernel[2];
+    output[31] += input[30] * kernel[0] + input[31] * kernel[1];
+    return;
+}
+
+
+void ConvoluteStandard_16(float * __restrict__ input, float * __restrict__ output, float * __restrict__ kernel){
+    output[0] += input[0] * kernel[1] + input[1] * kernel[2];
+    for(int oC = 1; oC < 15; ++oC)
+        output[oC] += input[oC-1] * kernel[0] + input[oC] * kernel[1] + input[oC+1] * kernel[2];
+    output[15] += input[14] * kernel[0] + input[15] * kernel[1];
+    return;
+}
+
+
+void ConvoluteStandard_8(float * __restrict__ input, float * __restrict__ output, float * __restrict__ kernel){
+    output[0] += input[0] * kernel[1] + input[1] * kernel[2];
+    for(int oC = 1; oC < 7; ++oC)
+        output[oC] += input[oC-1] * kernel[0] + input[oC] * kernel[1] + input[oC+1] * kernel[2];
+    output[7] += input[6] * kernel[0] + input[7] * kernel[1];
+    return;
+}
+
+
 void ConvoluteStandardSymmetric(float* input, float* output, const int siz, float* kernel){
     output[0]+=input[0] * kernel[1] + input[1] * kernel[0];
     for(int oC=1; oC<siz-1; ++oC)
@@ -255,7 +282,6 @@ void ConvoluteStandardFullySymmetric0(float* input, float* output, const int siz
 void ConvoluteStandard2D2D(matrix* input, matrix* output, matrix* kernel){
 //    if (bias)
 //        output->Add(bias->elem[0]);
-
     int input_rows = input->rows, input_cols = input->cols;
 
     float* output_oR = output->Row(0);
@@ -272,6 +298,65 @@ void ConvoluteStandard2D2D(matrix* input, matrix* output, matrix* kernel){
     output_oR = output->Row(input_rows-1);
     ConvoluteStandard(input->Row(input_rows-2), output_oR, input_cols, kernel->Row(0));
     ConvoluteStandard(input->Row(input_rows-1), output_oR, input_cols, kernel->Row(1));
+
+}
+
+
+void ConvoluteStandard2D2D_32(matrix* input, matrix* output, matrix* kernel){
+    float* output_oR = output->Row(0);
+    ConvoluteStandard_32(input->Row(0), output_oR, kernel->Row(1));
+    ConvoluteStandard_32(input->Row(1), output_oR, kernel->Row(2));
+
+    for(int oR=1; oR<31; ++oR){
+        output_oR = output->Row(oR);
+        ConvoluteStandard_32(input->Row(oR-1), output_oR, kernel->Row(0));
+        ConvoluteStandard_32(input->Row(oR),   output_oR, kernel->Row(1));
+        ConvoluteStandard_32(input->Row(oR+1), output_oR, kernel->Row(2));
+    }
+
+    output_oR = output->Row(31);
+    ConvoluteStandard_32(input->Row(30), output_oR, kernel->Row(0));
+    ConvoluteStandard_32(input->Row(31), output_oR, kernel->Row(1));
+
+    return;
+}
+
+void ConvoluteStandard2D2D_16(matrix* input, matrix* output, matrix* kernel){
+    float* output_oR = output->Row(0);
+    ConvoluteStandard_16(input->Row(0), output_oR, kernel->Row(1));
+    ConvoluteStandard_16(input->Row(1), output_oR, kernel->Row(2));
+
+    for(int oR=1; oR<15; ++oR){
+        output_oR = output->Row(oR);
+        ConvoluteStandard_16(input->Row(oR-1), output_oR, kernel->Row(0));
+        ConvoluteStandard_16(input->Row(oR),   output_oR, kernel->Row(1));
+        ConvoluteStandard_16(input->Row(oR+1), output_oR, kernel->Row(2));
+    }
+
+    output_oR = output->Row(15);
+    ConvoluteStandard_16(input->Row(14), output_oR, kernel->Row(0));
+    ConvoluteStandard_16(input->Row(15), output_oR, kernel->Row(1));
+
+    return;
+}
+
+void ConvoluteStandard2D2D_8(matrix* input, matrix* output, matrix* kernel){
+    float* output_oR = output->Row(0);
+    ConvoluteStandard_8(input->Row(0), output_oR, kernel->Row(1));
+    ConvoluteStandard_8(input->Row(1), output_oR, kernel->Row(2));
+
+    for(int oR=1; oR<7; ++oR){
+        output_oR = output->Row(oR);
+        ConvoluteStandard_8(input->Row(oR-1), output_oR, kernel->Row(0));
+        ConvoluteStandard_8(input->Row(oR),   output_oR, kernel->Row(1));
+        ConvoluteStandard_8(input->Row(oR+1), output_oR, kernel->Row(2));
+    }
+
+    output_oR = output->Row(7);
+    ConvoluteStandard_8(input->Row(6), output_oR, kernel->Row(0));
+    ConvoluteStandard_8(input->Row(7), output_oR, kernel->Row(1));
+
+    return;
 }
 
 void ConvoluteStandard2D2DSymmetric(matrix* input, matrix* output, matrix* kernel){
@@ -405,6 +490,76 @@ void BackwardConvoluteStandard(float * __restrict__ input, float * __restrict__ 
 
 
 
+void BackwardConvoluteStandard_32(float * __restrict__ input, float * __restrict__ inputDelta, float * __restrict__ outputDelta,
+                               float * __restrict__ kernel, float * __restrict__ kernelGrad){
+
+    kernelGrad[0] += outputDelta[1] * input[0];
+    kernelGrad[1] += outputDelta[0] * input[0];
+    inputDelta[0] += outputDelta[0] * kernel[1] + outputDelta[1] * kernel[0];
+
+    for(int iR = 1; iR < 31; ++iR){
+        kernelGrad[0] += outputDelta[iR+1] * input[iR];
+        kernelGrad[1] += outputDelta[iR] * input[iR];
+        kernelGrad[2] += outputDelta[iR-1] * input[iR];
+        inputDelta[iR  ] += outputDelta[iR-1] * kernel[2] + outputDelta[iR  ] * kernel[1] + outputDelta[iR+1] * kernel[0];
+    }
+
+    kernelGrad[2] += outputDelta[30] * input[31];
+    kernelGrad[1] += outputDelta[31] * input[31];
+
+    inputDelta[31] += outputDelta[30] * kernel[2] + outputDelta[31] * kernel[1];
+
+    return;
+}
+
+
+void BackwardConvoluteStandard_16(float * __restrict__ input, float * __restrict__ inputDelta, float * __restrict__ outputDelta,
+                               float * __restrict__ kernel, float * __restrict__ kernelGrad){
+
+    kernelGrad[0] += outputDelta[1] * input[0];
+    kernelGrad[1] += outputDelta[0] * input[0];
+    inputDelta[0] += outputDelta[0] * kernel[1] + outputDelta[1] * kernel[0];
+
+    for(int iR = 1; iR < 15; ++iR){
+        kernelGrad[0] += outputDelta[iR+1] * input[iR];
+        kernelGrad[1] += outputDelta[iR] * input[iR];
+        kernelGrad[2] += outputDelta[iR-1] * input[iR];
+        inputDelta[iR  ] += outputDelta[iR-1] * kernel[2] + outputDelta[iR  ] * kernel[1] + outputDelta[iR+1] * kernel[0];
+    }
+
+    kernelGrad[2] += outputDelta[14] * input[15];
+    kernelGrad[1] += outputDelta[15] * input[15];
+
+    inputDelta[15] += outputDelta[14] * kernel[2] + outputDelta[15] * kernel[1];
+
+    return;
+}
+
+
+void BackwardConvoluteStandard_8(float * __restrict__ input, float * __restrict__ inputDelta, float * __restrict__ outputDelta,
+                               float * __restrict__ kernel, float * __restrict__ kernelGrad){
+
+    kernelGrad[0] += outputDelta[1] * input[0];
+    kernelGrad[1] += outputDelta[0] * input[0];
+    inputDelta[0] += outputDelta[0] * kernel[1] + outputDelta[1] * kernel[0];
+
+    for(int iR = 1; iR < 7; ++iR){
+        kernelGrad[0] += outputDelta[iR+1] * input[iR];
+        kernelGrad[1] += outputDelta[iR] * input[iR];
+        kernelGrad[2] += outputDelta[iR-1] * input[iR];
+        inputDelta[iR  ] += outputDelta[iR-1] * kernel[2] + outputDelta[iR  ] * kernel[1] + outputDelta[iR+1] * kernel[0];
+    }
+
+    kernelGrad[2] += outputDelta[6] * input[7];
+    kernelGrad[1] += outputDelta[7] * input[7];
+
+    inputDelta[7] += outputDelta[6] * kernel[2] + outputDelta[7] * kernel[1];
+
+    return;
+}
+
+
+
 void BackwardConvoluteStandardSymmetric(float* input, float* inputDelta, float* outputDelta, float* kernel, float* kernelGrad, const int siz){
     float input_iR_0 = input[0], input_iR_1 = input[1], input_iR_2 = input[2], input_iR_3 = input[3];
 
@@ -513,6 +668,7 @@ void BackwardConvoluteStandard2D2D(matrix* input, matrix* inputDelta, matrix* ou
     float* inputDelta_iR = inputDelta->Row(0);
     float* input_iR = input->Row(0);
     int input_rows = input->rows, input_cols = input->cols;
+
     BackwardConvoluteStandard(input_iR, inputDelta_iR, outputDelta->Row(0), kernel->Row(1), kernelGrad->Row(1), input_cols);
     BackwardConvoluteStandard(input_iR, inputDelta_iR, outputDelta->Row(1), kernel->Row(0), kernelGrad->Row(0), input_cols);
     for(int iR=1; iR<input_rows-1; ++iR){
@@ -527,6 +683,82 @@ void BackwardConvoluteStandard2D2D(matrix* input, matrix* inputDelta, matrix* ou
     BackwardConvoluteStandard(input_iR, inputDelta_iR, outputDelta->Row(input_rows-2), kernel->Row(2), kernelGrad->Row(2), input_cols);
     BackwardConvoluteStandard(input_iR, inputDelta_iR, outputDelta->Row(input_rows-1), kernel->Row(1), kernelGrad->Row(1), input_cols);
 }
+
+
+
+
+void BackwardConvoluteStandard2D2D_32(matrix* input, matrix* inputDelta, matrix* outputDelta, matrix* kernel, matrix* kernelGrad,
+                           realNumber* biasGrad){
+
+    if (biasGrad)
+            biasGrad->elem[0]+=outputDelta->Sum();
+    float* inputDelta_iR = inputDelta->Row(0);
+    float* input_iR = input->Row(0);
+
+    BackwardConvoluteStandard_32(input_iR, inputDelta_iR, outputDelta->Row(0), kernel->Row(1), kernelGrad->Row(1));
+    BackwardConvoluteStandard_32(input_iR, inputDelta_iR, outputDelta->Row(1), kernel->Row(0), kernelGrad->Row(0));
+    for(int iR=1; iR<31; ++iR){
+        input_iR = input->Row(iR);
+        inputDelta_iR = inputDelta->Row(iR);
+        BackwardConvoluteStandard_32(input_iR, inputDelta_iR, outputDelta->Row(iR-1), kernel->Row(2), kernelGrad->Row(2));
+        BackwardConvoluteStandard_32(input_iR, inputDelta_iR, outputDelta->Row(iR),   kernel->Row(1), kernelGrad->Row(1));
+        BackwardConvoluteStandard_32(input_iR, inputDelta_iR, outputDelta->Row(iR+1), kernel->Row(0), kernelGrad->Row(0));
+    }
+    input_iR = input->Row(31);
+    inputDelta_iR = inputDelta->Row(31);
+    BackwardConvoluteStandard_32(input_iR, inputDelta_iR, outputDelta->Row(30), kernel->Row(2), kernelGrad->Row(2));
+    BackwardConvoluteStandard_32(input_iR, inputDelta_iR, outputDelta->Row(31), kernel->Row(1), kernelGrad->Row(1));
+    return;
+}
+
+void BackwardConvoluteStandard2D2D_16(matrix* input, matrix* inputDelta, matrix* outputDelta, matrix* kernel, matrix* kernelGrad,
+                           realNumber* biasGrad){
+
+    if (biasGrad)
+            biasGrad->elem[0]+=outputDelta->Sum();
+    float* inputDelta_iR = inputDelta->Row(0);
+    float* input_iR = input->Row(0);
+
+    BackwardConvoluteStandard_16(input_iR, inputDelta_iR, outputDelta->Row(0), kernel->Row(1), kernelGrad->Row(1));
+    BackwardConvoluteStandard_16(input_iR, inputDelta_iR, outputDelta->Row(1), kernel->Row(0), kernelGrad->Row(0));
+    for(int iR=1; iR<15; ++iR){
+        input_iR = input->Row(iR);
+        inputDelta_iR = inputDelta->Row(iR);
+        BackwardConvoluteStandard_16(input_iR, inputDelta_iR, outputDelta->Row(iR-1), kernel->Row(2), kernelGrad->Row(2));
+        BackwardConvoluteStandard_16(input_iR, inputDelta_iR, outputDelta->Row(iR),   kernel->Row(1), kernelGrad->Row(1));
+        BackwardConvoluteStandard_16(input_iR, inputDelta_iR, outputDelta->Row(iR+1), kernel->Row(0), kernelGrad->Row(0));
+    }
+    input_iR = input->Row(15);
+    inputDelta_iR = inputDelta->Row(15);
+    BackwardConvoluteStandard_16(input_iR, inputDelta_iR, outputDelta->Row(14), kernel->Row(2), kernelGrad->Row(2));
+    BackwardConvoluteStandard_16(input_iR, inputDelta_iR, outputDelta->Row(15), kernel->Row(1), kernelGrad->Row(1));
+    return;
+}
+
+void BackwardConvoluteStandard2D2D_8(matrix* input, matrix* inputDelta, matrix* outputDelta, matrix* kernel, matrix* kernelGrad,
+                           realNumber* biasGrad){
+
+    if (biasGrad)
+            biasGrad->elem[0]+=outputDelta->Sum();
+    float* inputDelta_iR = inputDelta->Row(0);
+    float* input_iR = input->Row(0);
+
+    BackwardConvoluteStandard_8(input_iR, inputDelta_iR, outputDelta->Row(0), kernel->Row(1), kernelGrad->Row(1));
+    BackwardConvoluteStandard_8(input_iR, inputDelta_iR, outputDelta->Row(1), kernel->Row(0), kernelGrad->Row(0));
+    for(int iR=1; iR<7; ++iR){
+        input_iR = input->Row(iR);
+        inputDelta_iR = inputDelta->Row(iR);
+        BackwardConvoluteStandard_8(input_iR, inputDelta_iR, outputDelta->Row(iR-1), kernel->Row(2), kernelGrad->Row(2));
+        BackwardConvoluteStandard_8(input_iR, inputDelta_iR, outputDelta->Row(iR),   kernel->Row(1), kernelGrad->Row(1));
+        BackwardConvoluteStandard_8(input_iR, inputDelta_iR, outputDelta->Row(iR+1), kernel->Row(0), kernelGrad->Row(0));
+    }
+    input_iR = input->Row(7);
+    inputDelta_iR = inputDelta->Row(7);
+    BackwardConvoluteStandard_8(input_iR, inputDelta_iR, outputDelta->Row(6), kernel->Row(2), kernelGrad->Row(2));
+    BackwardConvoluteStandard_8(input_iR, inputDelta_iR, outputDelta->Row(7), kernel->Row(1), kernelGrad->Row(1));
+    return;
+}
+
 
 
 
@@ -1351,6 +1583,189 @@ void BackwardSymmetricConvolution3D(tensor* input, tensor* inputDelta, tensor* o
     DeleteOnlyShell(kernel_out_inp);
     DeleteOnlyShell(kernelGrad_out_inp);
 }
+
+
+
+
+
+void Convolution3D_32(tensor* input, tensor* output, tensor* kernel, vect* bias){
+    matrix * input_inp = new matrix();
+    matrix * output_out = new matrix();
+    matrix * kernel_out_inp = new matrix();
+    int kernel_ind = 0;
+
+    for(int out=0; out<output->depth; ++out){
+        output_out->SetToTensorLayer(output, out);
+        if (bias->len>0)
+            output_out->Add(bias->elem[out]);
+
+        for(int inp = 0; inp<input->depth; ++inp){
+            input_inp->SetToTensorLayer(input, inp);
+            kernel_out_inp->SetToTensorLayer(kernel, kernel_ind);
+            ++kernel_ind;
+
+            ConvoluteStandard2D2D_32(input_inp, output_out, kernel_out_inp);
+        }
+    }
+
+    DeleteOnlyShell(input_inp);
+    DeleteOnlyShell(output_out);
+    DeleteOnlyShell(kernel_out_inp);
+}
+
+
+
+void BackwardConvolution3D_32(tensor* input, tensor* inputDelta, tensor* outputDelta, tensor* kernel, tensor* kernelGrad, vect* biasGrad){
+    matrix * input_inp = new matrix();
+    matrix * inputDelta_inp = new matrix();
+    matrix * outputDelta_out = new matrix();
+    matrix * kernel_out_inp = new matrix();
+    matrix * kernelGrad_out_inp = new matrix();
+    int kernel_ind = 0;
+
+    for(int out=0; out<outputDelta->depth; ++out){
+        outputDelta_out->SetToTensorLayer(outputDelta, out);
+        if (biasGrad->len > 0)
+            biasGrad->elem[out] += outputDelta_out->Sum();
+        for(int inp = 0; inp<input->depth; ++inp){
+            input_inp->SetToTensorLayer(input, inp);
+            inputDelta_inp->SetToTensorLayer(inputDelta, inp);
+            kernel_out_inp->SetToTensorLayer(kernel, kernel_ind);
+            kernelGrad_out_inp->SetToTensorLayer(kernelGrad, kernel_ind);
+            ++kernel_ind;
+
+            BackwardConvoluteStandard2D2D_32(input_inp, inputDelta_inp, outputDelta_out, kernel_out_inp, kernelGrad_out_inp, NULL);
+        }
+    }
+
+    DeleteOnlyShell(input_inp);
+    DeleteOnlyShell(inputDelta_inp);
+    DeleteOnlyShell(outputDelta_out);
+    DeleteOnlyShell(kernel_out_inp);
+    DeleteOnlyShell(kernelGrad_out_inp);
+}
+
+
+
+
+void Convolution3D_16(tensor* input, tensor* output, tensor* kernel, vect* bias){
+    matrix * input_inp = new matrix();
+    matrix * output_out = new matrix();
+    matrix * kernel_out_inp = new matrix();
+    int kernel_ind = 0;
+
+    for(int out=0; out<output->depth; ++out){
+        output_out->SetToTensorLayer(output, out);
+        if (bias->len>0)
+            output_out->Add(bias->elem[out]);
+
+        for(int inp = 0; inp<input->depth; ++inp){
+            input_inp->SetToTensorLayer(input, inp);
+            kernel_out_inp->SetToTensorLayer(kernel, kernel_ind);
+            ++kernel_ind;
+
+            ConvoluteStandard2D2D_16(input_inp, output_out, kernel_out_inp);
+        }
+    }
+
+    DeleteOnlyShell(input_inp);
+    DeleteOnlyShell(output_out);
+    DeleteOnlyShell(kernel_out_inp);
+}
+
+
+
+void BackwardConvolution3D_16(tensor* input, tensor* inputDelta, tensor* outputDelta, tensor* kernel, tensor* kernelGrad, vect* biasGrad){
+    matrix * input_inp = new matrix();
+    matrix * inputDelta_inp = new matrix();
+    matrix * outputDelta_out = new matrix();
+    matrix * kernel_out_inp = new matrix();
+    matrix * kernelGrad_out_inp = new matrix();
+    int kernel_ind = 0;
+
+    for(int out=0; out<outputDelta->depth; ++out){
+        outputDelta_out->SetToTensorLayer(outputDelta, out);
+        if (biasGrad->len > 0)
+            biasGrad->elem[out] += outputDelta_out->Sum();
+        for(int inp = 0; inp<input->depth; ++inp){
+            input_inp->SetToTensorLayer(input, inp);
+            inputDelta_inp->SetToTensorLayer(inputDelta, inp);
+            kernel_out_inp->SetToTensorLayer(kernel, kernel_ind);
+            kernelGrad_out_inp->SetToTensorLayer(kernelGrad, kernel_ind);
+            ++kernel_ind;
+
+            BackwardConvoluteStandard2D2D_16(input_inp, inputDelta_inp, outputDelta_out, kernel_out_inp, kernelGrad_out_inp, NULL);
+        }
+    }
+
+    DeleteOnlyShell(input_inp);
+    DeleteOnlyShell(inputDelta_inp);
+    DeleteOnlyShell(outputDelta_out);
+    DeleteOnlyShell(kernel_out_inp);
+    DeleteOnlyShell(kernelGrad_out_inp);
+}
+
+
+
+
+void Convolution3D_8(tensor* input, tensor* output, tensor* kernel, vect* bias){
+    matrix * input_inp = new matrix();
+    matrix * output_out = new matrix();
+    matrix * kernel_out_inp = new matrix();
+    int kernel_ind = 0;
+
+    for(int out=0; out<output->depth; ++out){
+        output_out->SetToTensorLayer(output, out);
+        if (bias->len>0)
+            output_out->Add(bias->elem[out]);
+
+        for(int inp = 0; inp<input->depth; ++inp){
+            input_inp->SetToTensorLayer(input, inp);
+            kernel_out_inp->SetToTensorLayer(kernel, kernel_ind);
+            ++kernel_ind;
+
+            ConvoluteStandard2D2D_8(input_inp, output_out, kernel_out_inp);
+        }
+    }
+
+    DeleteOnlyShell(input_inp);
+    DeleteOnlyShell(output_out);
+    DeleteOnlyShell(kernel_out_inp);
+}
+
+
+
+void BackwardConvolution3D_8(tensor* input, tensor* inputDelta, tensor* outputDelta, tensor* kernel, tensor* kernelGrad, vect* biasGrad){
+    matrix * input_inp = new matrix();
+    matrix * inputDelta_inp = new matrix();
+    matrix * outputDelta_out = new matrix();
+    matrix * kernel_out_inp = new matrix();
+    matrix * kernelGrad_out_inp = new matrix();
+    int kernel_ind = 0;
+
+    for(int out=0; out<outputDelta->depth; ++out){
+        outputDelta_out->SetToTensorLayer(outputDelta, out);
+        if (biasGrad->len > 0)
+            biasGrad->elem[out] += outputDelta_out->Sum();
+        for(int inp = 0; inp<input->depth; ++inp){
+            input_inp->SetToTensorLayer(input, inp);
+            inputDelta_inp->SetToTensorLayer(inputDelta, inp);
+            kernel_out_inp->SetToTensorLayer(kernel, kernel_ind);
+            kernelGrad_out_inp->SetToTensorLayer(kernelGrad, kernel_ind);
+            ++kernel_ind;
+
+            BackwardConvoluteStandard2D2D_8(input_inp, inputDelta_inp, outputDelta_out, kernel_out_inp, kernelGrad_out_inp, NULL);
+        }
+    }
+
+    DeleteOnlyShell(input_inp);
+    DeleteOnlyShell(inputDelta_inp);
+    DeleteOnlyShell(outputDelta_out);
+    DeleteOnlyShell(kernel_out_inp);
+    DeleteOnlyShell(kernelGrad_out_inp);
+}
+
+
 
 
 
@@ -2588,6 +3003,405 @@ void BackwardStairsFullBottleneck(tensor* input, tensor* inputDelta, tensor* ker
 
 
 
+void ForwardStairsFullBottleneck32(tensor* input, tensor* kernel_vert, tensor* kernel_hor, vect* bias, tensor* verticalConv,
+                                int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth,
+                                activityData* inputActivity, bool testMode){
+    tensor* input_stair = new tensor();
+    tensor* vertOutput_stair = new tensor();
+    tensor* output_stair = new tensor();
+    tensor* min_output_stair = new tensor();
+
+    tensor* kernelVert_stair = new tensor();
+    tensor* kernelHor_stair = new tensor();
+
+    vect* bias_stair = new vect();
+
+    int vertKernelStartIndex = 0;
+    int horKernelStartIndex = 0;
+
+    verticalConv->SetToZero();
+
+    for(int stair=0; stair<numStairs; ++stair){
+        input_stair->SubTensor(input,       startDepth + 2 * stair * numStairConvolutions);
+        vertOutput_stair->SubTensor(verticalConv, stair * bottleneckDepth, bottleneckDepth);
+        output_stair->SubTensor(input,      startDepth + 2 * stair * numStairConvolutions,  numStairConvolutions);
+        min_output_stair->SubTensor(input,  startDepth + 2 * stair * numStairConvolutions + numStairConvolutions, numStairConvolutions);
+
+        kernelVert_stair->SubTensor(kernel_vert, vertKernelStartIndex, (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth);
+        vertKernelStartIndex += (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth;
+
+        kernelHor_stair->SubTensor(kernel_hor, horKernelStartIndex, bottleneckDepth * numStairConvolutions);
+        horKernelStartIndex += bottleneckDepth * numStairConvolutions;
+
+        bias_stair->SubVect(bias, stair * numStairConvolutions, numStairConvolutions);
+
+        VerticalConvolution3D_32(input_stair, vertOutput_stair, kernelVert_stair);
+
+        Convolution3D_32(vertOutput_stair, output_stair, kernelHor_stair, bias_stair);
+
+        min_output_stair->BranchMaxMin(output_stair);
+        if (!testMode)
+                input->SetDroppedElementsToZero(inputActivity, input->Ind(startDepth + 2 * stair * numStairConvolutions), 2 * output_stair->len);
+    }
+
+    DeleteOnlyShell(input_stair);
+    DeleteOnlyShell(vertOutput_stair);
+    DeleteOnlyShell(output_stair);
+    DeleteOnlyShell(min_output_stair);
+    DeleteOnlyShell(kernelVert_stair);
+    DeleteOnlyShell(kernelHor_stair);
+    DeleteOnlyShell(bias_stair);
+}
+
+
+
+void BackwardStairsFullBottleneck32(tensor* input, tensor* inputDelta, tensor* kernel_vert, tensor* kernelGrad_vert,
+                                  tensor* kernel_hor, tensor* kernelGrad_hor, vect* biasGrad,
+                                tensor* verticalConv, tensor* verticalConvDelta, int startDepth, int numStairs,
+                                int numStairConvolutions, int bottleneckDepth, activityData* inputActivity){
+    tensor* input_stair = new tensor();
+    tensor* inputDelta_stair = new tensor();
+
+    tensor* full_output_stair = new tensor();
+    tensor* outputDelta_stair = new tensor();
+    tensor* min_outputDelta_stair = new tensor();
+
+    tensor* vertOutput_stair = new tensor();
+    tensor* vertOutputDelta_stair = new tensor();
+
+    tensor* kernelVert_stair = new tensor();
+    tensor* kernelHor_stair = new tensor();
+
+    tensor* kernelVertGrad_stair = new tensor();
+    tensor* kernelHorGrad_stair = new tensor();
+
+    vect* biasGrad_stair = new vect(0);
+
+    int vertKernelStartIndex = kernel_vert->depth;
+    int horKernelStartIndex = kernel_hor->depth;
+
+    verticalConvDelta->SetToZero();
+
+    for(int stair=numStairs - 1; stair>=0; --stair){
+        input_stair     ->SubTensor(input,      startDepth + 2 * stair * numStairConvolutions);
+        inputDelta_stair->SubTensor(inputDelta, startDepth + 2 * stair * numStairConvolutions);
+
+        vertOutput_stair     ->SubTensor(verticalConv,      stair * bottleneckDepth, bottleneckDepth);
+        vertOutputDelta_stair->SubTensor(verticalConvDelta, stair * bottleneckDepth, bottleneckDepth);
+
+        full_output_stair    ->SubTensor(input,       startDepth + 2 * stair * numStairConvolutions, 2 * numStairConvolutions);
+        outputDelta_stair    ->SubTensor(inputDelta,  startDepth + 2 * stair * numStairConvolutions,  numStairConvolutions);
+        min_outputDelta_stair->SubTensor(inputDelta,  startDepth + 2 * stair * numStairConvolutions + numStairConvolutions, numStairConvolutions);
+
+        vertKernelStartIndex -= (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth;
+        kernelVert_stair    ->SubTensor(kernel_vert,     vertKernelStartIndex, (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth);
+        kernelVertGrad_stair->SubTensor(kernelGrad_vert, vertKernelStartIndex, (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth);
+
+        horKernelStartIndex -= bottleneckDepth * numStairConvolutions;
+        kernelHor_stair     ->SubTensor(kernel_hor,     horKernelStartIndex, bottleneckDepth * numStairConvolutions);
+        kernelHorGrad_stair ->SubTensor(kernelGrad_hor, horKernelStartIndex, bottleneckDepth * numStairConvolutions);
+
+        biasGrad_stair->SubVect(biasGrad, stair * numStairConvolutions, numStairConvolutions);
+
+        outputDelta_stair->MaxMinBackward(min_outputDelta_stair, full_output_stair);
+        BackwardConvolution3D_32(vertOutput_stair, vertOutputDelta_stair, outputDelta_stair, kernelHor_stair, kernelHorGrad_stair, biasGrad_stair);
+        BackwardVerticalConvolution3D_32(input_stair, inputDelta_stair, vertOutputDelta_stair, kernelVert_stair, kernelVertGrad_stair);
+
+        inputDelta->SetDroppedElementsToZero(inputActivity, input->Ind(startDepth + 2 * stair * numStairConvolutions));
+    }
+
+    DeleteOnlyShell(input_stair);
+    DeleteOnlyShell(inputDelta_stair);
+
+    DeleteOnlyShell(full_output_stair);
+    DeleteOnlyShell(outputDelta_stair);
+    DeleteOnlyShell(min_outputDelta_stair);
+
+    DeleteOnlyShell(vertOutput_stair);
+    DeleteOnlyShell(vertOutputDelta_stair);
+
+    DeleteOnlyShell(kernelVert_stair);
+    DeleteOnlyShell(kernelHor_stair);
+
+    DeleteOnlyShell(kernelVertGrad_stair);
+    DeleteOnlyShell(kernelHorGrad_stair);
+
+    DeleteOnlyShell(biasGrad_stair);
+}
+
+
+
+
+
+
+
+void ForwardStairsFullBottleneck16(tensor* input, tensor* kernel_vert, tensor* kernel_hor, vect* bias, tensor* verticalConv,
+                                int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth,
+                                activityData* inputActivity, bool testMode){
+    tensor* input_stair = new tensor();
+    tensor* vertOutput_stair = new tensor();
+    tensor* output_stair = new tensor();
+    tensor* min_output_stair = new tensor();
+
+    tensor* kernelVert_stair = new tensor();
+    tensor* kernelHor_stair = new tensor();
+
+    vect* bias_stair = new vect();
+
+    int vertKernelStartIndex = 0;
+    int horKernelStartIndex = 0;
+
+    verticalConv->SetToZero();
+
+    for(int stair=0; stair<numStairs; ++stair){
+        input_stair->SubTensor(input,       startDepth + 2 * stair * numStairConvolutions);
+        vertOutput_stair->SubTensor(verticalConv, stair * bottleneckDepth, bottleneckDepth);
+        output_stair->SubTensor(input,      startDepth + 2 * stair * numStairConvolutions,  numStairConvolutions);
+        min_output_stair->SubTensor(input,  startDepth + 2 * stair * numStairConvolutions + numStairConvolutions, numStairConvolutions);
+
+        kernelVert_stair->SubTensor(kernel_vert, vertKernelStartIndex, (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth);
+        vertKernelStartIndex += (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth;
+
+        kernelHor_stair->SubTensor(kernel_hor, horKernelStartIndex, bottleneckDepth * numStairConvolutions);
+        horKernelStartIndex += bottleneckDepth * numStairConvolutions;
+
+        bias_stair->SubVect(bias, stair * numStairConvolutions, numStairConvolutions);
+
+        VerticalConvolution3D_16(input_stair, vertOutput_stair, kernelVert_stair);
+
+        Convolution3D_16(vertOutput_stair, output_stair, kernelHor_stair, bias_stair);
+
+        min_output_stair->BranchMaxMin(output_stair);
+        if (!testMode)
+                input->SetDroppedElementsToZero(inputActivity, input->Ind(startDepth + 2 * stair * numStairConvolutions), 2 * output_stair->len);
+    }
+
+    DeleteOnlyShell(input_stair);
+    DeleteOnlyShell(vertOutput_stair);
+    DeleteOnlyShell(output_stair);
+    DeleteOnlyShell(min_output_stair);
+    DeleteOnlyShell(kernelVert_stair);
+    DeleteOnlyShell(kernelHor_stair);
+    DeleteOnlyShell(bias_stair);
+}
+
+
+
+void BackwardStairsFullBottleneck16(tensor* input, tensor* inputDelta, tensor* kernel_vert, tensor* kernelGrad_vert,
+                                  tensor* kernel_hor, tensor* kernelGrad_hor, vect* biasGrad,
+                                tensor* verticalConv, tensor* verticalConvDelta, int startDepth, int numStairs,
+                                int numStairConvolutions, int bottleneckDepth, activityData* inputActivity){
+    tensor* input_stair = new tensor();
+    tensor* inputDelta_stair = new tensor();
+
+    tensor* full_output_stair = new tensor();
+    tensor* outputDelta_stair = new tensor();
+    tensor* min_outputDelta_stair = new tensor();
+
+    tensor* vertOutput_stair = new tensor();
+    tensor* vertOutputDelta_stair = new tensor();
+
+    tensor* kernelVert_stair = new tensor();
+    tensor* kernelHor_stair = new tensor();
+
+    tensor* kernelVertGrad_stair = new tensor();
+    tensor* kernelHorGrad_stair = new tensor();
+
+    vect* biasGrad_stair = new vect(0);
+
+    int vertKernelStartIndex = kernel_vert->depth;
+    int horKernelStartIndex = kernel_hor->depth;
+
+    verticalConvDelta->SetToZero();
+
+    for(int stair=numStairs - 1; stair>=0; --stair){
+        input_stair     ->SubTensor(input,      startDepth + 2 * stair * numStairConvolutions);
+        inputDelta_stair->SubTensor(inputDelta, startDepth + 2 * stair * numStairConvolutions);
+
+        vertOutput_stair     ->SubTensor(verticalConv,      stair * bottleneckDepth, bottleneckDepth);
+        vertOutputDelta_stair->SubTensor(verticalConvDelta, stair * bottleneckDepth, bottleneckDepth);
+
+        full_output_stair    ->SubTensor(input,       startDepth + 2 * stair * numStairConvolutions, 2 * numStairConvolutions);
+        outputDelta_stair    ->SubTensor(inputDelta,  startDepth + 2 * stair * numStairConvolutions,  numStairConvolutions);
+        min_outputDelta_stair->SubTensor(inputDelta,  startDepth + 2 * stair * numStairConvolutions + numStairConvolutions, numStairConvolutions);
+
+        vertKernelStartIndex -= (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth;
+        kernelVert_stair    ->SubTensor(kernel_vert,     vertKernelStartIndex, (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth);
+        kernelVertGrad_stair->SubTensor(kernelGrad_vert, vertKernelStartIndex, (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth);
+
+        horKernelStartIndex -= bottleneckDepth * numStairConvolutions;
+        kernelHor_stair     ->SubTensor(kernel_hor,     horKernelStartIndex, bottleneckDepth * numStairConvolutions);
+        kernelHorGrad_stair ->SubTensor(kernelGrad_hor, horKernelStartIndex, bottleneckDepth * numStairConvolutions);
+
+        biasGrad_stair->SubVect(biasGrad, stair * numStairConvolutions, numStairConvolutions);
+
+        outputDelta_stair->MaxMinBackward(min_outputDelta_stair, full_output_stair);
+        BackwardConvolution3D_16(vertOutput_stair, vertOutputDelta_stair, outputDelta_stair, kernelHor_stair, kernelHorGrad_stair, biasGrad_stair);
+        BackwardVerticalConvolution3D_16(input_stair, inputDelta_stair, vertOutputDelta_stair, kernelVert_stair, kernelVertGrad_stair);
+
+        inputDelta->SetDroppedElementsToZero(inputActivity, input->Ind(startDepth + 2 * stair * numStairConvolutions));
+    }
+
+    DeleteOnlyShell(input_stair);
+    DeleteOnlyShell(inputDelta_stair);
+
+    DeleteOnlyShell(full_output_stair);
+    DeleteOnlyShell(outputDelta_stair);
+    DeleteOnlyShell(min_outputDelta_stair);
+
+    DeleteOnlyShell(vertOutput_stair);
+    DeleteOnlyShell(vertOutputDelta_stair);
+
+    DeleteOnlyShell(kernelVert_stair);
+    DeleteOnlyShell(kernelHor_stair);
+
+    DeleteOnlyShell(kernelVertGrad_stair);
+    DeleteOnlyShell(kernelHorGrad_stair);
+
+    DeleteOnlyShell(biasGrad_stair);
+}
+
+
+
+
+
+
+
+void ForwardStairsFullBottleneck8(tensor* input, tensor* kernel_vert, tensor* kernel_hor, vect* bias, tensor* verticalConv,
+                                int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth,
+                                activityData* inputActivity, bool testMode){
+    tensor* input_stair = new tensor();
+    tensor* vertOutput_stair = new tensor();
+    tensor* output_stair = new tensor();
+    tensor* min_output_stair = new tensor();
+
+    tensor* kernelVert_stair = new tensor();
+    tensor* kernelHor_stair = new tensor();
+
+    vect* bias_stair = new vect();
+
+    int vertKernelStartIndex = 0;
+    int horKernelStartIndex = 0;
+
+    verticalConv->SetToZero();
+
+    for(int stair=0; stair<numStairs; ++stair){
+        input_stair->SubTensor(input,       startDepth + 2 * stair * numStairConvolutions);
+        vertOutput_stair->SubTensor(verticalConv, stair * bottleneckDepth, bottleneckDepth);
+        output_stair->SubTensor(input,      startDepth + 2 * stair * numStairConvolutions,  numStairConvolutions);
+        min_output_stair->SubTensor(input,  startDepth + 2 * stair * numStairConvolutions + numStairConvolutions, numStairConvolutions);
+
+        kernelVert_stair->SubTensor(kernel_vert, vertKernelStartIndex, (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth);
+        vertKernelStartIndex += (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth;
+
+        kernelHor_stair->SubTensor(kernel_hor, horKernelStartIndex, bottleneckDepth * numStairConvolutions);
+        horKernelStartIndex += bottleneckDepth * numStairConvolutions;
+
+        bias_stair->SubVect(bias, stair * numStairConvolutions, numStairConvolutions);
+
+        VerticalConvolution3D_8(input_stair, vertOutput_stair, kernelVert_stair);
+
+        Convolution3D_8(vertOutput_stair, output_stair, kernelHor_stair, bias_stair);
+
+        min_output_stair->BranchMaxMin(output_stair);
+        if (!testMode)
+                input->SetDroppedElementsToZero(inputActivity, input->Ind(startDepth + 2 * stair * numStairConvolutions), 2 * output_stair->len);
+    }
+
+    DeleteOnlyShell(input_stair);
+    DeleteOnlyShell(vertOutput_stair);
+    DeleteOnlyShell(output_stair);
+    DeleteOnlyShell(min_output_stair);
+    DeleteOnlyShell(kernelVert_stair);
+    DeleteOnlyShell(kernelHor_stair);
+    DeleteOnlyShell(bias_stair);
+}
+
+
+
+void BackwardStairsFullBottleneck8(tensor* input, tensor* inputDelta, tensor* kernel_vert, tensor* kernelGrad_vert,
+                                  tensor* kernel_hor, tensor* kernelGrad_hor, vect* biasGrad,
+                                tensor* verticalConv, tensor* verticalConvDelta, int startDepth, int numStairs,
+                                int numStairConvolutions, int bottleneckDepth, activityData* inputActivity){
+    tensor* input_stair = new tensor();
+    tensor* inputDelta_stair = new tensor();
+
+    tensor* full_output_stair = new tensor();
+    tensor* outputDelta_stair = new tensor();
+    tensor* min_outputDelta_stair = new tensor();
+
+    tensor* vertOutput_stair = new tensor();
+    tensor* vertOutputDelta_stair = new tensor();
+
+    tensor* kernelVert_stair = new tensor();
+    tensor* kernelHor_stair = new tensor();
+
+    tensor* kernelVertGrad_stair = new tensor();
+    tensor* kernelHorGrad_stair = new tensor();
+
+    vect* biasGrad_stair = new vect(0);
+
+    int vertKernelStartIndex = kernel_vert->depth;
+    int horKernelStartIndex = kernel_hor->depth;
+
+    verticalConvDelta->SetToZero();
+
+    for(int stair=numStairs - 1; stair>=0; --stair){
+        input_stair     ->SubTensor(input,      startDepth + 2 * stair * numStairConvolutions);
+        inputDelta_stair->SubTensor(inputDelta, startDepth + 2 * stair * numStairConvolutions);
+
+        vertOutput_stair     ->SubTensor(verticalConv,      stair * bottleneckDepth, bottleneckDepth);
+        vertOutputDelta_stair->SubTensor(verticalConvDelta, stair * bottleneckDepth, bottleneckDepth);
+
+        full_output_stair    ->SubTensor(input,       startDepth + 2 * stair * numStairConvolutions, 2 * numStairConvolutions);
+        outputDelta_stair    ->SubTensor(inputDelta,  startDepth + 2 * stair * numStairConvolutions,  numStairConvolutions);
+        min_outputDelta_stair->SubTensor(inputDelta,  startDepth + 2 * stair * numStairConvolutions + numStairConvolutions, numStairConvolutions);
+
+        vertKernelStartIndex -= (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth;
+        kernelVert_stair    ->SubTensor(kernel_vert,     vertKernelStartIndex, (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth);
+        kernelVertGrad_stair->SubTensor(kernelGrad_vert, vertKernelStartIndex, (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth);
+
+        horKernelStartIndex -= bottleneckDepth * numStairConvolutions;
+        kernelHor_stair     ->SubTensor(kernel_hor,     horKernelStartIndex, bottleneckDepth * numStairConvolutions);
+        kernelHorGrad_stair ->SubTensor(kernelGrad_hor, horKernelStartIndex, bottleneckDepth * numStairConvolutions);
+
+        biasGrad_stair->SubVect(biasGrad, stair * numStairConvolutions, numStairConvolutions);
+
+        outputDelta_stair->MaxMinBackward(min_outputDelta_stair, full_output_stair);
+        BackwardConvolution3D_8(vertOutput_stair, vertOutputDelta_stair, outputDelta_stair, kernelHor_stair, kernelHorGrad_stair, biasGrad_stair);
+        BackwardVerticalConvolution3D_8(input_stair, inputDelta_stair, vertOutputDelta_stair, kernelVert_stair, kernelVertGrad_stair);
+
+        inputDelta->SetDroppedElementsToZero(inputActivity, input->Ind(startDepth + 2 * stair * numStairConvolutions));
+    }
+
+    DeleteOnlyShell(input_stair);
+    DeleteOnlyShell(inputDelta_stair);
+
+    DeleteOnlyShell(full_output_stair);
+    DeleteOnlyShell(outputDelta_stair);
+    DeleteOnlyShell(min_outputDelta_stair);
+
+    DeleteOnlyShell(vertOutput_stair);
+    DeleteOnlyShell(vertOutputDelta_stair);
+
+    DeleteOnlyShell(kernelVert_stair);
+    DeleteOnlyShell(kernelHor_stair);
+
+    DeleteOnlyShell(kernelVertGrad_stair);
+    DeleteOnlyShell(kernelHorGrad_stair);
+
+    DeleteOnlyShell(biasGrad_stair);
+}
+
+
+
+
+
+
+
+
+
+
 void ForwardStairsFullBottleneckBalancedDrop(tensor* input, tensor* kernel_vert, tensor* kernel_hor, vect* bias, tensor* verticalConv,
                                 int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth,
                                 activityData* inputActivity, tensor* multipliers, bool testMode){
@@ -2716,6 +3530,488 @@ void BackwardStairsFullBottleneckBalancedDrop(tensor* input, tensor* inputDelta,
         BackwardSymmetricConvolution3D(vertOutput_stair, vertOutputDelta_stair, outputDelta_stair, kernelHor_stair, kernelHorGrad_stair, biasGrad_stair, 0);
 
         BackwardVerticalConvolution3D(input_stair, inputDelta_stair, vertOutputDelta_stair, kernelVert_stair, kernelVertGrad_stair);
+
+        inputDelta->SetDroppedElementsToZero(inputActivity, input->Ind(startDepth + 2 * stair * numStairConvolutions));
+    }
+
+    DeleteOnlyShell(input_stair);
+    DeleteOnlyShell(inputDelta_stair);
+
+    DeleteOnlyShell(full_output_stair);
+    DeleteOnlyShell(outputDelta_stair);
+    DeleteOnlyShell(min_outputDelta_stair);
+    DeleteOnlyShell(full_outputDelta_stair);
+
+    DeleteOnlyShell(vertOutput_stair);
+    DeleteOnlyShell(vertOutputDelta_stair);
+
+    DeleteOnlyShell(kernelVert_stair);
+    DeleteOnlyShell(kernelHor_stair);
+
+    DeleteOnlyShell(kernelVertGrad_stair);
+    DeleteOnlyShell(kernelHorGrad_stair);
+
+    DeleteOnlyShell(biasGrad_stair);
+
+    DeleteOnlyShell(multiplier_stair);
+}
+
+
+
+
+
+
+
+
+void ForwardStairsFullBottleneckBalancedDrop_32(tensor* input, tensor* kernel_vert, tensor* kernel_hor, vect* bias, tensor* verticalConv,
+                                int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth,
+                                activityData* inputActivity, tensor* multipliers, bool testMode){
+    tensor* input_stair = new tensor();
+    tensor* vertOutput_stair = new tensor();
+    tensor* output_stair = new tensor();
+    tensor* min_output_stair = new tensor();
+    tensor* full_output_stair = new tensor();
+
+    tensor* kernelVert_stair = new tensor();
+    tensor* kernelHor_stair = new tensor();
+
+    vect* bias_stair = new vect();
+
+    tensor* multiplier_stair = new tensor();
+
+    int vertKernelStartIndex = 0;
+    int horKernelStartIndex = 0;
+
+    verticalConv->SetToZero();
+
+    for(int stair=0; stair<numStairs; ++stair){
+        input_stair->SubTensor(input,       startDepth + 2 * stair * numStairConvolutions);
+        vertOutput_stair->SubTensor(verticalConv, stair * bottleneckDepth, bottleneckDepth);
+        output_stair->SubTensor(input,      startDepth + 2 * stair * numStairConvolutions,  numStairConvolutions);
+        min_output_stair->SubTensor(input,  startDepth + 2 * stair * numStairConvolutions + numStairConvolutions, numStairConvolutions);
+        full_output_stair->SubTensor(input,      startDepth + 2 * stair * numStairConvolutions,  2 * numStairConvolutions);
+
+        kernelVert_stair->SubTensor(kernel_vert, vertKernelStartIndex, (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth);
+        vertKernelStartIndex += (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth;
+
+        kernelHor_stair->SubTensor(kernel_hor, horKernelStartIndex, bottleneckDepth * numStairConvolutions);
+        horKernelStartIndex += bottleneckDepth * numStairConvolutions;
+
+        bias_stair->SubVect(bias, stair * numStairConvolutions, numStairConvolutions);
+
+        multiplier_stair->SubTensor(multipliers, 2 * stair * numStairConvolutions, 2 * numStairConvolutions);
+
+        VerticalConvolution3D_32(input_stair, vertOutput_stair, kernelVert_stair);
+
+        Convolution3D_32(vertOutput_stair, output_stair, kernelHor_stair, bias_stair);
+
+        min_output_stair->BranchMaxMin(output_stair);
+
+        if (!testMode){
+            full_output_stair->PointwiseMultiply(multiplier_stair);
+        }
+
+        if (!testMode)
+                input->SetDroppedElementsToZero(inputActivity, input->Ind(startDepth + 2 * stair * numStairConvolutions), 2 * output_stair->len);
+    }
+
+    DeleteOnlyShell(input_stair);
+    DeleteOnlyShell(vertOutput_stair);
+    DeleteOnlyShell(output_stair);
+    DeleteOnlyShell(min_output_stair);
+    DeleteOnlyShell(full_output_stair);
+
+    DeleteOnlyShell(kernelVert_stair);
+    DeleteOnlyShell(kernelHor_stair);
+    DeleteOnlyShell(bias_stair);
+
+    DeleteOnlyShell(multiplier_stair);
+}
+
+
+
+void BackwardStairsFullBottleneckBalancedDrop_32(tensor* input, tensor* inputDelta, tensor* kernel_vert, tensor* kernelGrad_vert,
+                                  tensor* kernel_hor, tensor* kernelGrad_hor, vect* biasGrad,
+                                tensor* verticalConv, tensor* verticalConvDelta, int startDepth, int numStairs,
+                                int numStairConvolutions, int bottleneckDepth, activityData* inputActivity, tensor* multipliers){
+    tensor* input_stair = new tensor();
+    tensor* inputDelta_stair = new tensor();
+
+    tensor* full_output_stair = new tensor();
+    tensor* outputDelta_stair = new tensor();
+    tensor* min_outputDelta_stair = new tensor();
+    tensor* full_outputDelta_stair = new tensor();
+
+    tensor* vertOutput_stair = new tensor();
+    tensor* vertOutputDelta_stair = new tensor();
+
+    tensor* kernelVert_stair = new tensor();
+    tensor* kernelHor_stair = new tensor();
+
+    tensor* kernelVertGrad_stair = new tensor();
+    tensor* kernelHorGrad_stair = new tensor();
+
+    vect* biasGrad_stair = new vect(0);
+
+    tensor* multiplier_stair = new tensor();
+
+    int vertKernelStartIndex = kernel_vert->depth;
+    int horKernelStartIndex = kernel_hor->depth;
+
+    verticalConvDelta->SetToZero();
+
+    for(int stair=numStairs - 1; stair>=0; --stair){
+        input_stair     ->SubTensor(input,      startDepth + 2 * stair * numStairConvolutions);
+        inputDelta_stair->SubTensor(inputDelta, startDepth + 2 * stair * numStairConvolutions);
+
+        vertOutput_stair      ->SubTensor(verticalConv,      stair * bottleneckDepth, bottleneckDepth);
+        vertOutputDelta_stair ->SubTensor(verticalConvDelta, stair * bottleneckDepth, bottleneckDepth);
+
+        full_output_stair     ->SubTensor(input,       startDepth + 2 * stair * numStairConvolutions, 2 * numStairConvolutions);
+        outputDelta_stair     ->SubTensor(inputDelta,  startDepth + 2 * stair * numStairConvolutions,  numStairConvolutions);
+        min_outputDelta_stair ->SubTensor(inputDelta,  startDepth + 2 * stair * numStairConvolutions + numStairConvolutions, numStairConvolutions);
+        full_outputDelta_stair->SubTensor(inputDelta,  startDepth + 2 * stair * numStairConvolutions,  2 * numStairConvolutions);
+
+        vertKernelStartIndex -= (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth;
+        kernelVert_stair    ->SubTensor(kernel_vert,     vertKernelStartIndex, (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth);
+        kernelVertGrad_stair->SubTensor(kernelGrad_vert, vertKernelStartIndex, (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth);
+
+        horKernelStartIndex -= bottleneckDepth * numStairConvolutions;
+        kernelHor_stair     ->SubTensor(kernel_hor,     horKernelStartIndex, bottleneckDepth * numStairConvolutions);
+        kernelHorGrad_stair ->SubTensor(kernelGrad_hor, horKernelStartIndex, bottleneckDepth * numStairConvolutions);
+
+        biasGrad_stair->SubVect(biasGrad, stair * numStairConvolutions, numStairConvolutions);
+
+        multiplier_stair->     SubTensor(multipliers, 2 * stair * numStairConvolutions, 2 * numStairConvolutions);
+
+        full_outputDelta_stair->PointwiseMultiply(multiplier_stair);
+
+        outputDelta_stair->MaxMinBackward(min_outputDelta_stair, full_output_stair);
+
+        BackwardConvolution3D_32(vertOutput_stair, vertOutputDelta_stair, outputDelta_stair, kernelHor_stair, kernelHorGrad_stair, biasGrad_stair);
+
+        BackwardVerticalConvolution3D_32(input_stair, inputDelta_stair, vertOutputDelta_stair, kernelVert_stair, kernelVertGrad_stair);
+
+        inputDelta->SetDroppedElementsToZero(inputActivity, input->Ind(startDepth + 2 * stair * numStairConvolutions));
+    }
+
+    DeleteOnlyShell(input_stair);
+    DeleteOnlyShell(inputDelta_stair);
+
+    DeleteOnlyShell(full_output_stair);
+    DeleteOnlyShell(outputDelta_stair);
+    DeleteOnlyShell(min_outputDelta_stair);
+    DeleteOnlyShell(full_outputDelta_stair);
+
+    DeleteOnlyShell(vertOutput_stair);
+    DeleteOnlyShell(vertOutputDelta_stair);
+
+    DeleteOnlyShell(kernelVert_stair);
+    DeleteOnlyShell(kernelHor_stair);
+
+    DeleteOnlyShell(kernelVertGrad_stair);
+    DeleteOnlyShell(kernelHorGrad_stair);
+
+    DeleteOnlyShell(biasGrad_stair);
+
+    DeleteOnlyShell(multiplier_stair);
+}
+
+
+
+
+
+
+
+
+void ForwardStairsFullBottleneckBalancedDrop_16(tensor* input, tensor* kernel_vert, tensor* kernel_hor, vect* bias, tensor* verticalConv,
+                                int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth,
+                                activityData* inputActivity, tensor* multipliers, bool testMode){
+    tensor* input_stair = new tensor();
+    tensor* vertOutput_stair = new tensor();
+    tensor* output_stair = new tensor();
+    tensor* min_output_stair = new tensor();
+    tensor* full_output_stair = new tensor();
+
+    tensor* kernelVert_stair = new tensor();
+    tensor* kernelHor_stair = new tensor();
+
+    vect* bias_stair = new vect();
+
+    tensor* multiplier_stair = new tensor();
+
+    int vertKernelStartIndex = 0;
+    int horKernelStartIndex = 0;
+
+    verticalConv->SetToZero();
+
+    for(int stair=0; stair<numStairs; ++stair){
+        input_stair->SubTensor(input,       startDepth + 2 * stair * numStairConvolutions);
+        vertOutput_stair->SubTensor(verticalConv, stair * bottleneckDepth, bottleneckDepth);
+        output_stair->SubTensor(input,      startDepth + 2 * stair * numStairConvolutions,  numStairConvolutions);
+        min_output_stair->SubTensor(input,  startDepth + 2 * stair * numStairConvolutions + numStairConvolutions, numStairConvolutions);
+        full_output_stair->SubTensor(input,      startDepth + 2 * stair * numStairConvolutions,  2 * numStairConvolutions);
+
+        kernelVert_stair->SubTensor(kernel_vert, vertKernelStartIndex, (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth);
+        vertKernelStartIndex += (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth;
+
+        kernelHor_stair->SubTensor(kernel_hor, horKernelStartIndex, bottleneckDepth * numStairConvolutions);
+        horKernelStartIndex += bottleneckDepth * numStairConvolutions;
+
+        bias_stair->SubVect(bias, stair * numStairConvolutions, numStairConvolutions);
+
+        multiplier_stair->SubTensor(multipliers, 2 * stair * numStairConvolutions, 2 * numStairConvolutions);
+
+        VerticalConvolution3D_16(input_stair, vertOutput_stair, kernelVert_stair);
+
+        Convolution3D_16(vertOutput_stair, output_stair, kernelHor_stair, bias_stair);
+
+        min_output_stair->BranchMaxMin(output_stair);
+
+        if (!testMode){
+            full_output_stair->PointwiseMultiply(multiplier_stair);
+        }
+
+        if (!testMode)
+                input->SetDroppedElementsToZero(inputActivity, input->Ind(startDepth + 2 * stair * numStairConvolutions), 2 * output_stair->len);
+    }
+
+    DeleteOnlyShell(input_stair);
+    DeleteOnlyShell(vertOutput_stair);
+    DeleteOnlyShell(output_stair);
+    DeleteOnlyShell(min_output_stair);
+    DeleteOnlyShell(full_output_stair);
+
+    DeleteOnlyShell(kernelVert_stair);
+    DeleteOnlyShell(kernelHor_stair);
+    DeleteOnlyShell(bias_stair);
+
+    DeleteOnlyShell(multiplier_stair);
+}
+
+
+
+void BackwardStairsFullBottleneckBalancedDrop_16(tensor* input, tensor* inputDelta, tensor* kernel_vert, tensor* kernelGrad_vert,
+                                  tensor* kernel_hor, tensor* kernelGrad_hor, vect* biasGrad,
+                                tensor* verticalConv, tensor* verticalConvDelta, int startDepth, int numStairs,
+                                int numStairConvolutions, int bottleneckDepth, activityData* inputActivity, tensor* multipliers){
+    tensor* input_stair = new tensor();
+    tensor* inputDelta_stair = new tensor();
+
+    tensor* full_output_stair = new tensor();
+    tensor* outputDelta_stair = new tensor();
+    tensor* min_outputDelta_stair = new tensor();
+    tensor* full_outputDelta_stair = new tensor();
+
+    tensor* vertOutput_stair = new tensor();
+    tensor* vertOutputDelta_stair = new tensor();
+
+    tensor* kernelVert_stair = new tensor();
+    tensor* kernelHor_stair = new tensor();
+
+    tensor* kernelVertGrad_stair = new tensor();
+    tensor* kernelHorGrad_stair = new tensor();
+
+    vect* biasGrad_stair = new vect(0);
+
+    tensor* multiplier_stair = new tensor();
+
+    int vertKernelStartIndex = kernel_vert->depth;
+    int horKernelStartIndex = kernel_hor->depth;
+
+    verticalConvDelta->SetToZero();
+
+    for(int stair=numStairs - 1; stair>=0; --stair){
+        input_stair     ->SubTensor(input,      startDepth + 2 * stair * numStairConvolutions);
+        inputDelta_stair->SubTensor(inputDelta, startDepth + 2 * stair * numStairConvolutions);
+
+        vertOutput_stair      ->SubTensor(verticalConv,      stair * bottleneckDepth, bottleneckDepth);
+        vertOutputDelta_stair ->SubTensor(verticalConvDelta, stair * bottleneckDepth, bottleneckDepth);
+
+        full_output_stair     ->SubTensor(input,       startDepth + 2 * stair * numStairConvolutions, 2 * numStairConvolutions);
+        outputDelta_stair     ->SubTensor(inputDelta,  startDepth + 2 * stair * numStairConvolutions,  numStairConvolutions);
+        min_outputDelta_stair ->SubTensor(inputDelta,  startDepth + 2 * stair * numStairConvolutions + numStairConvolutions, numStairConvolutions);
+        full_outputDelta_stair->SubTensor(inputDelta,  startDepth + 2 * stair * numStairConvolutions,  2 * numStairConvolutions);
+
+        vertKernelStartIndex -= (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth;
+        kernelVert_stair    ->SubTensor(kernel_vert,     vertKernelStartIndex, (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth);
+        kernelVertGrad_stair->SubTensor(kernelGrad_vert, vertKernelStartIndex, (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth);
+
+        horKernelStartIndex -= bottleneckDepth * numStairConvolutions;
+        kernelHor_stair     ->SubTensor(kernel_hor,     horKernelStartIndex, bottleneckDepth * numStairConvolutions);
+        kernelHorGrad_stair ->SubTensor(kernelGrad_hor, horKernelStartIndex, bottleneckDepth * numStairConvolutions);
+
+        biasGrad_stair->SubVect(biasGrad, stair * numStairConvolutions, numStairConvolutions);
+
+        multiplier_stair->     SubTensor(multipliers, 2 * stair * numStairConvolutions, 2 * numStairConvolutions);
+
+        full_outputDelta_stair->PointwiseMultiply(multiplier_stair);
+
+        outputDelta_stair->MaxMinBackward(min_outputDelta_stair, full_output_stair);
+
+        BackwardConvolution3D_16(vertOutput_stair, vertOutputDelta_stair, outputDelta_stair, kernelHor_stair, kernelHorGrad_stair, biasGrad_stair);
+
+        BackwardVerticalConvolution3D_16(input_stair, inputDelta_stair, vertOutputDelta_stair, kernelVert_stair, kernelVertGrad_stair);
+
+        inputDelta->SetDroppedElementsToZero(inputActivity, input->Ind(startDepth + 2 * stair * numStairConvolutions));
+    }
+
+    DeleteOnlyShell(input_stair);
+    DeleteOnlyShell(inputDelta_stair);
+
+    DeleteOnlyShell(full_output_stair);
+    DeleteOnlyShell(outputDelta_stair);
+    DeleteOnlyShell(min_outputDelta_stair);
+    DeleteOnlyShell(full_outputDelta_stair);
+
+    DeleteOnlyShell(vertOutput_stair);
+    DeleteOnlyShell(vertOutputDelta_stair);
+
+    DeleteOnlyShell(kernelVert_stair);
+    DeleteOnlyShell(kernelHor_stair);
+
+    DeleteOnlyShell(kernelVertGrad_stair);
+    DeleteOnlyShell(kernelHorGrad_stair);
+
+    DeleteOnlyShell(biasGrad_stair);
+
+    DeleteOnlyShell(multiplier_stair);
+}
+
+
+
+
+
+
+
+void ForwardStairsFullBottleneckBalancedDrop_8(tensor* input, tensor* kernel_vert, tensor* kernel_hor, vect* bias, tensor* verticalConv,
+                                int startDepth, int numStairs, int numStairConvolutions, int bottleneckDepth,
+                                activityData* inputActivity, tensor* multipliers, bool testMode){
+    tensor* input_stair = new tensor();
+    tensor* vertOutput_stair = new tensor();
+    tensor* output_stair = new tensor();
+    tensor* min_output_stair = new tensor();
+    tensor* full_output_stair = new tensor();
+
+    tensor* kernelVert_stair = new tensor();
+    tensor* kernelHor_stair = new tensor();
+
+    vect* bias_stair = new vect();
+
+    tensor* multiplier_stair = new tensor();
+
+    int vertKernelStartIndex = 0;
+    int horKernelStartIndex = 0;
+
+    verticalConv->SetToZero();
+
+    for(int stair=0; stair<numStairs; ++stair){
+        input_stair->SubTensor(input,       startDepth + 2 * stair * numStairConvolutions);
+        vertOutput_stair->SubTensor(verticalConv, stair * bottleneckDepth, bottleneckDepth);
+        output_stair->SubTensor(input,      startDepth + 2 * stair * numStairConvolutions,  numStairConvolutions);
+        min_output_stair->SubTensor(input,  startDepth + 2 * stair * numStairConvolutions + numStairConvolutions, numStairConvolutions);
+        full_output_stair->SubTensor(input,      startDepth + 2 * stair * numStairConvolutions,  2 * numStairConvolutions);
+
+        kernelVert_stair->SubTensor(kernel_vert, vertKernelStartIndex, (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth);
+        vertKernelStartIndex += (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth;
+
+        kernelHor_stair->SubTensor(kernel_hor, horKernelStartIndex, bottleneckDepth * numStairConvolutions);
+        horKernelStartIndex += bottleneckDepth * numStairConvolutions;
+
+        bias_stair->SubVect(bias, stair * numStairConvolutions, numStairConvolutions);
+
+        multiplier_stair->SubTensor(multipliers, 2 * stair * numStairConvolutions, 2 * numStairConvolutions);
+
+        VerticalConvolution3D_8(input_stair, vertOutput_stair, kernelVert_stair);
+
+        Convolution3D_8(vertOutput_stair, output_stair, kernelHor_stair, bias_stair);
+
+        min_output_stair->BranchMaxMin(output_stair);
+
+        if (!testMode){
+            full_output_stair->PointwiseMultiply(multiplier_stair);
+        }
+
+        if (!testMode)
+                input->SetDroppedElementsToZero(inputActivity, input->Ind(startDepth + 2 * stair * numStairConvolutions), 2 * output_stair->len);
+    }
+
+    DeleteOnlyShell(input_stair);
+    DeleteOnlyShell(vertOutput_stair);
+    DeleteOnlyShell(output_stair);
+    DeleteOnlyShell(min_output_stair);
+    DeleteOnlyShell(full_output_stair);
+
+    DeleteOnlyShell(kernelVert_stair);
+    DeleteOnlyShell(kernelHor_stair);
+    DeleteOnlyShell(bias_stair);
+
+    DeleteOnlyShell(multiplier_stair);
+}
+
+
+
+void BackwardStairsFullBottleneckBalancedDrop_8(tensor* input, tensor* inputDelta, tensor* kernel_vert, tensor* kernelGrad_vert,
+                                  tensor* kernel_hor, tensor* kernelGrad_hor, vect* biasGrad,
+                                tensor* verticalConv, tensor* verticalConvDelta, int startDepth, int numStairs,
+                                int numStairConvolutions, int bottleneckDepth, activityData* inputActivity, tensor* multipliers){
+    tensor* input_stair = new tensor();
+    tensor* inputDelta_stair = new tensor();
+
+    tensor* full_output_stair = new tensor();
+    tensor* outputDelta_stair = new tensor();
+    tensor* min_outputDelta_stair = new tensor();
+    tensor* full_outputDelta_stair = new tensor();
+
+    tensor* vertOutput_stair = new tensor();
+    tensor* vertOutputDelta_stair = new tensor();
+
+    tensor* kernelVert_stair = new tensor();
+    tensor* kernelHor_stair = new tensor();
+
+    tensor* kernelVertGrad_stair = new tensor();
+    tensor* kernelHorGrad_stair = new tensor();
+
+    vect* biasGrad_stair = new vect(0);
+
+    tensor* multiplier_stair = new tensor();
+
+    int vertKernelStartIndex = kernel_vert->depth;
+    int horKernelStartIndex = kernel_hor->depth;
+
+    verticalConvDelta->SetToZero();
+
+    for(int stair=numStairs - 1; stair>=0; --stair){
+        input_stair     ->SubTensor(input,      startDepth + 2 * stair * numStairConvolutions);
+        inputDelta_stair->SubTensor(inputDelta, startDepth + 2 * stair * numStairConvolutions);
+
+        vertOutput_stair      ->SubTensor(verticalConv,      stair * bottleneckDepth, bottleneckDepth);
+        vertOutputDelta_stair ->SubTensor(verticalConvDelta, stair * bottleneckDepth, bottleneckDepth);
+
+        full_output_stair     ->SubTensor(input,       startDepth + 2 * stair * numStairConvolutions, 2 * numStairConvolutions);
+        outputDelta_stair     ->SubTensor(inputDelta,  startDepth + 2 * stair * numStairConvolutions,  numStairConvolutions);
+        min_outputDelta_stair ->SubTensor(inputDelta,  startDepth + 2 * stair * numStairConvolutions + numStairConvolutions, numStairConvolutions);
+        full_outputDelta_stair->SubTensor(inputDelta,  startDepth + 2 * stair * numStairConvolutions,  2 * numStairConvolutions);
+
+        vertKernelStartIndex -= (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth;
+        kernelVert_stair    ->SubTensor(kernel_vert,     vertKernelStartIndex, (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth);
+        kernelVertGrad_stair->SubTensor(kernelGrad_vert, vertKernelStartIndex, (startDepth + 2 * stair * numStairConvolutions) * bottleneckDepth);
+
+        horKernelStartIndex -= bottleneckDepth * numStairConvolutions;
+        kernelHor_stair     ->SubTensor(kernel_hor,     horKernelStartIndex, bottleneckDepth * numStairConvolutions);
+        kernelHorGrad_stair ->SubTensor(kernelGrad_hor, horKernelStartIndex, bottleneckDepth * numStairConvolutions);
+
+        biasGrad_stair->SubVect(biasGrad, stair * numStairConvolutions, numStairConvolutions);
+
+        multiplier_stair->     SubTensor(multipliers, 2 * stair * numStairConvolutions, 2 * numStairConvolutions);
+
+        full_outputDelta_stair->PointwiseMultiply(multiplier_stair);
+
+        outputDelta_stair->MaxMinBackward(min_outputDelta_stair, full_output_stair);
+
+        BackwardConvolution3D_8(vertOutput_stair, vertOutputDelta_stair, outputDelta_stair, kernelHor_stair, kernelHorGrad_stair, biasGrad_stair);
+
+        BackwardVerticalConvolution3D_8(input_stair, inputDelta_stair, vertOutputDelta_stair, kernelVert_stair, kernelVertGrad_stair);
 
         inputDelta->SetDroppedElementsToZero(inputActivity, input->Ind(startDepth + 2 * stair * numStairConvolutions));
     }
@@ -5929,6 +7225,160 @@ void BackwardVerticalConvolution3D(tensor* input, tensor* inputDelta, tensor* ou
 
             inputDelta_inp->AddDistinct(kernel_multiplier, outputDelta_out);
             kernelGrad->elem[kernel_ind] += InnerDistinctProduct(outputDelta_out, input_inp);
+
+            ++kernel_ind;
+        }
+    }
+
+    DeleteOnlyShell(input_inp);
+    DeleteOnlyShell(inputDelta_inp);
+    DeleteOnlyShell(outputDelta_out);
+}
+
+
+void VerticalConvolution3D_32(tensor* input, tensor* output, tensor* kernel){
+    matrix* input_inp = new matrix();
+    matrix* output_out = new matrix();
+    float kernel_multiplier = 0.0f;
+
+    int kernel_ind = 0;
+    for(int out = 0; out < output->depth; ++out){
+        output_out->SetToTensorLayer(output, out);
+        for(int inp = 0; inp < input->depth; ++inp){
+            input_inp->SetToTensorLayer(input, inp);
+            kernel_multiplier = kernel->elem[kernel_ind];
+
+            output_out->AddDistinct_1024(kernel_multiplier, input_inp);
+
+            ++kernel_ind;
+        }
+    }
+    DeleteOnlyShell(input_inp);
+    DeleteOnlyShell(output_out);
+}
+
+void BackwardVerticalConvolution3D_32(tensor* input, tensor* inputDelta, tensor* outputDelta, tensor* kernel, tensor* kernelGrad){
+    matrix* input_inp = new matrix();
+    matrix* inputDelta_inp = new matrix();
+    matrix* outputDelta_out = new matrix();
+
+    float kernel_multiplier = 0.0f;
+
+    int kernel_ind = 0;
+    for(int out = 0; out < outputDelta->depth; ++out){
+        outputDelta_out->SetToTensorLayer(outputDelta, out);
+        for(int inp = 0; inp < input->depth; ++inp){
+            input_inp->SetToTensorLayer(input, inp);
+            inputDelta_inp->SetToTensorLayer(inputDelta, inp);
+
+            kernel_multiplier = kernel->elem[kernel_ind];
+
+            inputDelta_inp->AddDistinct_1024(kernel_multiplier, outputDelta_out);
+            kernelGrad->elem[kernel_ind] += InnerDistinctProduct_1024(outputDelta_out, input_inp);
+
+            ++kernel_ind;
+        }
+    }
+
+    DeleteOnlyShell(input_inp);
+    DeleteOnlyShell(inputDelta_inp);
+    DeleteOnlyShell(outputDelta_out);
+}
+
+
+
+
+void VerticalConvolution3D_16(tensor* input, tensor* output, tensor* kernel){
+    matrix* input_inp = new matrix();
+    matrix* output_out = new matrix();
+    float kernel_multiplier = 0.0f;
+
+    int kernel_ind = 0;
+    for(int out = 0; out < output->depth; ++out){
+        output_out->SetToTensorLayer(output, out);
+        for(int inp = 0; inp < input->depth; ++inp){
+            input_inp->SetToTensorLayer(input, inp);
+            kernel_multiplier = kernel->elem[kernel_ind];
+
+            output_out->AddDistinct_256(kernel_multiplier, input_inp);
+
+            ++kernel_ind;
+        }
+    }
+    DeleteOnlyShell(input_inp);
+    DeleteOnlyShell(output_out);
+}
+
+void BackwardVerticalConvolution3D_16(tensor* input, tensor* inputDelta, tensor* outputDelta, tensor* kernel, tensor* kernelGrad){
+    matrix* input_inp = new matrix();
+    matrix* inputDelta_inp = new matrix();
+    matrix* outputDelta_out = new matrix();
+
+    float kernel_multiplier = 0.0f;
+
+    int kernel_ind = 0;
+    for(int out = 0; out < outputDelta->depth; ++out){
+        outputDelta_out->SetToTensorLayer(outputDelta, out);
+        for(int inp = 0; inp < input->depth; ++inp){
+            input_inp->SetToTensorLayer(input, inp);
+            inputDelta_inp->SetToTensorLayer(inputDelta, inp);
+
+            kernel_multiplier = kernel->elem[kernel_ind];
+
+            inputDelta_inp->AddDistinct_256(kernel_multiplier, outputDelta_out);
+            kernelGrad->elem[kernel_ind] += InnerDistinctProduct_256(outputDelta_out, input_inp);
+
+            ++kernel_ind;
+        }
+    }
+
+    DeleteOnlyShell(input_inp);
+    DeleteOnlyShell(inputDelta_inp);
+    DeleteOnlyShell(outputDelta_out);
+}
+
+
+
+
+void VerticalConvolution3D_8(tensor* input, tensor* output, tensor* kernel){
+    matrix* input_inp = new matrix();
+    matrix* output_out = new matrix();
+    float kernel_multiplier = 0.0f;
+
+    int kernel_ind = 0;
+    for(int out = 0; out < output->depth; ++out){
+        output_out->SetToTensorLayer(output, out);
+        for(int inp = 0; inp < input->depth; ++inp){
+            input_inp->SetToTensorLayer(input, inp);
+            kernel_multiplier = kernel->elem[kernel_ind];
+
+            output_out->AddDistinct_64(kernel_multiplier, input_inp);
+
+            ++kernel_ind;
+        }
+    }
+    DeleteOnlyShell(input_inp);
+    DeleteOnlyShell(output_out);
+}
+
+void BackwardVerticalConvolution3D_8(tensor* input, tensor* inputDelta, tensor* outputDelta, tensor* kernel, tensor* kernelGrad){
+    matrix* input_inp = new matrix();
+    matrix* inputDelta_inp = new matrix();
+    matrix* outputDelta_out = new matrix();
+
+    float kernel_multiplier = 0.0f;
+
+    int kernel_ind = 0;
+    for(int out = 0; out < outputDelta->depth; ++out){
+        outputDelta_out->SetToTensorLayer(outputDelta, out);
+        for(int inp = 0; inp < input->depth; ++inp){
+            input_inp->SetToTensorLayer(input, inp);
+            inputDelta_inp->SetToTensorLayer(inputDelta, inp);
+
+            kernel_multiplier = kernel->elem[kernel_ind];
+
+            inputDelta_inp->AddDistinct_64(kernel_multiplier, outputDelta_out);
+            kernelGrad->elem[kernel_ind] += InnerDistinctProduct_64(outputDelta_out, input_inp);
 
             ++kernel_ind;
         }

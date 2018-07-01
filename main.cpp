@@ -43,7 +43,7 @@ void SomeInitialStuff(){
 //    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 //    //putenv((char*)"OMP_PROC_BIND=TRUE");
 //    putenv((char*)"OMP_DYNAMIC=FALSE");
-//    putenv((char*)"OMP_WAIT_POLICY=ACTIVE");
+    //putenv((char*)"OMP_WAIT_POLICY=ACTIVE");
 }
 
 int main()
@@ -57,17 +57,20 @@ int main()
 
     NeuralNet *NN = new NeuralNet;
 
+    const int num_layers = 2;
+    const int layer_size = 10;
+
     NN->SetInputShape(3, 32, 32);
 
-    NN->Add(StairsFullBottleneckBalancedDrop::Start(10, 10, 10));
-    NN->Add(FullAveragePoolingBalancedDrop::Start());
+    NN->Add(StairsFullBottleneck::Start(num_layers, layer_size, layer_size));
+    NN->Add(FullColumnDrop::Start(2, 2, 2 * layer_size, 2));
 
-    NN->Add(StairsFullBottleneckBalancedDrop::Start(10, 10, 10));
-    NN->Add(FullAveragePoolingBalancedDrop::Start());
+    NN->Add(StairsFullBottleneckBalancedDrop::Start(num_layers, layer_size, layer_size));
+    NN->Add(FullColumnDrop::Start(2, 2, 2 * layer_size, 2));
 
-    NN->Add(StairsFullBottleneckBalancedDrop::Start(10, 10, 10));
+    NN->Add(StairsFullBottleneckBalancedDrop::Start(num_layers, layer_size, layer_size));
 
-    NN->Add(FullAveragePoolingBalancedDrop::Start(8, 8));
+    NN->Add(FullColumnDrop::Start(8, 8, 2 * layer_size, 4));
 
     NN->Add(FullyConnectedSoftMax::Start(10));
     NN->Initiate();
@@ -78,8 +81,6 @@ int main()
     Opt->OptimizeInParallel(NN, CifarTrain, CifarTest);
     NN->weightsData->WriteToFile((char*)NET_WEIGHTS_FILE);
     cout<<"Optimization is done"<<endl;
-
-    NN->SwitchToTestMode();
 
     float error, accuracy;
     NN->CalculateErrorAndAccuracy(CifarTest, error, accuracy);

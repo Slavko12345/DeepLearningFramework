@@ -149,6 +149,33 @@ void orderedData::AddDistinct(float lamb, orderedData* addon){
         this_elem[i] += lamb * addon_elem[i];
 }
 
+void orderedData::AddDistinct_1024(float lamb, orderedData* addon){
+    float * __restrict__ this_elem = elem;
+    float *  __restrict__ addon_elem = addon->elem;
+
+    for(int i=0; i<1024; ++i)
+        this_elem[i] += lamb * addon_elem[i];
+    return;
+}
+
+void orderedData::AddDistinct_256(float lamb, orderedData* addon){
+    float * __restrict__ this_elem = elem;
+    float *  __restrict__ addon_elem = addon->elem;
+
+    for(int i=0; i<256; ++i)
+        this_elem[i] += lamb * addon_elem[i];
+    return;
+}
+
+void orderedData::AddDistinct_64(float lamb, orderedData* addon){
+    float * __restrict__ this_elem = elem;
+    float *  __restrict__ addon_elem = addon->elem;
+
+    for(int i=0; i<64; ++i)
+        this_elem[i] += lamb * addon_elem[i];
+    return;
+}
+
 
 void orderedData::Add(float lamb, orderedData* addon){
     float * addon_elem = addon->elem;
@@ -324,6 +351,12 @@ void orderedData::AdamUpdate(orderedData* grad, orderedData* Moment, orderedData
 
     for(int j=0; j<len; ++j)
         weight_elem[j] -= Step * Moment_elem[j] / (sqrt(MS_elem[j])+FLT_EPSILON);
+
+//    for(int j=0; j<len; ++j){
+//        Moment_elem[j] = k1 * Moment_elem[j] + k2 * grad_elem[j];
+//        MS_elem[j] = k1 * MS_elem[j] + k2 * sqr(grad_elem[j]);
+//        weight_elem[j] -= Step * Moment_elem[j] / (sqrt(MS_elem[j])+FLT_EPSILON);
+//    }
 }
 
 void orderedData::SetDroppedElementsToZero(activityData* mask){
@@ -726,6 +759,36 @@ float InnerDistinctProduct(orderedData* inp1, orderedData* inp2){
     float * __restrict__ inp2_elem = inp2->elem;
 
     for(int j=0; j<inp1->len; ++j)
+        res += inp1_elem[j] * inp2_elem[j];
+    return res;
+}
+
+float InnerDistinctProduct_1024(orderedData* inp1, orderedData* inp2){
+    float res = 0.0;
+    float * __restrict__ inp1_elem = inp1->elem;
+    float * __restrict__ inp2_elem = inp2->elem;
+
+    for(int j=0; j<1024; ++j)
+        res += inp1_elem[j] * inp2_elem[j];
+    return res;
+}
+
+float InnerDistinctProduct_256(orderedData* inp1, orderedData* inp2){
+    float res = 0.0;
+    float * __restrict__ inp1_elem = inp1->elem;
+    float * __restrict__ inp2_elem = inp2->elem;
+
+    for(int j=0; j<256; ++j)
+        res += inp1_elem[j] * inp2_elem[j];
+    return res;
+}
+
+float InnerDistinctProduct_64(orderedData* inp1, orderedData* inp2){
+    float res = 0.0;
+    float * __restrict__ inp1_elem = inp1->elem;
+    float * __restrict__ inp2_elem = inp2->elem;
+
+    for(int j=0; j<64; ++j)
         res += inp1_elem[j] * inp2_elem[j];
     return res;
 }
